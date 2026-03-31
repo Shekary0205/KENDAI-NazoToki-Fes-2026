@@ -2,6 +2,12 @@ export interface BattleQuestion {
   question: string;
   options: string[];
   correctIndex: number;
+  /** チェックリスト形式（複数選択）の場合に使用 */
+  type?: "single" | "checkbox";
+  /** 複数正解のインデックス（type: "checkbox" 時に使用） */
+  correctIndices?: number[];
+  /** 正解後に表示する解説 */
+  explanation?: string;
 }
 
 export interface BattleData {
@@ -26,9 +32,12 @@ export const battleData: BattleData[] = [
     damageToPlayer: 25,
     questions: [
       {
-        question: "日本の「健康」という言葉の由来で正しいものは？",
-        options: ["中国の古典から", "明治時代の造語", "江戸時代の医学書", "仏教用語から"],
-        correctIndex: 0
+        question: "健康福祉学部の学科を３つ答えよう",
+        options: ["医療情報学科", "社会福祉学科", "健康栄養学科", "臨床心理学科", "看護学科"],
+        correctIndex: -1,
+        type: "checkbox",
+        correctIndices: [0, 1, 2],
+        explanation: "健康福祉学部は「医療情報学科」「社会福祉学科」「健康栄養学科」の3学科で構成されています。医療情報学科では医療×ITの専門人材を、社会福祉学科では社会福祉士や介護福祉士を、健康栄養学科では管理栄養士を養成しています。"
       },
       {
         question: "高齢者福祉で重要な「QOL」とは何の略？",

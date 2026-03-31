@@ -5,20 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
-import { 
-  Swords, 
-  Heart, 
+import {
+  Swords,
+  Heart,
   Skull,
   Trophy,
   Home,
   RotateCcw,
-  Zap
+  Zap,
+  CheckSquare,
+  Square,
+  BookOpen
 } from "lucide-react";
 import { getDepartmentById } from "../data/departments-data";
 import { getBattleDataByDepartmentId } from "../data/battle-data";
 import { useBgm } from "../context/BgmContext";
 
-type BattleState = "intro" | "question" | "correct" | "incorrect" | "victory" | "defeat";
+type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
 
 export default function Battle() {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -31,6 +34,8 @@ export default function Battle() {
   const [playerHp, setPlayerHp] = useState(100);
   const [enemyHp, setEnemyHp] = useState(100);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
+  const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
   const [showDamage, setShowDamage] = useState<"player" | "enemy" | null>(null);
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
@@ -77,6 +82,38 @@ export default function Battle() {
     setBattleState("question");
   };
 
+  // 正解後の共通処理（ダメージ→解説 or 次の問題）
+  const processCorrectAnswer = (newEnemyHp: number) => {
+    setTimeout(() => {
+      setShowDamage(null);
+      // 解説がある場合は解説画面へ
+      if (currentQuestion.explanation) {
+        setBattleState("explanation");
+      } else {
+        advanceAfterCorrect(newEnemyHp);
+      }
+    }, 2000);
+  };
+
+  // 解説画面から次へ進む
+  const advanceAfterCorrect = (hp?: number) => {
+    const currentEnemyHp = hp ?? enemyHp;
+    if (currentEnemyHp <= 0) {
+      switchTrack("victory");
+      setBattleState("victory");
+    } else if (currentQuestionIndex < battleData.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(null);
+      setCheckedOptions(new Set());
+      setCheckboxSubmitted(false);
+      setBattleState("question");
+    } else {
+      switchTrack("victory");
+      setBattleState("victory");
+    }
+  };
+
+  // 単一選択の回答処理
   const handleSelectOption = (index: number) => {
     if (selectedOption !== null) return;
     setSelectedOption(index);
@@ -88,22 +125,7 @@ export default function Battle() {
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
-
-      setTimeout(() => {
-        setShowDamage(null);
-        if (newEnemyHp <= 0) {
-          switchTrack("victory");
-          setBattleState("victory");
-        } else if (currentQuestionIndex < battleData.questions.length - 1) {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-          setSelectedOption(null);
-          setBattleState("question");
-        } else {
-          // 問題が尽きた場合も勝利
-          switchTrack("victory");
-          setBattleState("victory");
-        }
-      }, 2000);
+      processCorrectAnswer(newEnemyHp);
     } else {
       setBattleState("incorrect");
       setShowDamage("player");
@@ -123,12 +145,64 @@ export default function Battle() {
     }
   };
 
+  // チェックリストのトグル
+  const handleToggleCheckbox = (index: number) => {
+    if (checkboxSubmitted) return;
+    setCheckedOptions(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  // チェックリストの回答を確定
+  const handleSubmitCheckbox = () => {
+    if (checkboxSubmitted) return;
+    setCheckboxSubmitted(true);
+
+    const correctSet = new Set(currentQuestion.correctIndices || []);
+    const isCorrect =
+      checkedOptions.size === correctSet.size &&
+      [...checkedOptions].every(i => correctSet.has(i));
+
+    if (isCorrect) {
+      setBattleState("correct");
+      setShowDamage("enemy");
+      const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
+      setEnemyHp(newEnemyHp);
+      processCorrectAnswer(newEnemyHp);
+    } else {
+      setBattleState("incorrect");
+      setShowDamage("player");
+      const newPlayerHp = Math.max(0, playerHp - battleData.damageToPlayer);
+      setPlayerHp(newPlayerHp);
+
+      setTimeout(() => {
+        setShowDamage(null);
+        if (newPlayerHp <= 0) {
+          switchTrack("trainer");
+          setBattleState("defeat");
+        } else {
+          setCheckedOptions(new Set());
+          setCheckboxSubmitted(false);
+          setBattleState("question");
+        }
+      }, 2000);
+    }
+  };
+
   const handleRetry = () => {
     switchTrack("trainer");
     setPlayerHp(battleData.playerMaxHp);
     setEnemyHp(battleData.enemyMaxHp);
     setCurrentQuestionIndex(0);
     setSelectedOption(null);
+    setCheckedOptions(new Set());
+    setCheckboxSubmitted(false);
     setBattleState("intro");
   };
 
@@ -408,66 +482,149 @@ export default function Battle() {
           />
         </div>
 
+        {/* 解説画面 */}
+        {battleState === "explanation" && currentQuestion.explanation && (
+          <Card className="shadow-xl border-2 border-green-400">
+            <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-50">
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-7 h-7 text-green-700" />
+                <CardTitle className="text-2xl text-green-900">解説</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <p className="text-lg text-gray-800 leading-relaxed">
+                {currentQuestion.explanation}
+              </p>
+              <Button
+                onClick={() => advanceAfterCorrect()}
+                className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                次の問題へ
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* クイズカード */}
-        <Card className="shadow-xl">
-          <CardHeader className={`bg-gradient-to-r ${colorClasses.from} ${colorClasses.to}`}>
-            <CardTitle className="text-2xl text-center">
-              {currentQuestion.question}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <div className="grid gap-3">
-              {currentQuestion.options.map((option, index) => {
-                const isSelected = selectedOption === index;
-                const isCorrect = index === currentQuestion.correctIndex;
-                const showResult = selectedOption !== null;
+        {battleState !== "explanation" && (
+          <Card className="shadow-xl">
+            <CardHeader className={`bg-gradient-to-r ${colorClasses.from} ${colorClasses.to}`}>
+              <CardTitle className="text-2xl text-center">
+                {currentQuestion.question}
+              </CardTitle>
+              {currentQuestion.type === "checkbox" && (
+                <p className="text-center text-gray-600 mt-2">
+                  正しいものをすべて選んでください
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              {/* 単一選択 */}
+              {currentQuestion.type !== "checkbox" && (
+                <div className="grid gap-3">
+                  {currentQuestion.options.map((option, index) => {
+                    const isSelected = selectedOption === index;
+                    const isCorrect = index === currentQuestion.correctIndex;
+                    const showResult = selectedOption !== null;
 
-                let buttonClass = "h-auto py-4 text-lg justify-start text-left";
-                if (showResult) {
-                  if (isSelected && isCorrect) {
-                    buttonClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
-                  } else if (isSelected && !isCorrect) {
-                    buttonClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
-                  } else if (isCorrect) {
-                    buttonClass += " bg-green-100 border-green-400";
-                  }
-                }
+                    let buttonClass = "h-auto py-4 text-lg justify-start text-left";
+                    if (showResult) {
+                      if (isSelected && isCorrect) {
+                        buttonClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      } else if (isCorrect) {
+                        buttonClass += " bg-green-100 border-green-400";
+                      }
+                    }
 
-                return (
-                  <Button
-                    key={index}
-                    onClick={() => handleSelectOption(index)}
-                    disabled={selectedOption !== null}
-                    variant={isSelected ? "default" : "outline"}
-                    className={buttonClass}
-                  >
-                    <span className="mr-3 font-bold">{String.fromCharCode(65 + index)}.</span>
-                    {option}
-                  </Button>
-                );
-              })}
-            </div>
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => handleSelectOption(index)}
+                        disabled={selectedOption !== null}
+                        variant={isSelected ? "default" : "outline"}
+                        className={buttonClass}
+                      >
+                        <span className="mr-3 font-bold">{String.fromCharCode(65 + index)}.</span>
+                        {option}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
 
-            {/* フィードバック */}
-            {battleState === "correct" && (
-              <Alert className="bg-green-50 border-green-300">
-                <Zap className="h-5 w-5 text-green-600" />
-                <AlertDescription className="text-green-800 font-bold text-lg">
-                  正解！ 敵に{battleData.damageToEnemy}ダメージ！
-                </AlertDescription>
-              </Alert>
-            )}
+              {/* チェックリスト（複数選択） */}
+              {currentQuestion.type === "checkbox" && (
+                <div className="grid gap-3">
+                  {currentQuestion.options.map((option, index) => {
+                    const isChecked = checkedOptions.has(index);
+                    const correctSet = new Set(currentQuestion.correctIndices || []);
+                    const isCorrectOption = correctSet.has(index);
+                    const showResult = checkboxSubmitted;
 
-            {battleState === "incorrect" && (
-              <Alert className="bg-red-50 border-red-300">
-                <Skull className="h-5 w-5 text-red-600" />
-                <AlertDescription className="text-red-800 font-bold text-lg">
-                  不正解... {battleData.damageToPlayer}ダメージを受けた！
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+                    let buttonClass = "h-auto py-4 text-lg justify-start text-left";
+                    if (showResult) {
+                      if (isChecked && isCorrectOption) {
+                        buttonClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isChecked && !isCorrectOption) {
+                        buttonClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      } else if (isCorrectOption) {
+                        buttonClass += " bg-green-100 border-green-400";
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => handleToggleCheckbox(index)}
+                        disabled={checkboxSubmitted}
+                        variant={isChecked ? "default" : "outline"}
+                        className={buttonClass}
+                      >
+                        {isChecked ? (
+                          <CheckSquare className="w-5 h-5 mr-3 flex-shrink-0" />
+                        ) : (
+                          <Square className="w-5 h-5 mr-3 flex-shrink-0" />
+                        )}
+                        {option}
+                      </Button>
+                    );
+                  })}
+
+                  {!checkboxSubmitted && (
+                    <Button
+                      onClick={handleSubmitCheckbox}
+                      disabled={checkedOptions.size === 0}
+                      className="w-full h-12 text-lg mt-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      回答する
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* フィードバック */}
+              {battleState === "correct" && (
+                <Alert className="bg-green-50 border-green-300">
+                  <Zap className="h-5 w-5 text-green-600" />
+                  <AlertDescription className="text-green-800 font-bold text-lg">
+                    正解！ 敵に{battleData.damageToEnemy}ダメージ！
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {battleState === "incorrect" && (
+                <Alert className="bg-red-50 border-red-300">
+                  <Skull className="h-5 w-5 text-red-600" />
+                  <AlertDescription className="text-red-800 font-bold text-lg">
+                    不正解... {battleData.damageToPlayer}ダメージを受けた！
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <style>{`
