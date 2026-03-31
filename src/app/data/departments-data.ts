@@ -5,6 +5,14 @@ export interface StageData {
   hint: string;
   answer: string;
   nextLocationHint: string;
+  /** チェックリスト形式の場合 */
+  type?: "text" | "checkbox";
+  /** チェックリストの選択肢 */
+  options?: string[];
+  /** 正解の選択肢インデックス */
+  correctIndices?: number[];
+  /** 正解後の解説 */
+  explanation?: string;
 }
 
 export interface DepartmentData {
@@ -27,10 +35,14 @@ export const departments: DepartmentData[] = [
       {
         id: 1,
         location: "1号館 エントランス",
-        riddle: "健康と福祉の学び舎へようこそ。\n「健康」という言葉から「康」を取ると、\n何という漢字が残る？",
-        hint: "「健康」の最初の文字に注目",
-        answer: "健",
-        nextLocationHint: "2階へ上がろう。壁に掲示されたイベント情報に注目！"
+        riddle: "健康福祉学部の学科を３つ答えよう",
+        hint: "医療・福祉・栄養に関する学科名を思い出してみよう",
+        answer: "",
+        nextLocationHint: "2階へ上がろう。壁に掲示されたイベント情報に注目！",
+        type: "checkbox",
+        options: ["医療情報学科", "社会福祉学科", "健康栄養学科", "臨床心理学科", "看護学科"],
+        correctIndices: [0, 1, 2],
+        explanation: "健康福祉学部は「医療情報学科」「社会福祉学科」「健康栄養学科」の3学科で構成されています。医療情報学科では医療×ITの専門人材を、社会福祉学科では社会福祉士や介護福祉士を、健康栄養学科では管理栄養士を養成しています。"
       },
       {
         id: 2,

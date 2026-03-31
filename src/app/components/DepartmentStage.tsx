@@ -6,13 +6,16 @@ import { Input } from "./ui/input";
 import { Progress } from "./ui/progress";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
-import { 
-  MapPin, 
-  Lightbulb, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  MapPin,
+  Lightbulb,
+  CheckCircle2,
+  XCircle,
   ArrowRight,
-  Home
+  Home,
+  CheckSquare,
+  Square,
+  BookOpen
 } from "lucide-react";
 import { getDepartmentById, normalizeAnswer } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
@@ -29,6 +32,9 @@ export default function DepartmentStage() {
   const [showHint, setShowHint] = useState(false);
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [showNext, setShowNext] = useState(false);
+  const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
+  const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
 
   // 謎解き中はトキワの森BGM
   useEffect(() => {
@@ -40,6 +46,9 @@ export default function DepartmentStage() {
     setShowHint(false);
     setFeedback(null);
     setShowNext(false);
+    setCheckedOptions(new Set());
+    setCheckboxSubmitted(false);
+    setShowExplanation(false);
   }, [currentStageId]);
 
   if (!department || !stage) {
@@ -61,17 +70,62 @@ export default function DepartmentStage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const normalizedUserAnswer = normalizeAnswer(userAnswer);
     const normalizedCorrectAnswer = normalizeAnswer(stage.answer);
 
     if (normalizedUserAnswer === normalizedCorrectAnswer) {
       setFeedback("correct");
-      setShowNext(true);
+      if (stage.explanation) {
+        setShowExplanation(true);
+      } else {
+        setShowNext(true);
+      }
     } else {
       setFeedback("incorrect");
       setTimeout(() => setFeedback(null), 2000);
     }
+  };
+
+  const handleToggleCheckbox = (index: number) => {
+    if (checkboxSubmitted) return;
+    setCheckedOptions(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const handleSubmitCheckbox = () => {
+    if (checkboxSubmitted) return;
+    setCheckboxSubmitted(true);
+
+    const correctSet = new Set(stage.correctIndices || []);
+    const isCorrect =
+      checkedOptions.size === correctSet.size &&
+      [...checkedOptions].every(i => correctSet.has(i));
+
+    if (isCorrect) {
+      setFeedback("correct");
+      if (stage.explanation) {
+        setShowExplanation(true);
+      } else {
+        setShowNext(true);
+      }
+    } else {
+      setFeedback("incorrect");
+      setTimeout(() => {
+        setFeedback(null);
+        setCheckedOptions(new Set());
+        setCheckboxSubmitted(false);
+      }, 2000);
+    }
+  };
+
+  const handleExplanationNext = () => {
+    setShowExplanation(false);
+    setShowNext(true);
   };
 
   const handleNext = () => {
@@ -178,31 +232,119 @@ export default function DepartmentStage() {
               )}
             </div>
 
-            {/* 回答フォーム */}
-            {!showNext ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    答えを入力してください
-                  </label>
-                  <Input
-                    type="text"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    placeholder="答えを入力..."
-                    className="text-lg h-12"
-                    autoFocus
-                  />
+            {/* 解説画面 */}
+            {showExplanation && stage.explanation && (
+              <div className="space-y-4">
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <AlertDescription className="text-green-800 font-semibold">
+                    正解！よくできました！
+                  </AlertDescription>
+                </Alert>
+
+                <div className="bg-emerald-50 p-5 rounded-lg border-2 border-emerald-300">
+                  <div className="flex items-start gap-3">
+                    <BookOpen className="w-6 h-6 text-emerald-700 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-emerald-900 mb-2">解説</h4>
+                      <p className="text-gray-800 leading-relaxed">{stage.explanation}</p>
+                    </div>
+                  </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  onClick={handleExplanationNext}
                   className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
-                  disabled={!userAnswer.trim()}
                 >
-                  回答する
+                  次へ進む
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-              </form>
+              </div>
+            )}
+
+            {/* 回答フォーム */}
+            {!showNext && !showExplanation ? (
+              <>
+                {/* テキスト入力形式 */}
+                {stage.type !== "checkbox" && (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        答えを入力してください
+                      </label>
+                      <Input
+                        type="text"
+                        value={userAnswer}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        placeholder="答えを入力..."
+                        className="text-lg h-12"
+                        autoFocus
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
+                      disabled={!userAnswer.trim()}
+                    >
+                      回答する
+                    </Button>
+                  </form>
+                )}
+
+                {/* チェックリスト形式 */}
+                {stage.type === "checkbox" && stage.options && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-700">
+                      正しいものをすべて選んでください
+                    </p>
+                    {stage.options.map((option, index) => {
+                      const isChecked = checkedOptions.has(index);
+                      const correctSet = new Set(stage.correctIndices || []);
+                      const isCorrectOption = correctSet.has(index);
+                      const showResult = checkboxSubmitted;
+
+                      let btnClass = "w-full h-auto py-4 text-lg justify-start text-left";
+                      if (showResult) {
+                        if (isChecked && isCorrectOption) {
+                          btnClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                        } else if (isChecked && !isCorrectOption) {
+                          btnClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                        } else if (isCorrectOption) {
+                          btnClass += " bg-green-100 border-green-400";
+                        }
+                      }
+
+                      return (
+                        <Button
+                          key={index}
+                          onClick={() => handleToggleCheckbox(index)}
+                          disabled={checkboxSubmitted}
+                          variant={isChecked ? "default" : "outline"}
+                          className={btnClass}
+                        >
+                          {isChecked ? (
+                            <CheckSquare className="w-5 h-5 mr-3 flex-shrink-0" />
+                          ) : (
+                            <Square className="w-5 h-5 mr-3 flex-shrink-0" />
+                          )}
+                          {option}
+                        </Button>
+                      );
+                    })}
+
+                    {!checkboxSubmitted && (
+                      <Button
+                        onClick={handleSubmitCheckbox}
+                        disabled={checkedOptions.size === 0}
+                        className={`w-full h-12 text-lg mt-2 ${colorClasses.bg} hover:opacity-90`}
+                      >
+                        回答する
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </>
             ) : null}
 
             {/* フィードバック */}
@@ -215,14 +357,16 @@ export default function DepartmentStage() {
               </Alert>
             )}
 
-            {feedback === "correct" && (
+            {feedback === "correct" && showNext && (
               <div className="space-y-4">
-                <Alert className="bg-green-50 border-green-200">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <AlertDescription className="text-green-800 font-semibold">
-                    正解！よくできました！
-                  </AlertDescription>
-                </Alert>
+                {!stage.explanation && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <AlertDescription className="text-green-800 font-semibold">
+                      正解！よくできました！
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 {stage.nextLocationHint && (
                   <div className="bg-blue-50 p-5 rounded-lg border-2 border-blue-200">
@@ -236,7 +380,7 @@ export default function DepartmentStage() {
                   </div>
                 )}
 
-                <Button 
+                <Button
                   onClick={handleNext}
                   className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
                 >
