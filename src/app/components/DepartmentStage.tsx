@@ -386,7 +386,7 @@ export default function DepartmentStage() {
                 >
                   {currentStageId < department.stages.length ? (
                     <>
-                      次の謎へ
+                      目的地へ到着
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </>
                   ) : (
