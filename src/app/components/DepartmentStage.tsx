@@ -380,6 +380,18 @@ export default function DepartmentStage() {
                   </div>
                 )}
 
+                {stage.nextLocationDetail && (
+                  <div className="bg-sky-50 p-6 rounded-xl border-2 border-sky-300 shadow-md">
+                    <h5 className="font-bold text-sky-900 text-xl mb-3 flex items-center gap-2">
+                      <Lightbulb className="w-6 h-6 text-sky-700" />
+                      {stage.nextLocationDetail.title}
+                    </h5>
+                    <p className="text-gray-800 text-lg leading-relaxed">
+                      {stage.nextLocationDetail.body}
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   onClick={handleNext}
                   className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}

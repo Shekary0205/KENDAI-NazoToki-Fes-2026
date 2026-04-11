@@ -13,6 +13,11 @@ export interface StageData {
   correctIndices?: number[];
   /** 正解後の解説 */
   explanation?: string;
+  /** 次の目的地の補足説明（タイトルと本文） */
+  nextLocationDetail?: {
+    title: string;
+    body: string;
+  };
 }
 
 export interface DepartmentData {
@@ -67,7 +72,11 @@ export const departments: DepartmentData[] = [
         hint: "張り紙を探せ。",
         answer: "KPAL",
         nextLocationHint: "KPAL室",
-        explanation: "KPALとは本学のリーダー団体。本イベントの企画にもKPALが関与しています。"
+        explanation: "KPALとは本学のリーダー団体。本イベントの企画にもKPALが関与しています。",
+        nextLocationDetail: {
+          title: "KPAL室ってどこ？",
+          body: "食堂を出て左へ進め。"
+        }
       }
     ]
   },
