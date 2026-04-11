@@ -46,8 +46,8 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 2,
-        location: "2号館 2階 掲示板",
-        riddle: "掲示板には様々な活動が紹介されている。\n「ボランティア」を逆さから読むと？",
+        location: "1号館2階",
+        riddle: "緑色の掲示板の謎を解け。",
         hint: "カタカナを逆から読んでみよう",
         answer: "あいてぃらんぼ",
         nextLocationHint: "3号館の学生ラウンジへ向かおう"
