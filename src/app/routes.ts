@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import DepartmentSelect from "./components/DepartmentSelect";
 import DepartmentStage from "./components/DepartmentStage";
 import Battle from "./components/Battle";
+import MidBattle from "./components/MidBattle";
 import DepartmentComplete from "./components/DepartmentComplete";
 import AllComplete from "./components/AllComplete";
 
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: "department/:departmentId/battle",
         Component: Battle,
+      },
+      {
+        path: "department/:departmentId/midbattle/:battleId",
+        Component: MidBattle,
       },
       {
         path: "department/:departmentId/complete",

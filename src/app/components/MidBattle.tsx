@@ -1,0 +1,614 @@
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Badge } from "./ui/badge";
+import {
+  Swords,
+  Heart,
+  Skull,
+  Trophy,
+  Home,
+  RotateCcw,
+  Zap,
+  CheckSquare,
+  Square,
+  BookOpen,
+  ArrowRight
+} from "lucide-react";
+import { getDepartmentById } from "../data/departments-data";
+import { useBgm } from "../context/BgmContext";
+
+type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
+
+export default function MidBattle() {
+  const { departmentId, battleId } = useParams<{ departmentId: string; battleId: string }>();
+  const navigate = useNavigate();
+  const department = getDepartmentById(departmentId || "");
+  const battleData = department?.midBattles?.find(b => b.id === parseInt(battleId || "0"));
+
+  const [battleState, setBattleState] = useState<BattleState>("intro");
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [playerHp, setPlayerHp] = useState(100);
+  const [enemyHp, setEnemyHp] = useState(100);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
+  const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
+  const [showDamage, setShowDamage] = useState<"player" | "enemy" | null>(null);
+  const { switchTrack } = useBgm();
+  const wonRef = useRef(false);
+
+  useEffect(() => {
+    if (battleData) {
+      setPlayerHp(battleData.playerMaxHp);
+      setEnemyHp(battleData.enemyMaxHp);
+    }
+  }, [battleData]);
+
+  useEffect(() => {
+    switchTrack("trainer");
+    return () => {
+      if (!wonRef.current) {
+        switchTrack("gym");
+      }
+    };
+  }, [switchTrack]);
+
+  if (!department || !battleData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>バトルデータが見つかりません</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/select")}>
+              学部選択に戻る
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentQuestion = battleData.questions[currentQuestionIndex];
+
+  const handleStartBattle = () => {
+    switchTrack("battle");
+    setBattleState("question");
+  };
+
+  const advanceAfterCorrect = (hp?: number) => {
+    const currentEnemyHp = hp ?? enemyHp;
+    if (currentEnemyHp <= 0) {
+      switchTrack("victory");
+      setBattleState("victory");
+    } else if (currentQuestionIndex < battleData.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(null);
+      setCheckedOptions(new Set());
+      setCheckboxSubmitted(false);
+      setBattleState("question");
+    } else {
+      switchTrack("victory");
+      setBattleState("victory");
+    }
+  };
+
+  const processCorrectAnswer = (newEnemyHp: number) => {
+    setTimeout(() => {
+      setShowDamage(null);
+      if (currentQuestion.explanation) {
+        setBattleState("explanation");
+      } else {
+        advanceAfterCorrect(newEnemyHp);
+      }
+    }, 2000);
+  };
+
+  const handleSelectOption = (index: number) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(index);
+
+    const isCorrect = index === currentQuestion.correctIndex;
+
+    if (isCorrect) {
+      setBattleState("correct");
+      setShowDamage("enemy");
+      const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
+      setEnemyHp(newEnemyHp);
+      processCorrectAnswer(newEnemyHp);
+    } else {
+      setBattleState("incorrect");
+      setShowDamage("player");
+      const newPlayerHp = Math.max(0, playerHp - battleData.damageToPlayer);
+      setPlayerHp(newPlayerHp);
+
+      setTimeout(() => {
+        setShowDamage(null);
+        if (newPlayerHp <= 0) {
+          switchTrack("trainer");
+          setBattleState("defeat");
+        } else {
+          setSelectedOption(null);
+          setBattleState("question");
+        }
+      }, 2000);
+    }
+  };
+
+  const handleToggleCheckbox = (index: number) => {
+    if (checkboxSubmitted) return;
+    setCheckedOptions(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const handleSubmitCheckbox = () => {
+    if (checkboxSubmitted) return;
+    setCheckboxSubmitted(true);
+
+    const correctSet = new Set(currentQuestion.correctIndices || []);
+    const isCorrect =
+      checkedOptions.size === correctSet.size &&
+      [...checkedOptions].every(i => correctSet.has(i));
+
+    if (isCorrect) {
+      setBattleState("correct");
+      setShowDamage("enemy");
+      const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
+      setEnemyHp(newEnemyHp);
+      processCorrectAnswer(newEnemyHp);
+    } else {
+      setBattleState("incorrect");
+      setShowDamage("player");
+      const newPlayerHp = Math.max(0, playerHp - battleData.damageToPlayer);
+      setPlayerHp(newPlayerHp);
+
+      setTimeout(() => {
+        setShowDamage(null);
+        if (newPlayerHp <= 0) {
+          switchTrack("trainer");
+          setBattleState("defeat");
+        } else {
+          setCheckedOptions(new Set());
+          setCheckboxSubmitted(false);
+          setBattleState("question");
+        }
+      }, 2000);
+    }
+  };
+
+  const handleRetry = () => {
+    switchTrack("trainer");
+    setPlayerHp(battleData.playerMaxHp);
+    setEnemyHp(battleData.enemyMaxHp);
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    setCheckedOptions(new Set());
+    setCheckboxSubmitted(false);
+    setBattleState("intro");
+  };
+
+  const handleVictory = () => {
+    // 勝利BGMを維持したまま次のステージへ
+    wonRef.current = true;
+    const nextStageId = battleData.nextStageId ?? battleData.afterStageId + 1;
+    navigate(`/department/${departmentId}/stage/${nextStageId}`);
+  };
+
+  const playerHpPercentage = (playerHp / battleData.playerMaxHp) * 100;
+  const enemyHpPercentage = (enemyHp / battleData.enemyMaxHp) * 100;
+
+  const getColorClasses = (color: string) => {
+    const colors: Record<string, { from: string; to: string; bg: string }> = {
+      blue: { from: "from-blue-100", to: "to-blue-50", bg: "bg-blue-600" },
+      green: { from: "from-green-100", to: "to-green-50", bg: "bg-green-600" },
+      purple: { from: "from-purple-100", to: "to-purple-50", bg: "bg-purple-600" },
+      yellow: { from: "from-yellow-100", to: "to-yellow-50", bg: "bg-yellow-600" },
+      orange: { from: "from-orange-100", to: "to-orange-50", bg: "bg-orange-600" },
+      pink: { from: "from-pink-100", to: "to-pink-50", bg: "bg-pink-600" },
+    };
+    return colors[color] || colors.blue;
+  };
+
+  const colorClasses = getColorClasses(department.color);
+
+  // イントロ画面
+  if (battleState === "intro") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-red-500 rounded-full p-6 shadow-2xl animate-pulse">
+                <Swords className="w-16 h-16 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-red-900">
+              中間試練！
+            </h1>
+            <p className="text-xl text-gray-700">
+              {battleData.enemyName}が立ちはだかる！
+            </p>
+          </div>
+
+          <Card className="shadow-2xl border-2 border-red-300">
+            <CardHeader className="bg-gradient-to-r from-red-100 to-orange-100">
+              <div className="flex items-center justify-center mb-4">
+                <img
+                  src={battleData.enemyImage}
+                  alt={battleData.enemyName}
+                  className="w-40 h-40 rounded-full object-cover border-4 border-red-400 shadow-lg"
+                />
+              </div>
+              <CardTitle className="text-3xl text-center text-red-900">
+                {battleData.enemyName}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-300">
+                <h3 className="font-bold text-lg text-amber-900 mb-3">⚔️ バトルルール</h3>
+                <ul className="space-y-2 text-gray-700">
+                  <li>• クイズに正解すると敵に<strong className="text-red-600">{battleData.damageToEnemy}ダメージ</strong></li>
+                  <li>• クイズに不正解だとあなたが<strong className="text-blue-600">{battleData.damageToPlayer}ダメージ</strong>を受ける</li>
+                  <li>• 敵のHPを0にすれば勝利！</li>
+                  <li>• あなたのHPが0になると敗北...</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-around p-4 bg-gradient-to-r from-blue-50 to-red-50 rounded-lg">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Heart className="w-6 h-6 text-blue-600" />
+                    <span className="font-bold text-blue-900">あなた</span>
+                  </div>
+                  <Badge className="bg-blue-600 text-white text-lg px-4 py-2">
+                    HP: {battleData.playerMaxHp}
+                  </Badge>
+                </div>
+                <Swords className="w-8 h-8 text-gray-400" />
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Skull className="w-6 h-6 text-red-600" />
+                    <span className="font-bold text-red-900">敵</span>
+                  </div>
+                  <Badge className="bg-red-600 text-white text-lg px-4 py-2">
+                    HP: {battleData.enemyMaxHp}
+                  </Badge>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleStartBattle}
+                className="w-full h-14 text-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+              >
+                <Swords className="w-6 h-6 mr-2" />
+                バトル開始！
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // 勝利画面
+  if (battleState === "victory") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-orange-50 to-green-100 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-yellow-400 rounded-full p-8 shadow-2xl animate-bounce">
+                <Trophy className="w-20 h-20 text-white" />
+              </div>
+            </div>
+            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-600">
+              勝利！
+            </h1>
+          </div>
+
+          <Card className="shadow-2xl border-4 border-yellow-400">
+            <CardContent className="space-y-6 pt-8">
+              <div className="text-center space-y-3">
+                <p className="text-2xl font-bold text-gray-800">
+                  {battleData.enemyName}を倒した！
+                </p>
+                <p className="text-lg text-gray-600">
+                  次の謎に進もう！
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-lg border-2 border-yellow-300">
+                <p className="text-center text-lg text-gray-800 leading-relaxed">
+                  見事な知識と判断力で<br />
+                  中間試練を突破しました！
+                </p>
+              </div>
+
+              <Button
+                onClick={handleVictory}
+                className="w-full h-14 text-xl bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+              >
+                次の謎へ
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // 敗北画面
+  if (battleState === "defeat") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-100 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-gray-500 rounded-full p-8 shadow-2xl">
+                <Skull className="w-20 h-20 text-white" />
+              </div>
+            </div>
+            <h1 className="text-5xl font-bold text-gray-700">
+              敗北...
+            </h1>
+          </div>
+
+          <Card className="shadow-2xl border-2 border-gray-400">
+            <CardContent className="space-y-6 pt-8">
+              <div className="text-center space-y-3">
+                <p className="text-2xl font-bold text-gray-800">
+                  {battleData.enemyName}に敗れた...
+                </p>
+                <p className="text-lg text-gray-600">
+                  もう一度挑戦してみよう！
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={handleRetry}
+                  className="w-full h-14 text-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <RotateCcw className="w-6 h-6 mr-2" />
+                  再戦する
+                </Button>
+
+                <Button
+                  onClick={() => navigate("/select")}
+                  variant="outline"
+                  className="w-full h-12 text-lg"
+                >
+                  <Home className="w-5 h-5 mr-2" />
+                  学部選択に戻る
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // バトル画面
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-4 py-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* ヘッダー */}
+        <div className="text-center">
+          <Badge variant="secondary" className="text-lg px-4 py-2">
+            問題 {currentQuestionIndex + 1} / {battleData.questions.length}
+          </Badge>
+        </div>
+
+        {/* バトルステータス */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className={`${showDamage === "player" ? "animate-shake border-4 border-red-500" : ""}`}>
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-50 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Heart className="w-6 h-6 text-blue-600" />
+                  <CardTitle className="text-lg">あなた</CardTitle>
+                </div>
+                <Badge className="bg-blue-600 text-white">
+                  {playerHp} / {battleData.playerMaxHp}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <Progress value={playerHpPercentage} className="h-6" />
+            </CardContent>
+          </Card>
+
+          <Card className={`${showDamage === "enemy" ? "animate-shake border-4 border-yellow-500" : ""}`}>
+            <CardHeader className="bg-gradient-to-r from-red-100 to-red-50 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skull className="w-6 h-6 text-red-600" />
+                  <CardTitle className="text-lg">{battleData.enemyName}</CardTitle>
+                </div>
+                <Badge className="bg-red-600 text-white">
+                  {enemyHp} / {battleData.enemyMaxHp}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <Progress value={enemyHpPercentage} className="h-6" />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 敵の画像 */}
+        <div className="flex justify-center">
+          <img
+            src={battleData.enemyImage}
+            alt={battleData.enemyName}
+            className={`w-48 h-48 rounded-full object-cover border-4 border-red-400 shadow-xl ${
+              showDamage === "enemy" ? "animate-shake" : ""
+            }`}
+          />
+        </div>
+
+        {/* 解説画面 */}
+        {battleState === "explanation" && currentQuestion.explanation && (
+          <Card className="shadow-xl border-2 border-green-400">
+            <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-50">
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-7 h-7 text-green-700" />
+                <CardTitle className="text-2xl text-green-900">解説</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <p className="text-lg text-gray-800 leading-relaxed whitespace-pre-line">
+                {currentQuestion.explanation}
+              </p>
+              <Button
+                onClick={() => advanceAfterCorrect()}
+                className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                次の問題へ
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* クイズカード */}
+        {battleState !== "explanation" && (
+          <Card className="shadow-xl">
+            <CardHeader className={`bg-gradient-to-r ${colorClasses.from} ${colorClasses.to}`}>
+              <CardTitle className="text-2xl text-center">
+                {currentQuestion.question}
+              </CardTitle>
+              {currentQuestion.type === "checkbox" && (
+                <p className="text-center text-gray-600 mt-2">
+                  正しいものをすべて選んでください
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              {currentQuestion.type !== "checkbox" && (
+                <div className="grid gap-3">
+                  {currentQuestion.options.map((option, index) => {
+                    const isSelected = selectedOption === index;
+                    const isCorrect = index === currentQuestion.correctIndex;
+                    const showResult = selectedOption !== null;
+
+                    let buttonClass = "h-auto py-4 text-lg justify-start text-left";
+                    if (showResult) {
+                      if (isSelected && isCorrect) {
+                        buttonClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      } else if (isCorrect) {
+                        buttonClass += " bg-green-100 border-green-400";
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => handleSelectOption(index)}
+                        disabled={selectedOption !== null}
+                        variant={isSelected ? "default" : "outline"}
+                        className={buttonClass}
+                      >
+                        <span className="mr-3 font-bold">{String.fromCharCode(65 + index)}.</span>
+                        {option}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {currentQuestion.type === "checkbox" && (
+                <div className="grid gap-3">
+                  {currentQuestion.options.map((option, index) => {
+                    const isChecked = checkedOptions.has(index);
+                    const correctSet = new Set(currentQuestion.correctIndices || []);
+                    const isCorrectOption = correctSet.has(index);
+                    const showResult = checkboxSubmitted;
+
+                    let buttonClass = "h-auto py-4 text-lg justify-start text-left";
+                    if (showResult) {
+                      if (isChecked && isCorrectOption) {
+                        buttonClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isChecked && !isCorrectOption) {
+                        buttonClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      } else if (isCorrectOption) {
+                        buttonClass += " bg-green-100 border-green-400";
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => handleToggleCheckbox(index)}
+                        disabled={checkboxSubmitted}
+                        variant={isChecked ? "default" : "outline"}
+                        className={buttonClass}
+                      >
+                        {isChecked ? (
+                          <CheckSquare className="w-5 h-5 mr-3 flex-shrink-0" />
+                        ) : (
+                          <Square className="w-5 h-5 mr-3 flex-shrink-0" />
+                        )}
+                        {option}
+                      </Button>
+                    );
+                  })}
+
+                  {!checkboxSubmitted && (
+                    <Button
+                      onClick={handleSubmitCheckbox}
+                      disabled={checkedOptions.size === 0}
+                      className="w-full h-12 text-lg mt-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      回答する
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {battleState === "correct" && (
+                <Alert className="bg-green-50 border-green-300">
+                  <Zap className="h-5 w-5 text-green-600" />
+                  <AlertDescription className="text-green-800 font-bold text-lg">
+                    正解！ 敵に{battleData.damageToEnemy}ダメージ！
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {battleState === "incorrect" && (
+                <Alert className="bg-red-50 border-red-300">
+                  <Skull className="h-5 w-5 text-red-600" />
+                  <AlertDescription className="text-red-800 font-bold text-lg">
+                    不正解... {battleData.damageToPlayer}ダメージを受けた！
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+          20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+          animation: shake 0.5s;
+        }
+      `}</style>
+    </div>
+  );
+}

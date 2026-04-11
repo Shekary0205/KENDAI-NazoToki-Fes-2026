@@ -128,6 +128,13 @@ export default function DepartmentStage() {
   };
 
   const handleNext = () => {
+    // このステージ終了後に中間バトルがあるかチェック
+    const midBattle = department.midBattles?.find(b => b.afterStageId === currentStageId);
+    if (midBattle) {
+      navigate(`/department/${departmentId}/midbattle/${midBattle.id}`);
+      return;
+    }
+
     if (currentStageId < department.stages.length) {
       navigate(`/department/${departmentId}/stage/${currentStageId + 1}`);
     } else {
@@ -407,7 +414,12 @@ export default function DepartmentStage() {
                   onClick={handleNext}
                   className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
                 >
-                  {currentStageId < department.stages.length ? (
+                  {department.midBattles?.some(b => b.afterStageId === currentStageId) ? (
+                    <>
+                      試練へ挑む
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  ) : currentStageId < department.stages.length ? (
                     <>
                       目的地へ到着
                       <ArrowRight className="w-5 h-5 ml-2" />
