@@ -63,7 +63,7 @@ export const departments: DepartmentData[] = [
         riddle: "学生食堂の謎を解け",
         hint: "張り紙を探せ。",
         answer: "KPAL",
-        nextLocationHint: "KPAL室",
+        nextLocationHint: "KPAL室入り口が示す場所に進め",
         explanation: "KPALとは本学のリーダー団体。本イベントの企画にもKPALが関与しています。",
         nextLocationDetail: {
           title: "KPAL室ってどこ？",
