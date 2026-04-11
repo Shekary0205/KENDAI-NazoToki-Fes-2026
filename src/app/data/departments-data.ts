@@ -50,7 +50,7 @@ export const departments: DepartmentData[] = [
         riddle: "緑色の掲示板の謎を解け。",
         hint: "ポスターのタイトルの頭を読め",
         answer: "ようこそ健大",
-        nextLocationHint: "3号館の学生ラウンジへ向かおう"
+        nextLocationHint: "右へ進み2号館学生ホール(食堂)の入り口へ"
       },
       {
         id: 3,
