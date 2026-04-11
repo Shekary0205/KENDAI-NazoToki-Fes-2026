@@ -54,11 +54,20 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 3,
-        location: "3号館 学生ラウンジ",
-        riddle: "ここは学生の憩いの場。\n「ラウンジ」のローマ字「LOUNGE」の\n3番目と5番目の文字を組み合わせると？",
+        location: "2号館 学生ホール(食堂)",
+        riddle: "入り口掲示板の謎を解け。\nまた学生食堂内、答えが示す場所へ進め。",
         hint: "L-O-U-N-G-E の3番目と5番目",
         answer: "アイス",
-        nextLocationHint: ""
+        nextLocationHint: "学生食堂内で答えが示す場所へ進め"
+      },
+      {
+        id: 4,
+        location: "アイス",
+        riddle: "学生食堂の謎を解け",
+        hint: "張り紙を探せ。",
+        answer: "KPAL",
+        nextLocationHint: "KPAL室",
+        explanation: "KPALとは本学のリーダー団体。本イベントの企画にもKPALが関与しています。"
       }
     ]
   },
