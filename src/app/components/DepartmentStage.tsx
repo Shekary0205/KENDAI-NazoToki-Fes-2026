@@ -221,28 +221,30 @@ export default function DepartmentStage() {
                 </div>
 
                 {/* ヒント */}
-                <div className="space-y-2">
-                  {!showHint ? (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => setShowHint(true)}
-                    >
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      ヒントを見る
-                    </Button>
-                  ) : (
-                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
-                      <div className="flex items-start gap-2">
-                        <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-yellow-900 mb-1">ヒント</h4>
-                          <p className="text-gray-700">{stage.hint}</p>
+                {stage.hint && (
+                  <div className="space-y-2">
+                    {!showHint ? (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setShowHint(true)}
+                      >
+                        <Lightbulb className="w-4 h-4 mr-2" />
+                        ヒントを見る
+                      </Button>
+                    ) : (
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-yellow-900 mb-1">ヒント</h4>
+                            <p className="text-gray-700">{stage.hint}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
 
