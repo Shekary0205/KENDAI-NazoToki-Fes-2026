@@ -200,37 +200,42 @@ export default function DepartmentStage() {
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
-            {/* 謎 */}
-            <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
-              <h3 className="font-bold text-lg text-amber-900 mb-3">📜 謎</h3>
-              <p className="text-lg whitespace-pre-line text-gray-800 leading-relaxed">
-                {stage.riddle}
-              </p>
-            </div>
-
-            {/* ヒント */}
-            <div className="space-y-2">
-              {!showHint ? (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setShowHint(true)}
-                >
-                  <Lightbulb className="w-4 h-4 mr-2" />
-                  ヒントを見る
-                </Button>
-              ) : (
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-yellow-900 mb-1">ヒント</h4>
-                      <p className="text-gray-700">{stage.hint}</p>
-                    </div>
-                  </div>
+            {/* 謎・ヒントは次の目的地画面では非表示 */}
+            {!showNext && (
+              <>
+                {/* 謎 */}
+                <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
+                  <h3 className="font-bold text-lg text-amber-900 mb-3">📜 謎</h3>
+                  <p className="text-lg whitespace-pre-line text-gray-800 leading-relaxed">
+                    {stage.riddle}
+                  </p>
                 </div>
-              )}
-            </div>
+
+                {/* ヒント */}
+                <div className="space-y-2">
+                  {!showHint ? (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowHint(true)}
+                    >
+                      <Lightbulb className="w-4 h-4 mr-2" />
+                      ヒントを見る
+                    </Button>
+                  ) : (
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-yellow-900 mb-1">ヒント</h4>
+                          <p className="text-gray-700">{stage.hint}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* 解説画面 */}
             {showExplanation && stage.explanation && (
@@ -358,31 +363,26 @@ export default function DepartmentStage() {
             )}
 
             {feedback === "correct" && showNext && (
-              <div className="space-y-4">
-                {!stage.explanation && (
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <AlertDescription className="text-green-800 font-semibold">
-                      正解！よくできました！
-                    </AlertDescription>
-                  </Alert>
-                )}
-
+              <div className="space-y-6">
                 {stage.nextLocationHint && (
-                  <div className="bg-blue-50 p-5 rounded-lg border-2 border-blue-200">
-                    <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      次の目的地
-                    </h4>
-                    <p className="text-gray-800 text-lg">
-                      {stage.nextLocationHint}
-                    </p>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-10 rounded-2xl border-4 border-blue-300 shadow-xl">
+                    <div className="flex flex-col items-center text-center space-y-6">
+                      <div className="bg-blue-500 rounded-full p-5 shadow-lg">
+                        <MapPin className="w-12 h-12 text-white" />
+                      </div>
+                      <h4 className="font-bold text-blue-900 text-3xl md:text-4xl">
+                        次の目的地
+                      </h4>
+                      <p className="text-gray-800 text-xl md:text-2xl font-semibold leading-relaxed">
+                        {stage.nextLocationHint}
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 <Button
                   onClick={handleNext}
-                  className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
+                  className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
                 >
                   {currentStageId < department.stages.length ? (
                     <>
