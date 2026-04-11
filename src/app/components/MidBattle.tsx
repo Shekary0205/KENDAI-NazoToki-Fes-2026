@@ -18,8 +18,17 @@ import {
   BookOpen,
   ArrowRight
 } from "lucide-react";
-import { getDepartmentById } from "../data/departments-data";
+import { getDepartmentById, type MidBattleQuestion } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
+
+const shuffleArray = <T,>(arr: T[]): T[] => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
 
 type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
 
@@ -30,7 +39,10 @@ export default function MidBattle() {
   const battleData = department?.midBattles?.find(b => b.id === parseInt(battleId || "0"));
 
   const [battleState, setBattleState] = useState<BattleState>("intro");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questionQueue, setQuestionQueue] = useState<MidBattleQuestion[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
   const [playerHp, setPlayerHp] = useState(100);
   const [enemyHp, setEnemyHp] = useState(100);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -44,6 +56,14 @@ export default function MidBattle() {
     if (battleData) {
       setPlayerHp(battleData.playerMaxHp);
       setEnemyHp(battleData.enemyMaxHp);
+      setQuestionQueue(
+        battleData.randomOrder
+          ? shuffleArray(battleData.questions)
+          : [...battleData.questions]
+      );
+      setQueueIndex(0);
+      setCorrectCount(0);
+      setWrongCount(0);
     }
   }, [battleData]);
 
@@ -73,29 +93,42 @@ export default function MidBattle() {
     );
   }
 
-  const currentQuestion = battleData.questions[currentQuestionIndex];
+  const currentQuestion = questionQueue[queueIndex];
 
   const handleStartBattle = () => {
     switchTrack("battle");
     setBattleState("question");
   };
 
-  const advanceAfterCorrect = (hp?: number) => {
-    const currentEnemyHp = hp ?? enemyHp;
-    if (currentEnemyHp <= 0) {
+  const advanceToNextQuestion = (enemyHpAfter: number, playerHpAfter: number) => {
+    if (enemyHpAfter <= 0) {
       switchTrack("victory");
       setBattleState("victory");
-    } else if (currentQuestionIndex < battleData.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      return;
+    }
+    if (playerHpAfter <= 0) {
+      switchTrack("trainer");
+      setBattleState("defeat");
+      return;
+    }
+    if (queueIndex < questionQueue.length - 1) {
+      setQueueIndex(queueIndex + 1);
       setSelectedOption(null);
       setCheckedOptions(new Set());
       setCheckboxSubmitted(false);
       setBattleState("question");
     } else {
-      switchTrack("victory");
-      setBattleState("victory");
+      // 問題が尽きた場合: 正解数の方が多ければ勝利、そうでなければ敗北
+      if (correctCount > wrongCount) {
+        switchTrack("victory");
+        setBattleState("victory");
+      } else {
+        switchTrack("trainer");
+        setBattleState("defeat");
+      }
     }
   };
+
 
   const processCorrectAnswer = (newEnemyHp: number) => {
     setTimeout(() => {
@@ -119,21 +152,28 @@ export default function MidBattle() {
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
-      processCorrectAnswer(newEnemyHp);
+      setCorrectCount(c => c + 1);
+      setTimeout(() => {
+        setShowDamage(null);
+        if (currentQuestion.explanation) {
+          setBattleState("explanation");
+        } else {
+          advanceToNextQuestion(newEnemyHp, playerHp);
+        }
+      }, 2000);
     } else {
       setBattleState("incorrect");
       setShowDamage("player");
       const newPlayerHp = Math.max(0, playerHp - battleData.damageToPlayer);
       setPlayerHp(newPlayerHp);
-
+      setWrongCount(w => w + 1);
       setTimeout(() => {
         setShowDamage(null);
-        if (newPlayerHp <= 0) {
-          switchTrack("trainer");
-          setBattleState("defeat");
+        // 不正解でも解説があれば表示して次の問題へ（同じ問題は繰り返さない）
+        if (currentQuestion.explanation) {
+          setBattleState("explanation");
         } else {
-          setSelectedOption(null);
-          setBattleState("question");
+          advanceToNextQuestion(enemyHp, newPlayerHp);
         }
       }, 2000);
     }
@@ -163,22 +203,27 @@ export default function MidBattle() {
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
-      processCorrectAnswer(newEnemyHp);
+      setCorrectCount(c => c + 1);
+      setTimeout(() => {
+        setShowDamage(null);
+        if (currentQuestion.explanation) {
+          setBattleState("explanation");
+        } else {
+          advanceToNextQuestion(newEnemyHp, playerHp);
+        }
+      }, 2000);
     } else {
       setBattleState("incorrect");
       setShowDamage("player");
       const newPlayerHp = Math.max(0, playerHp - battleData.damageToPlayer);
       setPlayerHp(newPlayerHp);
-
+      setWrongCount(w => w + 1);
       setTimeout(() => {
         setShowDamage(null);
-        if (newPlayerHp <= 0) {
-          switchTrack("trainer");
-          setBattleState("defeat");
+        if (currentQuestion.explanation) {
+          setBattleState("explanation");
         } else {
-          setCheckedOptions(new Set());
-          setCheckboxSubmitted(false);
-          setBattleState("question");
+          advanceToNextQuestion(enemyHp, newPlayerHp);
         }
       }, 2000);
     }
@@ -188,7 +233,14 @@ export default function MidBattle() {
     switchTrack("trainer");
     setPlayerHp(battleData.playerMaxHp);
     setEnemyHp(battleData.enemyMaxHp);
-    setCurrentQuestionIndex(0);
+    setQuestionQueue(
+      battleData.randomOrder
+        ? shuffleArray(battleData.questions)
+        : [...battleData.questions]
+    );
+    setQueueIndex(0);
+    setCorrectCount(0);
+    setWrongCount(0);
     setSelectedOption(null);
     setCheckedOptions(new Set());
     setCheckboxSubmitted(false);
@@ -399,13 +451,20 @@ export default function MidBattle() {
   }
 
   // バトル画面
+  if (!currentQuestion) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* ヘッダー */}
-        <div className="text-center">
-          <Badge variant="secondary" className="text-lg px-4 py-2">
-            問題 {currentQuestionIndex + 1} / {battleData.questions.length}
+        <div className="flex justify-center gap-3 flex-wrap">
+          <Badge className="bg-green-600 text-white text-base px-4 py-2">
+            ✅ 正解 {correctCount} / 5
+          </Badge>
+          <Badge className="bg-red-600 text-white text-base px-4 py-2">
+            ❌ 不正解 {wrongCount} / 5
           </Badge>
         </div>
 
@@ -471,7 +530,7 @@ export default function MidBattle() {
                 {currentQuestion.explanation}
               </p>
               <Button
-                onClick={() => advanceAfterCorrect()}
+                onClick={() => advanceToNextQuestion(enemyHp, playerHp)}
                 className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 次の問題へ
