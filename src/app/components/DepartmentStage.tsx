@@ -252,7 +252,7 @@ export default function DepartmentStage() {
                     <BookOpen className="w-6 h-6 text-emerald-700 mt-0.5 flex-shrink-0" />
                     <div>
                       <h4 className="font-bold text-emerald-900 mb-2">解説</h4>
-                      <p className="text-gray-800 leading-relaxed">{stage.explanation}</p>
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-line">{stage.explanation}</p>
                     </div>
                   </div>
                 </div>
