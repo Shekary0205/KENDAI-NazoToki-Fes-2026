@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Home, CheckCircle2, Music } from "lucide-react";
+import { Home, CheckCircle2 } from "lucide-react";
 import { departments, getClearedDepartments, isAllDepartmentsCleared } from "../data/departments-data";
 import { useEffect, useState } from "react";
 import { useBgm } from "../context/BgmContext";
@@ -11,7 +11,7 @@ export default function DepartmentSelect() {
   const navigate = useNavigate();
   const [clearedDepts, setClearedDepts] = useState<string[]>([]);
   const [allCleared, setAllCleared] = useState(false);
-  const { isPlaying, toggleBgm, switchTrack } = useBgm();
+  const { switchTrack } = useBgm();
 
   useEffect(() => {
     // 学部選択画面ではポケモンジムBGM
@@ -161,19 +161,6 @@ export default function DepartmentSelect() {
           </CardContent>
         </Card>
 
-        {/* BGMコントロール */}
-        <div className="text-center space-y-1">
-          <p className="text-xs text-gray-500">↓こんなところにBGMが！↓</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleBgm}
-            className="text-xs h-8 px-3"
-          >
-            <Music className="w-3 h-3 mr-1" />
-            {isPlaying ? "BGM停止" : "BGM再生"}
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -176,6 +176,14 @@ export const departments: DepartmentData[] = [
         hint: "",
         answer: "ITパスポート",
         nextLocationHint: "新たな試練が待ち受ける..."
+      },
+      {
+        id: 13,
+        location: "2号館 第一体育館前",
+        riddle: "隠された謎を解け",
+        hint: "",
+        answer: "自利利他",
+        nextLocationHint: "最終試練に挑め！"
       }
     ],
     midBattles: [
@@ -419,6 +427,7 @@ export const departments: DepartmentData[] = [
         damageToEnemy: 20,
         damageToPlayer: 20,
         randomOrder: true,
+        nextLocationHint: "おめでとう！医療情報学科を制覇しました。\nエレベーターで２階へ戻り、第一体育館前へ向かえ！",
         questions: [
           {
             question: "医療情報学科で選択できる２つのコースを選べ",
