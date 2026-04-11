@@ -492,7 +492,17 @@ export default function Battle() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
-              <p className="text-lg text-gray-800 leading-relaxed">
+              <div className="bg-amber-50 p-4 rounded-lg border-2 border-amber-300">
+                <h4 className="font-bold text-amber-900 text-sm mb-2">正解</h4>
+                <p className="text-lg font-bold text-gray-900">
+                  {currentQuestion.type === "checkbox"
+                    ? (currentQuestion.correctIndices || [])
+                        .map(i => currentQuestion.options[i])
+                        .join(" / ")
+                    : currentQuestion.options[currentQuestion.correctIndex ?? 0]}
+                </p>
+              </div>
+              <p className="text-lg text-gray-800 leading-relaxed whitespace-pre-line">
                 {currentQuestion.explanation}
               </p>
               <Button

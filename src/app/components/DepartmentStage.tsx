@@ -265,6 +265,17 @@ export default function DepartmentStage() {
                   </AlertDescription>
                 </Alert>
 
+                <div className="bg-amber-50 p-4 rounded-lg border-2 border-amber-300">
+                  <h4 className="font-bold text-amber-900 text-sm mb-2">正解</h4>
+                  <p className="text-lg font-bold text-gray-900">
+                    {stage.type === "checkbox"
+                      ? (stage.correctIndices || [])
+                          .map(i => (stage.options || [])[i])
+                          .join(" / ")
+                      : stage.answer}
+                  </p>
+                </div>
+
                 <div className="bg-emerald-50 p-5 rounded-lg border-2 border-emerald-300">
                   <div className="flex items-start gap-3">
                     <BookOpen className="w-6 h-6 text-emerald-700 mt-0.5 flex-shrink-0" />
