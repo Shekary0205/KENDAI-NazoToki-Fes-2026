@@ -47,6 +47,8 @@ export interface MidBattleData {
   questions: MidBattleQuestion[];
   /** true の場合、問題プールからランダムに出題し、一度出た問題は繰り返さない */
   randomOrder?: boolean;
+  /** 勝利画面で「次の目的地」として表示する案内テキスト */
+  nextLocationHint?: string;
 }
 
 export interface DepartmentData {
@@ -149,6 +151,30 @@ export const departments: DepartmentData[] = [
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "もりプロ",
+        nextLocationHint: "新たな試練が待ち受ける..."
+      },
+      {
+        id: 10,
+        location: "1号館4階",
+        riddle: "張り紙の謎を解け",
+        hint: "",
+        answer: "ICT",
+        nextLocationHint: "情報学習室へ向かえ"
+      },
+      {
+        id: 11,
+        location: "情報学習室",
+        riddle: "部屋に隠された謎を解け",
+        hint: "",
+        answer: "医療事務",
+        nextLocationHint: "４階奥へ！"
+      },
+      {
+        id: 12,
+        location: "1号館4階",
+        riddle: "張り紙の謎を解け",
+        hint: "",
+        answer: "ITパスポート",
         nextLocationHint: "新たな試練が待ち受ける..."
       }
     ],
@@ -278,6 +304,7 @@ export const departments: DepartmentData[] = [
         damageToEnemy: 20,
         damageToPlayer: 20,
         randomOrder: true,
+        nextLocationHint: "3階を制覇しました！\n４階は医療情報学科のフロアです。\n階段で向かいましょう。",
         questions: [
           {
             question: "社会福祉に関わる相談に対応し、助言、指導、援助を行う専門職に従事可能となる国家資格は？",

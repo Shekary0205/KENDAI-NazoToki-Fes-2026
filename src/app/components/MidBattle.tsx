@@ -16,7 +16,8 @@ import {
   CheckSquare,
   Square,
   BookOpen,
-  ArrowRight
+  ArrowRight,
+  MapPin
 } from "lucide-react";
 import { getDepartmentById, type MidBattleQuestion } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
@@ -388,6 +389,22 @@ export default function MidBattle() {
                   中間試練を突破しました！
                 </p>
               </div>
+
+              {battleData.nextLocationHint && (
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-10 rounded-2xl border-4 border-blue-300 shadow-xl">
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className="bg-blue-500 rounded-full p-5 shadow-lg">
+                      <MapPin className="w-12 h-12 text-white" />
+                    </div>
+                    <h4 className="font-bold text-blue-900 text-3xl md:text-4xl">
+                      次の目的地
+                    </h4>
+                    <p className="text-gray-800 text-xl md:text-2xl font-semibold leading-relaxed whitespace-pre-line">
+                      {battleData.nextLocationHint}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <Button
                 onClick={handleVictory}
