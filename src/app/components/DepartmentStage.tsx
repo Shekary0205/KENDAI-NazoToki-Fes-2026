@@ -78,6 +78,8 @@ export default function DepartmentStage() {
       setFeedback("correct");
       if (stage.explanation) {
         setShowExplanation(true);
+      } else if (stage.skipNextLocationScreen) {
+        handleNext();
       } else {
         setShowNext(true);
       }
@@ -110,6 +112,8 @@ export default function DepartmentStage() {
       setFeedback("correct");
       if (stage.explanation) {
         setShowExplanation(true);
+      } else if (stage.skipNextLocationScreen) {
+        handleNext();
       } else {
         setShowNext(true);
       }
@@ -123,17 +127,22 @@ export default function DepartmentStage() {
     }
   };
 
-  const handleExplanationNext = () => {
-    setShowExplanation(false);
-    setShowNext(true);
-  };
-
   const handleNext = () => {
     if (currentStageId < department.stages.length) {
       navigate(`/department/${departmentId}/stage/${currentStageId + 1}`);
     } else {
       // 最後のステージをクリアしたらバトルへ
       navigate(`/department/${departmentId}/battle`);
+    }
+  };
+
+  const handleExplanationNext = () => {
+    setShowExplanation(false);
+    // 次の目的地画面をスキップする場合は直接次の問題へ
+    if (stage.skipNextLocationScreen) {
+      handleNext();
+    } else {
+      setShowNext(true);
     }
   };
 
