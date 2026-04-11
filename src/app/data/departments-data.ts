@@ -57,7 +57,7 @@ export const departments: DepartmentData[] = [
         location: "3号館 学生ラウンジ",
         riddle: "ここは学生の憩いの場。\n「ラウンジ」のローマ字「LOUNGE」の\n3番目と5番目の文字を組み合わせると？",
         hint: "L-O-U-N-G-E の3番目と5番目",
-        answer: "UG",
+        answer: "アイス",
         nextLocationHint: ""
       }
     ]
