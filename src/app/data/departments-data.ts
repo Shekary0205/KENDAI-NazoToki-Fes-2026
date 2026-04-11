@@ -48,8 +48,8 @@ export const departments: DepartmentData[] = [
         id: 2,
         location: "1号館2階",
         riddle: "緑色の掲示板の謎を解け。",
-        hint: "カタカナを逆から読んでみよう",
-        answer: "あいてぃらんぼ",
+        hint: "ポスターのタイトルの頭を読め",
+        answer: "ようこそ健大",
         nextLocationHint: "3号館の学生ラウンジへ向かおう"
       },
       {
