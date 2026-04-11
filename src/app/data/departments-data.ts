@@ -55,19 +55,11 @@ export const departments: DepartmentData[] = [
         riddle: "緑色の掲示板の謎を解け。",
         hint: "ポスターのタイトルの頭を読め",
         answer: "ようこそ健大",
-        nextLocationHint: "右へ進み2号館学生ホール(食堂)の入り口へ"
+        nextLocationHint: "右へ進み2号館学生ホール(食堂)へ"
       },
       {
         id: 3,
         location: "2号館 学生ホール(食堂)",
-        riddle: "入り口掲示板の謎を解け。\nまた学生食堂内、答えが示す場所へ進め。",
-        hint: "L-O-U-N-G-E の3番目と5番目",
-        answer: "アイス",
-        nextLocationHint: "学生食堂内で答えが示す場所へ進め"
-      },
-      {
-        id: 4,
-        location: "アイス",
         riddle: "学生食堂の謎を解け",
         hint: "張り紙を探せ。",
         answer: "KPAL",
