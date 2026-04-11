@@ -248,10 +248,15 @@ export default function MidBattle() {
   };
 
   const handleVictory = () => {
-    // 勝利BGMを維持したまま次のステージへ
     wonRef.current = true;
     const nextStageId = battleData.nextStageId ?? battleData.afterStageId + 1;
-    navigate(`/department/${departmentId}/stage/${nextStageId}`);
+    const hasNextStage = department.stages.some(s => s.id === nextStageId);
+    if (hasNextStage) {
+      navigate(`/department/${departmentId}/stage/${nextStageId}`);
+    } else {
+      // 次のステージがない場合は最終試練へ
+      navigate(`/department/${departmentId}/battle`);
+    }
   };
 
   const playerHpPercentage = (playerHp / battleData.playerMaxHp) * 100;
