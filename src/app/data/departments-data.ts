@@ -101,7 +101,7 @@ export const departments: DepartmentData[] = [
         id: 3,
         location: "2号館 学生ホール(食堂)",
         riddle: "学生食堂の謎を解け",
-        hint: "張り紙を探せ。",
+        hint: "セブンティーンアイス",
         answer: "KPAL",
         nextLocationHint: "KPAL室入り口が示す場所に進め",
         explanation: "KPALとは本学のリーダー団体。本イベントの企画にもKPALが関与しています。",
@@ -114,7 +114,7 @@ export const departments: DepartmentData[] = [
         id: 4,
         location: "KPAL室入り口が示す場所",
         riddle: "示された場所を確認しろ",
-        hint: "セブンティーンアイス",
+        hint: "PC-????",
         answer: "医療DX",
         nextLocationHint: "エレベーターで４階まで進め",
         explanation: "医療DX（デジタルトランスフォーメーション）とは、電子カルテやオンライン診療、AI診断支援などデジタル技術を活用して医療の質と効率を高める取り組みです。本学の医療情報学科では、診療情報管理士や基本情報技術者などの資格取得を通じて、医療と情報の両方に精通した人材を育成しており、まさに医療DXを支える専門家を輩出しています。"
