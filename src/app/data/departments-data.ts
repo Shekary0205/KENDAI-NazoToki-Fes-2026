@@ -124,7 +124,7 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 6,
-        location: "1号館3階",
+        location: "3階奥まで進め",
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "社会福祉学科",
