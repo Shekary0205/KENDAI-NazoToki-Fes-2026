@@ -306,7 +306,7 @@ export default function MidBattle() {
                   <img
                     src={battleData.enemyImage}
                     alt={battleData.enemyName}
-                    className="w-full h-full object-cover scale-[1.6] -translate-y-[15%]"
+                    className="w-full h-full object-cover -translate-y-[30%]"
                   />
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function MidBattle() {
             <img
               src={battleData.enemyImage}
               alt={battleData.enemyName}
-              className="w-full h-full object-cover scale-[1.6] -translate-y-[15%]"
+              className="w-full h-full object-cover -translate-y-[30%]"
             />
           </div>
         </div>
