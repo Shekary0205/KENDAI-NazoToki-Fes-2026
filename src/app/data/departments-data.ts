@@ -40,6 +40,8 @@ export interface MidBattleData {
   nextStageId?: number;
   enemyName: string;
   enemyImage: string;
+  /** 画像のY方向シフト (例: "30%" で下に30%、"-15%" で上に15%) */
+  enemyImageOffsetY?: string;
   enemyMaxHp: number;
   playerMaxHp: number;
   damageToEnemy: number;
@@ -193,6 +195,7 @@ export const departments: DepartmentData[] = [
         nextStageId: 6,
         enemyName: "戦う栄養士",
         enemyImage: "/images/tatakau-eiyoushi.png",
+        enemyImageOffsetY: "30%",
         nextLocationHint: "3階奥まで進め",
         enemyMaxHp: 100,
         playerMaxHp: 100,
@@ -306,8 +309,9 @@ export const departments: DepartmentData[] = [
       {
         id: 2,
         afterStageId: 9,
-        enemyName: "社会福祉の番人",
-        enemyImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop",
+        enemyName: "脳筋ソーシャルワーカー",
+        enemyImage: "/images/noukin-sw.png",
+        enemyImageOffsetY: "15%",
         enemyMaxHp: 100,
         playerMaxHp: 100,
         damageToEnemy: 20,

@@ -306,7 +306,7 @@ export default function MidBattle() {
                   <img
                     src={battleData.enemyImage}
                     alt={battleData.enemyName}
-                    className="w-full h-full object-contain scale-[1.6] translate-y-[30%]"
+                    className="w-full h-full object-contain scale-[1.6]" style={{ transform: `scale(1.6) translateY(${battleData.enemyImageOffsetY || "0%"})` }}
                   />
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function MidBattle() {
             <img
               src={battleData.enemyImage}
               alt={battleData.enemyName}
-              className="w-full h-full object-contain scale-[1.6] translate-y-[30%]"
+              className="w-full h-full object-contain scale-[1.6]" style={{ transform: `scale(1.6) translateY(${battleData.enemyImageOffsetY || "0%"})` }}
             />
           </div>
         </div>
