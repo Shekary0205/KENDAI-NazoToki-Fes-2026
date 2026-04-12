@@ -37,10 +37,11 @@ export default function DepartmentStage() {
   const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
 
-  // 謎解き中はトキワの森BGM
+  // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
-    switchTrack("field");
-  }, [switchTrack]);
+    const track = (stage?.bgm || "field") as import("../context/BgmContext").BgmTrack;
+    switchTrack(track);
+  }, [switchTrack, stage]);
 
   useEffect(() => {
     setUserAnswer("");

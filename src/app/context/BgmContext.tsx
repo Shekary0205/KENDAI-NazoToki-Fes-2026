@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useState, useCallback, type ReactNode } from "react";
 
-export type BgmTrack = "gym" | "field" | "trainer" | "battle" | "finalBattle" | "victory";
+export type BgmTrack = "gym" | "field" | "cave" | "mansion" | "lastRoad" | "trainer" | "battle" | "wildBattle" | "trainerBattle" | "finalBattle" | "victory";
 
 interface BgmContextValue {
   isPlaying: boolean;
@@ -14,8 +14,13 @@ const BgmContext = createContext<BgmContextValue | null>(null);
 const TRACKS: Record<BgmTrack, string> = {
   gym: "/audio/pokemon-gym.wav",
   field: "/audio/tokiwa-forest.wav",
+  cave: "/audio/cave.wav",
+  mansion: "/audio/mansion.wav",
+  lastRoad: "/audio/last-road.wav",
   trainer: "/audio/trainer-appears.wav",
   battle: "/audio/vs-gym-leader.wav",
+  wildBattle: "/audio/vs-wild.wav",
+  trainerBattle: "/audio/vs-trainer.wav",
   finalBattle: "/audio/final-battle.wav",
   victory: "/audio/victory.wav",
 };

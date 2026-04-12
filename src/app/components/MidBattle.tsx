@@ -98,7 +98,8 @@ export default function MidBattle() {
   const currentQuestion = questionQueue[queueIndex];
 
   const handleStartBattle = () => {
-    switchTrack("battle");
+    const track = (battleData.battleBgm || "battle") as import("../context/BgmContext").BgmTrack;
+    switchTrack(track);
     setBattleState("question");
   };
 
