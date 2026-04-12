@@ -480,15 +480,6 @@ export default function MidBattle() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* ヘッダー */}
-        <div className="flex justify-center gap-3 flex-wrap">
-          <Badge className="bg-green-600 text-white text-base px-4 py-2">
-            ✅ 正解 {correctCount} / 5
-          </Badge>
-          <Badge className="bg-red-600 text-white text-base px-4 py-2">
-            ❌ 不正解 {wrongCount} / 5
-          </Badge>
-        </div>
 
         {/* バトルステータス */}
         <div className="grid md:grid-cols-2 gap-4">
