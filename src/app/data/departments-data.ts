@@ -738,6 +738,7 @@ export const normalizeAnswer = (answer: string): string => {
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
     .replace(/[ァ-ン]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0x60))
     .replace(/盛り上げよう/g, 'もりあげよう')
+    .replace(/台本/g, 'だいほん')
     .replace(/\s+/g, '');
 };
 
