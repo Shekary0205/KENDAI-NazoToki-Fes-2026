@@ -94,7 +94,7 @@ export default function Battle() {
   const currentQuestion = questionQueue[queueIndex];
 
   const handleStartBattle = () => {
-    switchTrack("battle");
+    switchTrack("finalBattle");
     setBattleState("question");
   };
 
