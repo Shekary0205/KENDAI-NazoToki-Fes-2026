@@ -16,6 +16,8 @@ export interface BattleData {
   departmentId: string;
   enemyName: string;
   enemyImage: string;
+  /** 画像のY方向シフト */
+  enemyImageOffsetY?: string;
   enemyMaxHp: number;
   playerMaxHp: number;
   damageToEnemy: number;
@@ -28,8 +30,9 @@ export interface BattleData {
 export const battleData: BattleData[] = [
   {
     departmentId: "health-welfare",
-    enemyName: "健康福祉の守護者",
-    enemyImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=400&fit=crop",
+    enemyName: "1号館の王",
+    enemyImage: "/images/1goukan-king.png",
+    enemyImageOffsetY: "20%",
     enemyMaxHp: 100,
     playerMaxHp: 100,
     damageToEnemy: 10,
