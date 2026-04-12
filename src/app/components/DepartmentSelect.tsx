@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Home, CheckCircle2 } from "lucide-react";
-import { departments, getClearedDepartments, isAllDepartmentsCleared } from "../data/departments-data";
+import { Home, CheckCircle2, PlayCircle } from "lucide-react";
+import { departments, getClearedDepartments, isAllDepartmentsCleared, loadGameProgress } from "../data/departments-data";
 import { useEffect, useState } from "react";
 import { useBgm } from "../context/BgmContext";
 
@@ -70,6 +70,34 @@ export default function DepartmentSelect() {
             好きな学部から謎解きをスタートしよう！
           </p>
         </div>
+
+        {/* 続きから再開 */}
+        {(() => {
+          const saved = loadGameProgress();
+          if (!saved) return null;
+          return (
+            <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 shadow-lg">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-3">
+                  <div className="text-3xl">📌</div>
+                  <h2 className="text-xl font-bold text-orange-900">
+                    セーブデータがあります
+                  </h2>
+                  <p className="text-gray-700 text-sm">
+                    前回の保存: {saved.savedAt}
+                  </p>
+                  <Button
+                    onClick={() => navigate(saved.currentPath)}
+                    className="mt-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  >
+                    <PlayCircle className="w-5 h-5 mr-2" />
+                    続きから再開
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* 全クリアメッセージ */}
         {allCleared && (

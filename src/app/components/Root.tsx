@@ -1,39 +1,26 @@
 import { Outlet, useLocation } from "react-router";
 import ScrollToTop from "./ScrollToTop";
 import { Button } from "./ui/button";
-import { Music, Save } from "lucide-react";
+import { Music } from "lucide-react";
 import { useBgm } from "../context/BgmContext";
 import { saveGameProgress } from "../data/departments-data";
-import { useState } from "react";
+import { useEffect } from "react";
 
 export default function Root() {
   const { isPlaying, toggleBgm } = useBgm();
   const location = useLocation();
-  const [showSaved, setShowSaved] = useState(false);
 
-  const handleSave = () => {
-    saveGameProgress(location.pathname);
-    setShowSaved(true);
-    setTimeout(() => setShowSaved(false), 2000);
-  };
+  // 画面遷移のたびに自動保存
+  useEffect(() => {
+    // ホーム画面と学部選択画面では保存しない
+    if (location.pathname !== "/" && location.pathname !== "/select") {
+      saveGameProgress(location.pathname);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="relative min-h-screen">
       <ScrollToTop />
-
-      {/* 右上固定の保存ボタン */}
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleSave}
-          className="bg-white/90 backdrop-blur shadow-md text-xs h-9 px-3"
-        >
-          <Save className="w-4 h-4 mr-1" />
-          {showSaved ? "保存しました！" : "経過保存"}
-        </Button>
-      </div>
-
       <Outlet />
 
       {/* グローバルBGMコントロール */}
