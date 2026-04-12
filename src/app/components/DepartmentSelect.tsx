@@ -127,18 +127,26 @@ export default function DepartmentSelect() {
           {departments.map((dept) => {
             const isCleared = clearedDepts.includes(dept.id);
             const colorClasses = getColorClasses(dept.color);
+            const isAvailable = dept.id === "health-welfare";
 
             return (
               <Card
                 key={dept.id}
-                className={`transition-all hover:shadow-lg cursor-pointer ${
-                  isCleared ? "border-2 border-green-400" : ""
-                }`}
+                className={`transition-all ${
+                  isAvailable ? "hover:shadow-lg cursor-pointer" : "opacity-70"
+                } ${isCleared ? "border-2 border-green-400" : ""}`}
               >
                 <CardHeader className={`${colorClasses.bg} border-b ${colorClasses.border} relative`}>
                   {isCleared && (
                     <div className="absolute top-4 right-4">
                       <CheckCircle2 className="w-8 h-8 text-green-600 fill-green-100" />
+                    </div>
+                  )}
+                  {!isAvailable && (
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-gray-500 text-white text-xs">
+                        Coming Soon
+                      </Badge>
                     </div>
                   )}
                   <div className="flex items-center gap-3 mb-2">
@@ -152,24 +160,34 @@ export default function DepartmentSelect() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Badge className={colorClasses.badge}>
-                      {dept.stages.length}つの謎
-                    </Badge>
-                    {isCleared && (
-                      <Badge className="bg-green-100 text-green-700">
-                        クリア済み ✓
-                      </Badge>
-                    )}
-                  </div>
-                  <Link to={`/department/${dept.id}/stage/1`}>
-                    <Button
-                      className="w-full"
-                      variant={isCleared ? "outline" : "default"}
-                    >
-                      {isCleared ? "もう一度挑戦" : "謎解きスタート"}
-                    </Button>
-                  </Link>
+                  {isAvailable ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <Badge className={colorClasses.badge}>
+                          {dept.stages.length}つの謎
+                        </Badge>
+                        {isCleared && (
+                          <Badge className="bg-green-100 text-green-700">
+                            クリア済み ✓
+                          </Badge>
+                        )}
+                      </div>
+                      <Link to={`/department/${dept.id}/stage/1`}>
+                        <Button
+                          className="w-full"
+                          variant={isCleared ? "outline" : "default"}
+                        >
+                          {isCleared ? "もう一度挑戦" : "謎解きスタート"}
+                        </Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="text-center py-2">
+                      <p className="text-sm text-gray-500 font-semibold">
+                        4月14日以降に毎日公開予定！
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
