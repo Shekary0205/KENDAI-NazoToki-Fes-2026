@@ -302,11 +302,13 @@ export default function MidBattle() {
           <Card className="shadow-2xl border-2 border-red-300">
             <CardHeader className="bg-gradient-to-r from-red-100 to-orange-100">
               <div className="flex items-center justify-center mb-4">
-                <img
-                  src={battleData.enemyImage}
-                  alt={battleData.enemyName}
-                  className="w-40 h-40 rounded-full object-cover border-4 border-red-400 shadow-lg"
-                />
+                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-red-400 shadow-lg">
+                  <img
+                    src={battleData.enemyImage}
+                    alt={battleData.enemyName}
+                    className="w-full h-full object-cover scale-[1.6] -translate-y-[15%]"
+                  />
+                </div>
               </div>
               <CardTitle className="text-3xl text-center text-red-900">
                 {battleData.enemyName}
@@ -523,13 +525,15 @@ export default function MidBattle() {
 
         {/* 敵の画像 */}
         <div className="flex justify-center">
-          <img
-            src={battleData.enemyImage}
-            alt={battleData.enemyName}
-            className={`w-48 h-48 rounded-full object-cover border-4 border-red-400 shadow-xl ${
-              showDamage === "enemy" ? "animate-shake" : ""
-            }`}
-          />
+          <div className={`w-48 h-48 rounded-full overflow-hidden border-4 border-red-400 shadow-xl ${
+            showDamage === "enemy" ? "animate-shake" : ""
+          }`}>
+            <img
+              src={battleData.enemyImage}
+              alt={battleData.enemyName}
+              className="w-full h-full object-cover scale-[1.6] -translate-y-[15%]"
+            />
+          </div>
         </div>
 
         {/* 解説画面 */}
