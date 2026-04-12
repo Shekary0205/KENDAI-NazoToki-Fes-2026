@@ -8,6 +8,8 @@ export interface BattleQuestion {
   correctIndices?: number[];
   /** 正解後に表示する解説 */
   explanation?: string;
+  /** 解説に表示する画像パス */
+  explanationImage?: string;
 }
 
 export interface BattleData {

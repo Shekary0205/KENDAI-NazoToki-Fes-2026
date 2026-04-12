@@ -534,6 +534,15 @@ export default function Battle() {
               <p className="text-lg text-gray-800 leading-relaxed whitespace-pre-line">
                 {currentQuestion.explanation}
               </p>
+              {currentQuestion.explanationImage && (
+                <div className="flex justify-center">
+                  <img
+                    src={currentQuestion.explanationImage}
+                    alt="解説画像"
+                    className="max-w-[280px] w-full rounded-xl shadow-md"
+                  />
+                </div>
+              )}
               <Button
                 onClick={() => advanceToNextQuestion(enemyHp, playerHp)}
                 className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"

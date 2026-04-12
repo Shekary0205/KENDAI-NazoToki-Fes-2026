@@ -29,6 +29,8 @@ export interface MidBattleQuestion {
   correctIndex?: number;
   correctIndices?: number[];
   explanation?: string;
+  /** 解説に表示する画像パス */
+  explanationImage?: string;
 }
 
 export interface MidBattleData {
@@ -110,12 +112,12 @@ export const departments: DepartmentData[] = [
         riddle: "示された場所を確認しろ",
         hint: "PC-????",
         answer: "医療DX",
-        nextLocationHint: "エレベーターで3階まで進め",
+        nextLocationHint: "エレベーターで４階まで進め",
         explanation: "医療DX（デジタルトランスフォーメーション）とは、電子カルテやオンライン診療、AI診断支援などデジタル技術を活用して医療の質と効率を高める取り組みです。本学の医療情報学科では、診療情報管理士や基本情報技術者などの資格取得を通じて、医療と情報の両方に精通した人材を育成しており、まさに医療DXを支える専門家を輩出しています。"
       },
       {
         id: 5,
-        location: "1号館3階",
+        location: "1号館4階",
         riddle: "張り紙の問題に答えよう",
         hint: "階段の張り紙を確認してみよう",
         answer: "アリフィスとフォファル",
@@ -124,16 +126,16 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 6,
-        location: "3階奥まで進め",
+        location: "４階奥まで進め",
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "社会福祉学科",
-        nextLocationHint: "４階は社会福祉学科のフロア！右手の階段から４階に進もう",
+        nextLocationHint: "５階は社会福祉学科のフロア！右手の階段から５階に進もう",
         explanation: "高崎健康福祉大学の社会福祉学科は、人々の暮らしと尊厳を守る福祉専門職を育成する学科です。「社会福祉コース」と「介護福祉コース」の2コース制を採用しており、目指す進路に合わせて専門性を深められます。\n\n【取得を目指せる主な資格】\n・社会福祉士（国家試験受験資格）\n・精神保健福祉士（国家試験受験資格）\n・介護福祉士（国家試験受験資格）\n・高等学校教諭一種免許（福祉・公民）\n・司書・司書教諭\n\n【学びの特色】\n地域の福祉施設や医療機関、行政機関との連携による実習を重視し、「現場で活きる実践力」を養います。高齢者福祉、障がい者福祉、児童福祉、医療ソーシャルワークなど幅広い分野を体系的に学ぶことができ、卒業生は福祉施設・病院・行政・学校など多様なフィールドで活躍しています。"
       },
       {
         id: 7,
-        location: "1号館4階",
+        location: "1号館5階",
         riddle: "張り紙の謎を解け",
         hint: "たすけあいを意味する漢字",
         answer: "助",
@@ -141,7 +143,7 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 8,
-        location: "1号館4階",
+        location: "1号館5階",
         riddle: "張り紙の謎を解け",
         hint: "車椅子を数えるときの単位は「台」",
         answer: "台本",
@@ -149,7 +151,7 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 9,
-        location: "1号館4階",
+        location: "1号館5階",
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "社会福祉学科をもりあげようプロジェクト",
@@ -158,7 +160,7 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 10,
-        location: "1号館4階",
+        location: "1号館6階",
         riddle: "張り紙の謎を解け",
         hint: "３つの数が示す文字を取れ",
         answer: "ICT",
@@ -170,11 +172,11 @@ export const departments: DepartmentData[] = [
         riddle: "部屋に隠された謎を解け",
         hint: "体の一部分を表す漢字",
         answer: "手",
-        nextLocationHint: "４階奥へ！"
+        nextLocationHint: "６階奥へ！"
       },
       {
         id: 12,
-        location: "1号館4階",
+        location: "1号館6階",
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "ITパスポート",
@@ -197,7 +199,7 @@ export const departments: DepartmentData[] = [
         enemyName: "戦う栄養士",
         enemyImage: "/images/tatakau-eiyoushi.png",
         enemyImageOffsetY: "30%",
-        nextLocationHint: "3階奥まで進め",
+        nextLocationHint: "４階奥まで進め",
         enemyMaxHp: 100,
         playerMaxHp: 100,
         damageToEnemy: 20,
@@ -323,7 +325,7 @@ export const departments: DepartmentData[] = [
         damageToEnemy: 20,
         damageToPlayer: 20,
         randomOrder: true,
-        nextLocationHint: "3階を制覇しました！\n４階は医療情報学科のフロアです。\n階段で向かいましょう。",
+        nextLocationHint: "５階を制覇しました！\n６階は医療情報学科のフロアです。\n階段で向かいましょう。",
         questions: [
           {
             question: "社会福祉に関わる相談に対応し、助言、指導、援助を行う専門職に従事可能となる国家資格は？",
