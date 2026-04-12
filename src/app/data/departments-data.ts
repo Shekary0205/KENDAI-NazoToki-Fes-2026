@@ -433,8 +433,9 @@ export const departments: DepartmentData[] = [
       {
         id: 3,
         afterStageId: 12,
-        enemyName: "医療情報の探求者",
-        enemyImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=400&fit=crop",
+        enemyName: "医療事務プリンセス",
+        enemyImage: "/images/iryo-jimu-princess.png",
+        enemyImageOffsetY: "15%",
         enemyMaxHp: 100,
         playerMaxHp: 100,
         damageToEnemy: 20,
