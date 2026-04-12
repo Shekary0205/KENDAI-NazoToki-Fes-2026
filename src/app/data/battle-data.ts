@@ -32,7 +32,7 @@ export const battleData: BattleData[] = [
     departmentId: "health-welfare",
     enemyName: "1号館の王",
     enemyImage: "/images/1goukan-king.png",
-    enemyImageOffsetY: "20%",
+    enemyImageOffsetY: "35%",
     enemyMaxHp: 100,
     playerMaxHp: 100,
     damageToEnemy: 10,
