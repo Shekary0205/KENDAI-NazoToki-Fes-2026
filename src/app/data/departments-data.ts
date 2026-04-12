@@ -160,7 +160,7 @@ export const departments: DepartmentData[] = [
         id: 10,
         location: "1号館4階",
         riddle: "張り紙の謎を解け",
-        hint: "",
+        hint: "３つの数が示す文字を取れ",
         answer: "ICT",
         nextLocationHint: "情報学習室へ向かえ"
       },
