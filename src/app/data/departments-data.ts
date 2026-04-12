@@ -22,6 +22,8 @@ export interface StageData {
   skipNextLocationScreen?: boolean;
   /** この謎解き中に再生するBGMトラック（未指定の場合は "field"） */
   bgm?: string;
+  /** ヒントに付与するリンクURL */
+  hintUrl?: string;
 }
 
 export interface MidBattleQuestion {
@@ -163,6 +165,7 @@ export const departments: DepartmentData[] = [
         riddle: "張り紙の謎を解け",
         hint: "",
         answer: "社会福祉学科をもりあげようプロジェクト",
+        hintUrl: "https://www.instagram.com/kendai_syafuku_moripuro?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
         nextLocationHint: "戦闘の予感...",
         explanation: "2009（平成21）年に学科名が改称されたことを機に、学科広報活動の充実、学生に対する教育的効果を目的として、15名程度の有志学生から「もりプロ」が発足しました。"
       },
