@@ -117,7 +117,8 @@ export const departments: DepartmentData[] = [
         riddle: "張り紙の問題に答えよう",
         hint: "階段の張り紙を確認してみよう",
         answer: "アリフィスとフォファル",
-        nextLocationHint: "3階奥まで進め",
+        nextLocationHint: "",
+        skipNextLocationScreen: true,
         explanation: "2月16日（月）、群馬県庁にて開催された「令和7年度やま・さと応縁隊成果発表会」において、本学科の学生が成果発表を行いました。\n\nやま・さと応縁隊とは\n「やま・さと応縁隊」は、群馬県農政課が県内の大学等に委託して実施する事業です。高齢化や人口減少などの課題を抱える中山間地域において、大学生が地域住民との交流やフィールドワークを通じて、地域の課題解決や魅力の発信方法を検討・提案します。単なる支援にとどまらず、地域に深く関わり、住民との「縁」を育むことで、地域に根付く独自の魅力を再発見し、地域の活性化につなげることを目的としています。"
       },
       {
@@ -193,6 +194,7 @@ export const departments: DepartmentData[] = [
         nextStageId: 6,
         enemyName: "健康栄養の使者",
         enemyImage: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=400&fit=crop",
+        nextLocationHint: "3階奥まで進め",
         enemyMaxHp: 100,
         playerMaxHp: 100,
         damageToEnemy: 20,
