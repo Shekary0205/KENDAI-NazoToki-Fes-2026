@@ -143,8 +143,8 @@ export const departments: DepartmentData[] = [
         id: 8,
         location: "1号館4階",
         riddle: "張り紙の謎を解け",
-        hint: "",
-        answer: "介護士",
+        hint: "車椅子を数えるときの単位は「台」",
+        answer: "台本",
         nextLocationHint: "奥まで進め"
       },
       {
