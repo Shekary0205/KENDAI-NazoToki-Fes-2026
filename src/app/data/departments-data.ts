@@ -152,8 +152,9 @@ export const departments: DepartmentData[] = [
         location: "1号館4階",
         riddle: "張り紙の謎を解け",
         hint: "",
-        answer: "もりプロ",
-        nextLocationHint: "新たな試練が待ち受ける..."
+        answer: "社会福祉学科をもりあげようプロジェクト",
+        nextLocationHint: "戦闘の予感...",
+        explanation: "2009（平成21）年に学科名が改称されたことを機に、学科広報活動の充実、学生に対する教育的効果を目的として、15名程度の有志学生から「もりプロ」が発足しました。"
       },
       {
         id: 10,
@@ -719,6 +720,7 @@ export const normalizeAnswer = (answer: string): string => {
     .toLowerCase()
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
     .replace(/[ァ-ン]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0x60))
+    .replace(/盛り上げよう/g, 'もりあげよう')
     .replace(/\s+/g, '');
 };
 
