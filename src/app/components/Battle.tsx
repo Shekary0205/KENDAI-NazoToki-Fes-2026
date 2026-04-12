@@ -20,6 +20,7 @@ import {
 import { getDepartmentById } from "../data/departments-data";
 import { getBattleDataByDepartmentId, type BattleQuestion } from "../data/battle-data";
 import { useBgm } from "../context/BgmContext";
+import { fireCorrectEffect } from "../utils/confetti";
 
 type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
 
@@ -139,6 +140,7 @@ export default function Battle() {
 
     if (isCorrect) {
       setBattleState("correct");
+      fireCorrectEffect();
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
@@ -192,6 +194,7 @@ export default function Battle() {
 
     if (isCorrect) {
       setBattleState("correct");
+      fireCorrectEffect();
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);

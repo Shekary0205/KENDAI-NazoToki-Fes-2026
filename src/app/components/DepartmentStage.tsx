@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { getDepartmentById, normalizeAnswer } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
+import { fireCorrectEffect } from "../utils/confetti";
 
 export default function DepartmentStage() {
   const { departmentId, stageId } = useParams<{ departmentId: string; stageId: string }>();
@@ -76,6 +77,7 @@ export default function DepartmentStage() {
 
     if (normalizedUserAnswer === normalizedCorrectAnswer) {
       setFeedback("correct");
+      fireCorrectEffect();
       if (stage.explanation) {
         setShowExplanation(true);
       } else if (stage.skipNextLocationScreen) {
@@ -110,6 +112,7 @@ export default function DepartmentStage() {
 
     if (isCorrect) {
       setFeedback("correct");
+      fireCorrectEffect();
       if (stage.explanation) {
         setShowExplanation(true);
       } else if (stage.skipNextLocationScreen) {

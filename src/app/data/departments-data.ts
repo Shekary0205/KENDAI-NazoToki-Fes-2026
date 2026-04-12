@@ -737,4 +737,30 @@ export const isAllDepartmentsCleared = (): boolean => {
 
 export const resetProgress = (): void => {
   localStorage.removeItem('clearedDepartments');
+  localStorage.removeItem('gameProgress');
+};
+
+// 経過保存の管理
+export interface GameProgress {
+  currentPath: string;
+  savedAt: string;
+}
+
+export const saveGameProgress = (path: string): void => {
+  if (typeof window === 'undefined') return;
+  const progress: GameProgress = {
+    currentPath: path,
+    savedAt: new Date().toLocaleString('ja-JP'),
+  };
+  localStorage.setItem('gameProgress', JSON.stringify(progress));
+};
+
+export const loadGameProgress = (): GameProgress | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem('gameProgress');
+  return saved ? JSON.parse(saved) : null;
+};
+
+export const clearGameProgress = (): void => {
+  localStorage.removeItem('gameProgress');
 };

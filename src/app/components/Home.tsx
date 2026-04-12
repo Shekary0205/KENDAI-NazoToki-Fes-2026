@@ -1,9 +1,13 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { MapPin, Search, Trophy, QrCode } from "lucide-react";
+import { MapPin, Search, Trophy, PlayCircle } from "lucide-react";
+import { loadGameProgress } from "../data/departments-data";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const savedProgress = loadGameProgress();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full space-y-8">
@@ -74,9 +78,22 @@ export default function Home() {
               </ul>
             </div>
 
+            {savedProgress && (
+              <Button
+                onClick={() => navigate(savedProgress.currentPath)}
+                className="w-full text-lg h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              >
+                <PlayCircle className="w-6 h-6 mr-2" />
+                続きから再開（{savedProgress.savedAt}）
+              </Button>
+            )}
+
             <Link to="/select" className="block">
-              <Button className="w-full text-lg h-14 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                学部選択へ進む
+              <Button
+                className="w-full text-lg h-14 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                variant={savedProgress ? "outline" : "default"}
+              >
+                {savedProgress ? "最初から学部選択へ" : "学部選択へ進む"}
               </Button>
             </Link>
           </CardContent>

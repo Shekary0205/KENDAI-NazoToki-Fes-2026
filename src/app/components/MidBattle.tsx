@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getDepartmentById, type MidBattleQuestion } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
+import { fireCorrectEffect } from "../utils/confetti";
 
 const shuffleArray = <T,>(arr: T[]): T[] => {
   const copy = [...arr];
@@ -150,6 +151,7 @@ export default function MidBattle() {
 
     if (isCorrect) {
       setBattleState("correct");
+      fireCorrectEffect();
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
@@ -201,6 +203,7 @@ export default function MidBattle() {
 
     if (isCorrect) {
       setBattleState("correct");
+      fireCorrectEffect();
       setShowDamage("enemy");
       const newEnemyHp = Math.max(0, enemyHp - battleData.damageToEnemy);
       setEnemyHp(newEnemyHp);
