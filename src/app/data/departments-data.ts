@@ -163,7 +163,7 @@ export const departments: DepartmentData[] = [
         location: "1号館5階",
         bgm: "cave",
         riddle: "張り紙の謎を解け",
-        hint: "",
+        hint: "Instagramを見てみよう",
         answer: "社会福祉学科をもりあげようプロジェクト",
         hintUrl: "https://www.instagram.com/kendai_syafuku_moripuro?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
         nextLocationHint: "戦闘の予感...",
