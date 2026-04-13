@@ -797,3 +797,26 @@ export const loadGameProgress = (): GameProgress | null => {
 export const clearGameProgress = (): void => {
   localStorage.removeItem('gameProgress');
 };
+
+// ユーザーアカウント管理
+export interface UserAccount {
+  studentId: string;
+  name: string;
+  createdAt: string;
+}
+
+export const saveUserAccount = (studentId: string, name: string): void => {
+  if (typeof window === 'undefined') return;
+  const account: UserAccount = {
+    studentId,
+    name,
+    createdAt: new Date().toLocaleString('ja-JP'),
+  };
+  localStorage.setItem('userAccount', JSON.stringify(account));
+};
+
+export const loadUserAccount = (): UserAccount | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem('userAccount');
+  return saved ? JSON.parse(saved) : null;
+};
