@@ -677,6 +677,34 @@ export const departments: DepartmentData[] = [
         ],
         correctIndex: 0,
         nextLocationHint: "戦闘の予感..."
+      },
+      {
+        id: 7,
+        location: "8号館3階",
+        riddle: "3階を探検し、3Rsの原則を３つ日本語で答えろ。",
+        hint: "ピンクのポスターに注目",
+        answer: "",
+        type: "multi-input",
+        multiAnswers: [["代替"], ["削減"], ["洗練"]],
+        inputLabels: ["1つ目", "2つ目", "3つ目"],
+        skipNextLocationScreen: true,
+        nextLocationHint: ""
+      },
+      {
+        id: 8,
+        location: "8号館3階",
+        riddle: "この階層に存在するシャワーの数を答えろ",
+        hint: "",
+        answer: "4",
+        nextLocationHint: "ついに最上階。４階左へ進め"
+      },
+      {
+        id: 9,
+        location: "4階左奥",
+        riddle: "張り紙の謎を解け",
+        hint: "図書館",
+        answer: "いりょ",
+        nextLocationHint: ""
       }
     ],
     midBattles: [
@@ -882,6 +910,7 @@ export const normalizeAnswer = (answer: string): string => {
     .replace(/[ァ-ン]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0x60))
     .replace(/盛り上げよう/g, 'もりあげよう')
     .replace(/台本/g, 'だいほん')
+    .replace(/〜|～|~$/g, '')
     .replace(/\s+/g, '');
 };
 
