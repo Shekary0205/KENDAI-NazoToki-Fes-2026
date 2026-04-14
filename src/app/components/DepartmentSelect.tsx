@@ -127,7 +127,7 @@ export default function DepartmentSelect() {
           {departments.map((dept) => {
             const isCleared = clearedDepts.includes(dept.id);
             const colorClasses = getColorClasses(dept.color);
-            const isAvailable = dept.id === "health-welfare";
+            const isAvailable = dept.id === "health-welfare" || dept.id === "pharmacy";
 
             return (
               <Card

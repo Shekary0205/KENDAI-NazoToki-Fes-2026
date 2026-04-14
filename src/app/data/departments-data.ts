@@ -5,12 +5,18 @@ export interface StageData {
   hint: string;
   answer: string;
   nextLocationHint: string;
-  /** チェックリスト形式の場合 */
-  type?: "text" | "checkbox";
-  /** チェックリストの選択肢 */
+  /** 問題タイプ */
+  type?: "text" | "checkbox" | "select" | "multi-input";
+  /** 選択肢（checkbox / select で使用） */
   options?: string[];
-  /** 正解の選択肢インデックス */
+  /** 正解の選択肢インデックス（checkbox: 複数, select: correctIndex で指定） */
   correctIndices?: number[];
+  /** select 形式の正解インデックス */
+  correctIndex?: number;
+  /** multi-input 形式: 各入力ボックスの受け入れ可能な答えリスト */
+  multiAnswers?: string[][];
+  /** multi-input 形式: 各入力ボックスのラベル */
+  inputLabels?: string[];
   /** 正解後の解説 */
   explanation?: string;
   /** 次の目的地の補足説明（タイトルと本文） */
@@ -597,33 +603,80 @@ export const departments: DepartmentData[] = [
   {
     id: "pharmacy",
     name: "薬学部",
-    buildings: "7号館",
+    buildings: "8号館",
     color: "purple",
     icon: "💊",
     stages: [
       {
         id: 1,
-        location: "7号館 エントランス",
-        riddle: "薬の知識を深める場所。\n「薬学部」の「薬」という漢字から\n「艹（くさかんむり）」を取ると？",
-        hint: "草冠の下の部分を見てみよう",
-        answer: "楽",
-        nextLocationHint: "研究室フロアへ。化学式の掲示に注目！"
+        location: "8号館エントランス",
+        riddle: "薬学部の学生が取得を目指す資格の名前はどれ？",
+        hint: "",
+        answer: "",
+        type: "select",
+        options: ["薬剤師", "医師", "看護師", "管理栄養士"],
+        correctIndex: 0,
+        nextLocationHint: "ようこそ8号館薬学部へ！左手の学生サロン(自習スペース)へ進め！"
       },
       {
         id: 2,
-        location: "7号館 研究室フロア",
-        riddle: "水の化学式「H2O」。\nこの中の数字を全て足すと？",
-        hint: "2 + 0 = ?",
-        answer: "2",
-        nextLocationHint: "図書コーナーへ向かおう"
+        location: "1階学生サロン",
+        riddle: "張り紙の謎を解け",
+        hint: "方向に注目",
+        answer: "けんだい",
+        nextLocationHint: "サロン正面の掲示板確認しよう！"
       },
       {
         id: 3,
-        location: "7号館 図書コーナー",
-        riddle: "本棚に並ぶ薬学の知識。\n「PHARMACY」のアルファベットは全部で何文字？",
-        hint: "P-H-A-R-M-A-C-Y を数えよう",
-        answer: "8",
-        nextLocationHint: ""
+        location: "1階学生サロン前掲示板",
+        riddle: "張り紙の謎を解け",
+        hint: "文字の位置に当てはめろ",
+        answer: "たぬきそば",
+        nextLocationHint: "さらに奥、学生食堂へ進め"
+      },
+      {
+        id: 4,
+        location: "1階学生食堂",
+        riddle: "張り紙の謎を解け",
+        hint: "食券に注目",
+        answer: "",
+        type: "multi-input",
+        multiAnswers: [["380"], ["60"], ["620"]],
+        inputLabels: ["1つ目の答え", "2つ目の答え", "3つ目の答え"],
+        nextLocationHint: "よくやった！2階へ進み左手へ向かえ"
+      },
+      {
+        id: 5,
+        location: "2階左奥",
+        riddle: "３つの張り紙の答えを入力しろ",
+        hint: "1階を探索してみよう",
+        answer: "",
+        type: "multi-input",
+        multiAnswers: [
+          ["薬学イベントサークル", "薬学イベントサークル（仮）", "薬学イベントサークル(仮)"],
+          ["ヨクイニン"],
+          ["240歩", "240"]
+        ],
+        inputLabels: ["1つ目の答え", "2つ目の答え", "3つ目の答え"],
+        nextLocationHint: "2階さらに奥へ進め"
+      },
+      {
+        id: 6,
+        location: "2階右奥",
+        riddle: "廊下に設置されたシャワーにはなんの意味がある？",
+        hint: "",
+        answer: "",
+        type: "select",
+        options: [
+          "薬剤が付着した際にすぐ洗い流すため",
+          "火災時の消火用",
+          "実験器具の洗浄用",
+          "温度管理のための冷却装置",
+          "掃除用の水道設備",
+          "装飾目的のオブジェ"
+        ],
+        correctIndex: 0,
+        nextLocationHint: "3階へ進め"
       }
     ]
   },

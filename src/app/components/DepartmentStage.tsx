@@ -36,6 +36,8 @@ export default function DepartmentStage() {
   const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
   const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [multiInputs, setMultiInputs] = useState<string[]>([]);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -51,6 +53,8 @@ export default function DepartmentStage() {
     setCheckedOptions(new Set());
     setCheckboxSubmitted(false);
     setShowExplanation(false);
+    setSelectedOption(null);
+    setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
   }, [currentStageId]);
 
   if (!department || !stage) {
@@ -144,6 +148,55 @@ export default function DepartmentStage() {
     } else {
       // 最後のステージをクリアしたらバトルへ
       navigate(`/department/${departmentId}/battle`);
+    }
+  };
+
+  // select 形式の回答処理（間違えても正解を見せず繰り返す）
+  const handleSelectOption = (index: number) => {
+    if (index === stage.correctIndex) {
+      setSelectedOption(index);
+      setFeedback("correct");
+      fireCorrectEffect();
+      if (stage.explanation) {
+        setShowExplanation(true);
+      } else if (stage.skipNextLocationScreen) {
+        handleNext();
+      } else {
+        setShowNext(true);
+      }
+    } else {
+      setSelectedOption(index);
+      setFeedback("incorrect");
+      setTimeout(() => {
+        setFeedback(null);
+        setSelectedOption(null);
+      }, 1500);
+    }
+  };
+
+  // multi-input 形式の回答処理
+  const handleMultiInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stage.multiAnswers) return;
+
+    const allCorrect = stage.multiAnswers.every((acceptableAnswers, i) => {
+      const userVal = normalizeAnswer(multiInputs[i] || "");
+      return acceptableAnswers.some(a => normalizeAnswer(a) === userVal);
+    });
+
+    if (allCorrect) {
+      setFeedback("correct");
+      fireCorrectEffect();
+      if (stage.explanation) {
+        setShowExplanation(true);
+      } else if (stage.skipNextLocationScreen) {
+        handleNext();
+      } else {
+        setShowNext(true);
+      }
+    } else {
+      setFeedback("incorrect");
+      setTimeout(() => setFeedback(null), 2000);
     }
   };
 
@@ -314,7 +367,7 @@ export default function DepartmentStage() {
             {!showNext && !showExplanation ? (
               <>
                 {/* テキスト入力形式 */}
-                {stage.type !== "checkbox" && (
+                {(!stage.type || stage.type === "text") && (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -334,6 +387,69 @@ export default function DepartmentStage() {
                       type="submit"
                       className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
                       disabled={!userAnswer.trim()}
+                    >
+                      回答する
+                    </Button>
+                  </form>
+                )}
+
+                {/* 選択式（間違えても正解を見せず繰り返す） */}
+                {stage.type === "select" && stage.options && (
+                  <div className="space-y-3">
+                    {stage.options.map((option, index) => {
+                      const isSelected = selectedOption === index;
+                      const isCorrect = index === stage.correctIndex;
+
+                      let btnClass = "w-full h-auto py-4 text-lg justify-start text-left";
+                      if (isSelected && isCorrect && feedback === "correct") {
+                        btnClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isSelected && !isCorrect && feedback === "incorrect") {
+                        btnClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      }
+
+                      return (
+                        <Button
+                          key={index}
+                          onClick={() => handleSelectOption(index)}
+                          disabled={feedback === "correct"}
+                          variant="outline"
+                          className={btnClass}
+                        >
+                          <span className="mr-3 font-bold">{String.fromCharCode(65 + index)}.</span>
+                          {option}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* 複数入力ボックス形式 */}
+                {stage.type === "multi-input" && stage.multiAnswers && (
+                  <form onSubmit={handleMultiInputSubmit} className="space-y-4">
+                    {stage.multiAnswers.map((_, index) => (
+                      <div key={index}>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          {stage.inputLabels?.[index] || `答え ${index + 1}`}
+                        </label>
+                        <Input
+                          type="text"
+                          value={multiInputs[index] || ""}
+                          onChange={(e) => {
+                            const next = [...multiInputs];
+                            next[index] = e.target.value;
+                            setMultiInputs(next);
+                          }}
+                          placeholder="答えを入力..."
+                          className="text-lg h-12"
+                          autoFocus={index === 0}
+                        />
+                      </div>
+                    ))}
+
+                    <Button
+                      type="submit"
+                      className={`w-full h-12 text-lg ${colorClasses.bg} hover:opacity-90`}
+                      disabled={multiInputs.some(v => !v.trim())}
                     >
                       回答する
                     </Button>
