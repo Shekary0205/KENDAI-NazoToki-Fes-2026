@@ -704,7 +704,23 @@ export const departments: DepartmentData[] = [
         riddle: "張り紙の謎を解け",
         hint: "図書館",
         answer: "いりょ",
-        nextLocationHint: ""
+        nextLocationHint: "４階右奥へ進め"
+      },
+      {
+        id: 10,
+        location: "8号館4階",
+        riddle: "模擬薬局正面に存在する部屋の名前を答えろ",
+        hint: "",
+        answer: "TDM室",
+        nextLocationHint: "４階１番奥へ"
+      },
+      {
+        id: 11,
+        location: "8号館4階",
+        riddle: "最奥の張り紙に記載された単語を入力",
+        hint: "",
+        answer: "ファーマシすと",
+        nextLocationHint: "最終試練に挑め！"
       }
     ],
     midBattles: [
