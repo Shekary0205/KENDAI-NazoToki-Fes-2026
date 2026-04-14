@@ -703,7 +703,7 @@ export const departments: DepartmentData[] = [
         location: "4階左奥",
         riddle: "張り紙の謎を解け",
         hint: "図書館",
-        answer: "いりょ",
+        answer: "ちりょ",
         nextLocationHint: "４階右奥へ進め"
       },
       {
