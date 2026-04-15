@@ -948,9 +948,10 @@ export const departments: DepartmentData[] = [
             {
               id: 4,
               location: "8号館2階",
-              riddle: "水汲み装置を探し、単語を入力しろ。",
+              riddle: "水汲み装置を探せ。寄贈元の団体を答えろ。",
               hint: "エレベータ前",
-              answer: "教員免許",
+              answer: "同窓会",
+              alternateAnswers: ["高崎健康福祉大学同窓会"],
               accident: {
                 image: "/images/water-accident.jpg",
                 title: "アクシデント発生！",
