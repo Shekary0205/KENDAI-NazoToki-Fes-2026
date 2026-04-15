@@ -5,8 +5,8 @@ import Opening from "./components/Opening";
 import { BgmProvider } from "./context/BgmContext";
 import InAppBrowserGuard from "./components/InAppBrowserGuard";
 import AccountSetup from "./components/AccountSetup";
-import { loadUserAccount } from "./data/departments-data";
-import { registerAccountToServer } from "./utils/supabase";
+import { loadUserAccount, getClearedDepartments } from "./data/departments-data";
+import { registerAccountToServer, recordClearedDepartmentToServer } from "./utils/supabase";
 
 export default function App() {
   const [hasAccount, setHasAccount] = useState(() => !!loadUserAccount());
@@ -17,11 +17,15 @@ export default function App() {
     if (!hasAccount) return;
     if (sessionStorage.getItem("accountSyncedThisSession") === "true") return;
     const account = loadUserAccount();
-    if (account) {
-      registerAccountToServer(account.studentId, account.name).then(() => {
-        sessionStorage.setItem("accountSyncedThisSession", "true");
+    if (!account) return;
+    registerAccountToServer(account.studentId, account.name).then(() => {
+      sessionStorage.setItem("accountSyncedThisSession", "true");
+      // 既存のクリア済み学部もサーバーに同期（重複は無視される）
+      const cleared = getClearedDepartments();
+      cleared.forEach(deptId => {
+        void recordClearedDepartmentToServer(account.studentId, deptId);
       });
-    }
+    });
   }, [hasAccount]);
 
   if (!hasAccount) {

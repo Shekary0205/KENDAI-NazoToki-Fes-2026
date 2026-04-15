@@ -322,6 +322,18 @@ export default function FinalBattle() {
 
           <Card className="shadow-2xl border-4 border-red-400">
             <CardHeader className="bg-gradient-to-r from-red-100 to-orange-100">
+              {finalBattle.enemyImage && (
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-red-400 shadow-lg bg-white">
+                    <img
+                      src={finalBattle.enemyImage}
+                      alt={finalBattle.enemyName}
+                      className="w-full h-full object-cover"
+                      style={finalBattle.enemyImageOffsetY ? { objectPosition: `center ${finalBattle.enemyImageOffsetY}` } : undefined}
+                    />
+                  </div>
+                </div>
+              )}
               <CardTitle className="text-3xl text-center text-red-900">
                 {finalBattle.enemyName}
               </CardTitle>
@@ -614,6 +626,22 @@ export default function FinalBattle() {
             </CardContent>
           </Card>
         </div>
+
+        {/* 敵の画像 */}
+        {finalBattle.enemyImage && (
+          <div className="flex justify-center">
+            <div className={`w-48 h-48 rounded-full overflow-hidden border-4 border-red-400 shadow-xl bg-white ${
+              showDamage === "enemy" ? "animate-shake" : ""
+            }`}>
+              <img
+                src={finalBattle.enemyImage}
+                alt={finalBattle.enemyName}
+                className="w-full h-full object-cover"
+                style={finalBattle.enemyImageOffsetY ? { objectPosition: `center ${finalBattle.enemyImageOffsetY}` } : undefined}
+              />
+            </div>
+          </div>
+        )}
 
         {/* 進捗表示 */}
         <div className="text-center">

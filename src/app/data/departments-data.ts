@@ -1,3 +1,5 @@
+import { recordClearedDepartmentToServer } from "../utils/supabase";
+
 export interface ItemData {
   id: string;
   name: string;
@@ -1557,6 +1559,7 @@ export const departments: DepartmentData[] = [
     },
     finalBattle: {
       enemyName: "第1種ワールド教諭",
+      enemyImage: "/images/world.png",
       enemyMaxHp: 150,
       playerMaxHp: 100,
       damageToEnemy: 10,
@@ -1776,9 +1779,15 @@ export const getClearedDepartments = (): string[] => {
 
 export const markDepartmentAsCleared = (departmentId: string): void => {
   const cleared = getClearedDepartments();
-  if (!cleared.includes(departmentId)) {
+  const isNewClear = !cleared.includes(departmentId);
+  if (isNewClear) {
     cleared.push(departmentId);
     localStorage.setItem('clearedDepartments', JSON.stringify(cleared));
+  }
+  // サーバー側にも記録（初回/重複どちらでも実行、サーバー側で重複は無視される）
+  const account = loadUserAccount();
+  if (account) {
+    void recordClearedDepartmentToServer(account.studentId, departmentId);
   }
 };
 
