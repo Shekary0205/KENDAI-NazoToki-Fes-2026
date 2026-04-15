@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -33,6 +33,8 @@ const SCRAMBLE_WORDS = [
   { word: "ほいくし", hint: "乳幼児の保育を行う国家資格" },
   { word: "きょういんめんきょ", hint: "教師として働くために必要な資格" },
   { word: "もんてっそーり", hint: "子どもの自発的活動を促す教育法" },
+  { word: "ようちえんきょうゆ", hint: "3歳〜就学前の幼児の教育を行う専門職" },
+  { word: "がっきゅうけいえい", hint: "担任が学級を運営・管理する営み" },
 ];
 
 // ===== ステージ2: ペアマッチング =====
@@ -56,19 +58,29 @@ type CardItem = {
 
 // ===== ステージ3: ピアノ童謡 =====
 const PIANO_KEYS = [
-  { note: "ド", color: "bg-red-200 border-red-400" },
-  { note: "レ", color: "bg-orange-200 border-orange-400" },
-  { note: "ミ", color: "bg-yellow-200 border-yellow-400" },
-  { note: "ファ", color: "bg-green-200 border-green-400" },
-  { note: "ソ", color: "bg-blue-200 border-blue-400" },
-  { note: "ラ", color: "bg-indigo-200 border-indigo-400" },
-  { note: "シ", color: "bg-purple-200 border-purple-400" },
+  { note: "ド", color: "bg-red-200 border-red-400", freq: 261.63 },
+  { note: "レ", color: "bg-orange-200 border-orange-400", freq: 293.66 },
+  { note: "ミ", color: "bg-yellow-200 border-yellow-400", freq: 329.63 },
+  { note: "ファ", color: "bg-green-200 border-green-400", freq: 349.23 },
+  { note: "ソ", color: "bg-blue-200 border-blue-400", freq: 392.00 },
+  { note: "ラ", color: "bg-indigo-200 border-indigo-400", freq: 440.00 },
+  { note: "シ", color: "bg-purple-200 border-purple-400", freq: 493.88 },
 ];
 
-const PIANO_SONG = {
-  name: "きらきらぼし",
-  notes: ["ド", "ド", "ソ", "ソ", "ラ", "ラ", "ソ", "ファ", "ファ", "ミ", "ミ", "レ", "レ", "ド"],
-};
+const PIANO_SONGS = [
+  {
+    name: "きらきらぼし",
+    notes: ["ド", "ド", "ソ", "ソ", "ラ", "ラ", "ソ", "ファ", "ファ", "ミ", "ミ", "レ", "レ", "ド"],
+  },
+  {
+    name: "ちょうちょう",
+    notes: ["ソ", "ミ", "ミ", "ファ", "レ", "レ", "ド", "レ", "ミ", "ファ", "ソ", "ソ", "ソ"],
+  },
+  {
+    name: "メリーさんのひつじ",
+    notes: ["ミ", "レ", "ド", "レ", "ミ", "ミ", "ミ", "レ", "レ", "レ", "ミ", "ソ", "ソ"],
+  },
+];
 
 type MiniStage = "intro" | "scramble" | "scrambleClear" | "pair" | "pairClear" | "piano" | "pianoClear" | "cleared";
 
@@ -136,8 +148,40 @@ export default function KeywordMinigame() {
   const [busy, setBusy] = useState(false);
 
   // ステージ3: ピアノ
+  const [pianoSongIndex, setPianoSongIndex] = useState(0);
   const [pianoProgress, setPianoProgress] = useState(0);
   const [pianoKeyFeedback, setPianoKeyFeedback] = useState<{ note: string; type: "correct" | "wrong" } | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Web Audio でピアノ音を再生
+  const playNote = (note: string) => {
+    const keyData = PIANO_KEYS.find(k => k.note === note);
+    if (!keyData) return;
+    try {
+      if (!audioContextRef.current) {
+        const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioContextRef.current = new AC();
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.value = keyData.freq;
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.25, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      oscillator.start(now);
+      oscillator.stop(now + 0.5);
+    } catch {
+      // 無視
+    }
+  };
 
   useEffect(() => {
     switchTrack("field");
@@ -256,14 +300,24 @@ export default function KeywordMinigame() {
 
   // ===== ステージ3: ピアノ =====
   const handlePianoKeyClick = (note: string) => {
-    const expectedNote = PIANO_SONG.notes[pianoProgress];
+    playNote(note);
+    const currentSong = PIANO_SONGS[pianoSongIndex];
+    const expectedNote = currentSong.notes[pianoProgress];
     if (note === expectedNote) {
       setPianoKeyFeedback({ note, type: "correct" });
       setTimeout(() => setPianoKeyFeedback(null), 200);
       const next = pianoProgress + 1;
-      if (next >= PIANO_SONG.notes.length) {
+      if (next >= currentSong.notes.length) {
         fireCorrectEffect();
-        setTimeout(() => setMiniStage("pianoClear"), 400);
+        // 次の曲があれば進む、なければクリア
+        if (pianoSongIndex + 1 < PIANO_SONGS.length) {
+          setTimeout(() => {
+            setPianoSongIndex(pianoSongIndex + 1);
+            setPianoProgress(0);
+          }, 800);
+        } else {
+          setTimeout(() => setMiniStage("pianoClear"), 600);
+        }
       } else {
         setPianoProgress(next);
       }
@@ -542,8 +596,9 @@ export default function KeywordMinigame() {
 
   // ステージ3: ピアノ
   if (miniStage === "piano") {
-    const progressPercent = (pianoProgress / PIANO_SONG.notes.length) * 100;
-    const nextNote = PIANO_SONG.notes[pianoProgress];
+    const currentSong = PIANO_SONGS[pianoSongIndex];
+    const progressPercent = (pianoProgress / currentSong.notes.length) * 100;
+    const nextNote = currentSong.notes[pianoProgress];
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 p-4 py-8">
         <div className="max-w-lg mx-auto space-y-4">
@@ -552,9 +607,14 @@ export default function KeywordMinigame() {
               <Home className="w-4 h-4 mr-2" />
               ハブへ戻る
             </Button>
-            <Badge className="bg-purple-600 text-white text-base px-3 py-1">
-              {pianoProgress} / {PIANO_SONG.notes.length}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-pink-600 text-white text-base px-3 py-1">
+                曲 {pianoSongIndex + 1} / {PIANO_SONGS.length}
+              </Badge>
+              <Badge className="bg-purple-600 text-white text-base px-3 py-1">
+                {pianoProgress} / {currentSong.notes.length}
+              </Badge>
+            </div>
           </div>
 
           <div className="text-center space-y-1">
@@ -562,7 +622,7 @@ export default function KeywordMinigame() {
               <Music className="w-6 h-6" />
               ③ ピアノで童謡演奏
             </h2>
-            <p className="text-sm text-gray-600">「{PIANO_SONG.name}」を演奏しよう！</p>
+            <p className="text-sm text-gray-600">「{currentSong.name}」を演奏しよう！</p>
           </div>
 
           <Progress value={progressPercent} className="h-3" />
@@ -574,7 +634,7 @@ export default function KeywordMinigame() {
                 楽譜（次は: {nextNote}）
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {PIANO_SONG.notes.map((note, i) => (
+                {currentSong.notes.map((note, i) => (
                   <div
                     key={i}
                     className={`w-8 h-10 flex items-center justify-center rounded text-sm font-bold border-2 ${
