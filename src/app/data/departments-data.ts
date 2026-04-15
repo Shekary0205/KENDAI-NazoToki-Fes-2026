@@ -934,7 +934,7 @@ export const departments: DepartmentData[] = [
             {
               id: 3,
               location: "8号館エントランス掲示板",
-              riddle: "掲示板の謎を解け",
+              riddle: "Oの次。Qの前\nSの次。Uの前\nBの前",
               hint: "",
               answer: "PTA",
               itemReward: {
