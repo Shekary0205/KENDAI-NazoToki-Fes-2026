@@ -1399,7 +1399,8 @@ export const departments: DepartmentData[] = [
                 title: "アクシデント発生！",
                 message: "ベルマークを回収ボックスに投入しよう！\nベルマーク１点は一円に換算することができるぞ！",
                 requiredItemId: "bellmark",
-                successMessage: "ベルマークを回収ボックスに投入した！"
+                successMessage: "ベルマークを回収ボックスに投入した！",
+                image: "/images/bell.png"
               },
               nextLocationHint: "次の問題に答えよう。"
             },
