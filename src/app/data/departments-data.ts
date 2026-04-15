@@ -1366,9 +1366,9 @@ export const departments: DepartmentData[] = [
             {
               id: 6,
               location: "9号館3階",
-              riddle: "この階層の掲示板には何枚の掲示物がはられている？",
+              riddle: "紅蝶の導く言葉を紡げ",
               hint: "",
-              answer: "9",
+              answer: "remember",
               accident: {
                 title: "アクシデント発生！",
                 message: "ポスターが剥がれかけている！\nこのままだと飛ばされそうだ。\nアイテムを使ってなんとかしよう。",
