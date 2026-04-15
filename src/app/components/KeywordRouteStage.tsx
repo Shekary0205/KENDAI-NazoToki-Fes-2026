@@ -17,6 +17,7 @@ import {
   Package,
   AlertTriangle,
   Sparkles,
+  Swords,
 } from "lucide-react";
 import {
   getDepartmentById,
@@ -241,6 +242,11 @@ export default function KeywordRouteStage() {
   const handleNext = () => {
     const isLastStage = currentStageId >= (keyword.stages?.length ?? 0);
     if (isLastStage) {
+      // 戦闘がある場合は戦闘画面へ
+      if (keyword.battle) {
+        navigate(`/department/${departmentId}/keyword/${routeId}/battle`);
+        return;
+      }
       saveObtainedKeyword(departmentId!, keyword.id, keyword.correctKeyword);
       clearKeywordStageProgress(departmentId!, keyword.id);
       setPhase("keywordObtained");
@@ -596,6 +602,11 @@ export default function KeywordRouteStage() {
                   <>
                     目的地へ到着
                     <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                ) : keyword.battle ? (
+                  <>
+                    戦闘へ挑む
+                    <Swords className="w-5 h-5 ml-2" />
                   </>
                 ) : (
                   <>
