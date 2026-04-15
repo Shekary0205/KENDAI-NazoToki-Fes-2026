@@ -305,13 +305,13 @@ export default function KeywordHub() {
                   className="flex-1"
                   onClick={() => setConfirmRoute(null)}
                 >
-                  いいえ
+                  キャンセル
                 </Button>
                 <Button
                   className="flex-1 bg-yellow-600 hover:bg-yellow-700"
                   onClick={() => proceedToRoute(confirmRoute)}
                 >
-                  はい
+                  到着
                 </Button>
               </div>
             </CardContent>

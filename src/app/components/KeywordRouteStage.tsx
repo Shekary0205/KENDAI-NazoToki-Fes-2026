@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   Sparkles,
   Swords,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import {
   getDepartmentById,
@@ -71,6 +73,8 @@ export default function KeywordRouteStage() {
   const [inventory, setInventory] = useState<ItemData[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [itemUseError, setItemUseError] = useState<string | null>(null);
+  const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
+  const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
 
   useEffect(() => {
     switchTrack("field");
@@ -81,6 +85,8 @@ export default function KeywordRouteStage() {
     setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
     setShowHint(false);
     setFeedback(null);
+    setCheckedOptions(new Set());
+    setCheckboxSubmitted(false);
     setSelectedItemId(null);
     setItemUseError(null);
     setInventory(getObtainedItems());
@@ -213,6 +219,37 @@ export default function KeywordRouteStage() {
     } else {
       setFeedback("incorrect");
       setTimeout(() => setFeedback(null), 2000);
+    }
+  };
+
+  const handleToggleCheckbox = (index: number) => {
+    if (checkboxSubmitted) return;
+    setCheckedOptions(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const handleSubmitCheckbox = () => {
+    if (checkboxSubmitted) return;
+    setCheckboxSubmitted(true);
+    const correctSet = new Set(stage.correctIndices || []);
+    const isCorrect =
+      checkedOptions.size === correctSet.size &&
+      [...checkedOptions].every(i => correctSet.has(i));
+    if (isCorrect) {
+      setFeedback("correct");
+      fireCorrectEffect();
+      proceedAfterCorrect();
+    } else {
+      setFeedback("incorrect");
+      setTimeout(() => {
+        setFeedback(null);
+        setCheckedOptions(new Set());
+        setCheckboxSubmitted(false);
+      }, 2000);
     }
   };
 
@@ -480,6 +517,59 @@ export default function KeywordRouteStage() {
                     回答する
                   </Button>
                 </form>
+              )}
+
+              {/* チェックリスト形式 */}
+              {stage.type === "checkbox" && stage.options && (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-gray-700">
+                    正しいものをすべて選んでください
+                  </p>
+                  {stage.options.map((option, index) => {
+                    const isChecked = checkedOptions.has(index);
+                    const correctSet = new Set(stage.correctIndices || []);
+                    const isCorrectOption = correctSet.has(index);
+                    const showResult = checkboxSubmitted;
+
+                    let btnClass = "w-full h-auto py-4 text-lg justify-start text-left";
+                    if (showResult) {
+                      if (isChecked && isCorrectOption) {
+                        btnClass += " bg-green-500 hover:bg-green-500 text-white border-green-600";
+                      } else if (isChecked && !isCorrectOption) {
+                        btnClass += " bg-red-500 hover:bg-red-500 text-white border-red-600";
+                      } else if (isCorrectOption) {
+                        btnClass += " bg-green-100 border-green-400";
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => handleToggleCheckbox(index)}
+                        disabled={checkboxSubmitted}
+                        variant={isChecked ? "default" : "outline"}
+                        className={btnClass}
+                      >
+                        {isChecked ? (
+                          <CheckSquare className="w-5 h-5 mr-3 flex-shrink-0" />
+                        ) : (
+                          <Square className="w-5 h-5 mr-3 flex-shrink-0" />
+                        )}
+                        {option}
+                      </Button>
+                    );
+                  })}
+
+                  {!checkboxSubmitted && (
+                    <Button
+                      onClick={handleSubmitCheckbox}
+                      disabled={checkedOptions.size === 0}
+                      className="w-full h-12 text-lg mt-2 bg-yellow-600 hover:bg-yellow-700"
+                    >
+                      回答する
+                    </Button>
+                  )}
+                </div>
               )}
 
               {/* 途中保存ボタン */}

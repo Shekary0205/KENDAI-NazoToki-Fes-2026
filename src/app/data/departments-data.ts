@@ -1268,7 +1268,28 @@ export const departments: DepartmentData[] = [
           description: "9号館を探索してキーワードを手に入れよう",
           correctKeyword: "placeholder2",
           routeType: "stages",
-          stages: []
+          confirmMessage: "エントランスから左へ進み、ドアを出て隣の号館へ移動しろ。",
+          stages: [
+            {
+              id: 1,
+              location: "9号館1階",
+              riddle: "9号館1階にある施設を全て選択しろ",
+              hint: "",
+              answer: "",
+              type: "checkbox",
+              options: [
+                "国際交流センター",
+                "ボランティアサポートセンター",
+                "キャリアサポートセンター",
+                "教職支援センター",
+                "学生ホール",
+                "保健センター",
+                "図書館"
+              ],
+              correctIndices: [0, 1, 2, 3, 4],
+              nextLocationHint: "9号館へようこそ。次の問題へ進め"
+            }
+          ]
         },
         {
           id: 3,
