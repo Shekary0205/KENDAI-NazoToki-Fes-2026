@@ -364,7 +364,7 @@ export default function KeywordRouteStage() {
                 </p>
               </div>
 
-              {stage.hint && (
+              {(stage.hint || stage.hintUrl) && (
                 <div className="space-y-2">
                   {!showHint ? (
                     <Button variant="outline" className="w-full" onClick={() => setShowHint(true)}>
@@ -377,7 +377,17 @@ export default function KeywordRouteStage() {
                         <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                         <div>
                           <h4 className="font-semibold text-yellow-900 mb-1">ヒント</h4>
-                          <p className="text-gray-700">{stage.hint}</p>
+                          {stage.hint && <p className="text-gray-700">{stage.hint}</p>}
+                          {stage.hintUrl && (
+                            <a
+                              href={stage.hintUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block mt-2 text-blue-600 underline text-sm font-semibold break-all"
+                            >
+                              📎 ヒントのリンクを開く
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>

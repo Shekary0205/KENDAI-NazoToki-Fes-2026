@@ -947,7 +947,38 @@ export const departments: DepartmentData[] = [
                 showTutorial: true,
                 successMessage: "うきわで水から身を守った！水難を回避しました！"
               },
-              nextLocationHint: "無事に水難を回避した！次の目的地へ進もう"
+              nextLocationHint: "危機はさった。階段で２階奥まで進め"
+            },
+            {
+              id: 5,
+              location: "8号館2階",
+              riddle: "掲示板の問題を解け",
+              hint: "Instagramを確認しよう",
+              hintUrl: "https://www.instagram.com/kendai_kodomo_chaitomo/",
+              answer: "チャイとも",
+              nextLocationHint: "この奥は9号館。引き返して3階へ進め。"
+            },
+            {
+              id: 6,
+              location: "8号館3階",
+              riddle: "入学式でも披露された、本学の学歌のタイトルを答えよ。",
+              hint: "",
+              answer: "夢のはじまり",
+              nextLocationHint: "3階奥まで進め"
+            },
+            {
+              id: 7,
+              location: "8号館3階",
+              riddle: "掲示板の謎を解け",
+              hint: "",
+              answer: "健大子どもチャンネル",
+              itemReward: {
+                id: "gabyou",
+                name: "画鋲",
+                icon: "📌",
+                description: "掲示物を留めるアイテム"
+              },
+              nextLocationHint: "戦闘の予感..."
             }
           ]
         },
