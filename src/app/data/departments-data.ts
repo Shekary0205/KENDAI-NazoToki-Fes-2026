@@ -990,7 +990,21 @@ export const departments: DepartmentData[] = [
               riddle: "張り紙の謎を解け。",
               hint: "",
               answer: "LHR",
-              nextLocationHint: ""
+              accident: {
+                title: "アクシデント発生！",
+                message: "火災が発生した。\nアイテムを使って食い止めろ！\n必要なアイテムを持たない場合、別のキーワードを探索してみよう。",
+                requiredItemId: "shoukaki",
+                successMessage: "消火器で火を消し止めた！火災を回避しました！"
+              },
+              nextLocationHint: "よくがんばりました。５階へ進みましょう。"
+            },
+            {
+              id: 9,
+              location: "8号館4階",
+              riddle: "張り紙の謎を解け。",
+              hint: "",
+              answer: "ランドセル",
+              nextLocationHint: "戦闘の予感..."
             }
           ],
           battle: {
