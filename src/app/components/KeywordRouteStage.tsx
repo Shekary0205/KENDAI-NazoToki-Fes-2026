@@ -25,6 +25,9 @@ import {
   saveObtainedKeyword,
   saveKeywordStageProgress,
   clearKeywordStageProgress,
+  saveKeywordStagePhase,
+  loadKeywordStagePhase,
+  clearKeywordStagePhase,
   addItem,
   getObtainedItems,
   removeItem,
@@ -78,12 +81,20 @@ export default function KeywordRouteStage() {
     setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
     setShowHint(false);
     setFeedback(null);
-    setPhase("question");
     setSelectedItemId(null);
     setItemUseError(null);
     setInventory(getObtainedItems());
     if (departmentId && routeId) {
       saveKeywordStageProgress(departmentId, parseInt(routeId), currentStageId);
+      // フェーズ復元（アクシデント画面で中断した場合など）
+      const savedPhase = loadKeywordStagePhase(departmentId, parseInt(routeId), currentStageId);
+      if (savedPhase === "accidentScreen") {
+        setPhase("accidentScreen");
+      } else {
+        setPhase("question");
+      }
+    } else {
+      setPhase("question");
     }
   }, [currentStageId, departmentId, routeId, stage]);
 
@@ -237,6 +248,10 @@ export default function KeywordRouteStage() {
       setInventory(getObtainedItems());
       setSelectedItemId(null);
       setItemUseError(null);
+      // アクシデント解決したのでフェーズ保存をクリア
+      if (departmentId && routeId) {
+        clearKeywordStagePhase(departmentId, parseInt(routeId));
+      }
       setPhase("accidentResolved");
     } else {
       setItemUseError("そのアイテムではこのアクシデントは解決できない...");
@@ -265,6 +280,12 @@ export default function KeywordRouteStage() {
   const handleSaveAndExit = () => {
     if (departmentId && routeId) {
       saveKeywordStageProgress(departmentId, parseInt(routeId), currentStageId);
+      // アクシデント画面で中断した場合はフェーズも保存
+      if (phase === "accidentScreen") {
+        saveKeywordStagePhase(departmentId, parseInt(routeId), currentStageId, "accidentScreen");
+      } else {
+        clearKeywordStagePhase(departmentId, parseInt(routeId));
+      }
     }
     navigate(`/department/${departmentId}/keyword-hub`);
   };

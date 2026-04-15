@@ -1503,6 +1503,44 @@ export const clearKeywordStageProgress = (
   routeId: number
 ): void => {
   localStorage.removeItem(`keywordProgress_${departmentId}_${routeId}`);
+  localStorage.removeItem(`keywordPhase_${departmentId}_${routeId}`);
+};
+
+// ステージのフェーズ保存（アクシデント中断など）
+export const saveKeywordStagePhase = (
+  departmentId: string,
+  routeId: number,
+  stageId: number,
+  phase: string
+): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(
+    `keywordPhase_${departmentId}_${routeId}`,
+    JSON.stringify({ stageId, phase })
+  );
+};
+
+export const loadKeywordStagePhase = (
+  departmentId: string,
+  routeId: number,
+  stageId: number
+): string | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem(`keywordPhase_${departmentId}_${routeId}`);
+  if (!saved) return null;
+  try {
+    const data = JSON.parse(saved);
+    return data.stageId === stageId ? data.phase : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearKeywordStagePhase = (
+  departmentId: string,
+  routeId: number
+): void => {
+  localStorage.removeItem(`keywordPhase_${departmentId}_${routeId}`);
 };
 
 // アイテム管理
