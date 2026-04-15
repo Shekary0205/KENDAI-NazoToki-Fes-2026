@@ -7,6 +7,9 @@ import Battle from "./components/Battle";
 import MidBattle from "./components/MidBattle";
 import DepartmentComplete from "./components/DepartmentComplete";
 import AllComplete from "./components/AllComplete";
+import KeywordHub from "./components/KeywordHub";
+import KeywordRouteStage from "./components/KeywordRouteStage";
+import KeywordMinigame from "./components/KeywordMinigame";
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +35,18 @@ export const router = createBrowserRouter([
       {
         path: "department/:departmentId/midbattle/:battleId",
         Component: MidBattle,
+      },
+      {
+        path: "department/:departmentId/keyword-hub",
+        Component: KeywordHub,
+      },
+      {
+        path: "department/:departmentId/keyword/:routeId/stage/:stageId",
+        Component: KeywordRouteStage,
+      },
+      {
+        path: "department/:departmentId/keyword/:routeId/minigame",
+        Component: KeywordMinigame,
       },
       {
         path: "department/:departmentId/complete",

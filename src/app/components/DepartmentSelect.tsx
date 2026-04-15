@@ -1,9 +1,18 @@
 import { Link, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
-import { Home, CheckCircle2, PlayCircle } from "lucide-react";
-import { departments, getClearedDepartments, isAllDepartmentsCleared, loadGameProgress } from "../data/departments-data";
+import { Home, CheckCircle2, PlayCircle, Lock } from "lucide-react";
+import {
+  departments,
+  getClearedDepartments,
+  isAllDepartmentsCleared,
+  loadGameProgress,
+  isDepartmentUnlocked,
+  unlockDepartment,
+  type DepartmentData,
+} from "../data/departments-data";
 import { useEffect, useState } from "react";
 import { useBgm } from "../context/BgmContext";
 
@@ -11,7 +20,38 @@ export default function DepartmentSelect() {
   const navigate = useNavigate();
   const [clearedDepts, setClearedDepts] = useState<string[]>([]);
   const [allCleared, setAllCleared] = useState(false);
+  const [passwordDept, setPasswordDept] = useState<DepartmentData | null>(null);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { switchTrack } = useBgm();
+
+  const handleDepartmentClick = (dept: DepartmentData) => {
+    // パスワード付きの学部で未解除の場合
+    if (dept.unlockPassword && !isDepartmentUnlocked(dept.id)) {
+      setPasswordDept(dept);
+      setPasswordInput("");
+      setPasswordError(false);
+      return;
+    }
+    navigate(`/department/${dept.id}/stage/1`);
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordDept) return;
+    if (passwordInput === passwordDept.unlockPassword) {
+      unlockDepartment(passwordDept.id);
+      const dept = passwordDept;
+      setPasswordDept(null);
+      setPasswordInput("");
+      setRefreshKey(k => k + 1);
+      navigate(`/department/${dept.id}/stage/1`);
+    } else {
+      setPasswordError(true);
+      setTimeout(() => setPasswordError(false), 2000);
+    }
+  };
 
   useEffect(() => {
     // 学部選択画面ではポケモンジムBGM
@@ -123,17 +163,23 @@ export default function DepartmentSelect() {
         )}
 
         {/* 学部一覧 */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4" key={refreshKey}>
           {departments.map((dept) => {
             const isCleared = clearedDepts.includes(dept.id);
             const colorClasses = getColorClasses(dept.color);
-            const isAvailable = dept.id === "health-welfare" || dept.id === "pharmacy";
+            const isPublic = dept.id === "health-welfare" || dept.id === "pharmacy";
+            const hasPassword = !!dept.unlockPassword;
+            const isUnlocked = isDepartmentUnlocked(dept.id);
+            const isAvailable = isPublic || (hasPassword && isUnlocked);
 
             return (
               <Card
                 key={dept.id}
+                onClick={() => {
+                  if (isAvailable || hasPassword) handleDepartmentClick(dept);
+                }}
                 className={`transition-all ${
-                  isAvailable ? "hover:shadow-lg cursor-pointer" : "opacity-70"
+                  isAvailable || hasPassword ? "hover:shadow-lg cursor-pointer" : "opacity-70"
                 } ${isCleared ? "border-2 border-green-400" : ""}`}
               >
                 <CardHeader className={`${colorClasses.bg} border-b ${colorClasses.border} relative`}>
@@ -142,8 +188,9 @@ export default function DepartmentSelect() {
                       <CheckCircle2 className="w-8 h-8 text-green-600 fill-green-100" />
                     </div>
                   )}
-                  {!isAvailable && (
-                    <div className="absolute top-4 right-4">
+                  {!isPublic && !isUnlocked && (
+                    <div className="absolute top-4 right-4 flex items-center gap-1">
+                      {hasPassword && <Lock className="w-4 h-4 text-gray-600" />}
                       <Badge className="bg-gray-500 text-white text-xs">
                         Coming Soon
                       </Badge>
@@ -164,7 +211,7 @@ export default function DepartmentSelect() {
                     <>
                       <div className="flex items-center justify-between">
                         <Badge className={colorClasses.badge}>
-                          {dept.stages.length}つの謎
+                          {dept.keywordMode ? "キーワード収集" : `${dept.stages.length}つの謎`}
                         </Badge>
                         {isCleared && (
                           <Badge className="bg-green-100 text-green-700">
@@ -172,15 +219,23 @@ export default function DepartmentSelect() {
                           </Badge>
                         )}
                       </div>
-                      <Link to={`/department/${dept.id}/stage/1`}>
-                        <Button
-                          className="w-full"
-                          variant={isCleared ? "outline" : "default"}
-                        >
-                          {isCleared ? "もう一度挑戦" : "謎解きスタート"}
-                        </Button>
-                      </Link>
+                      <Button
+                        className="w-full"
+                        variant={isCleared ? "outline" : "default"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDepartmentClick(dept);
+                        }}
+                      >
+                        {isCleared ? "もう一度挑戦" : "謎解きスタート"}
+                      </Button>
                     </>
+                  ) : hasPassword ? (
+                    <div className="text-center py-2">
+                      <p className="text-sm text-gray-500 font-semibold">
+                        4月14日以降に毎日公開予定！
+                      </p>
+                    </div>
                   ) : (
                     <div className="text-center py-2">
                       <p className="text-sm text-gray-500 font-semibold">
@@ -193,6 +248,54 @@ export default function DepartmentSelect() {
             );
           })}
         </div>
+
+        {/* パスワード入力モーダル */}
+        {passwordDept && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+            <Card className="max-w-sm w-full shadow-2xl">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-gray-700" />
+                  <CardTitle className="text-lg">パスワードを入力</CardTitle>
+                </div>
+                <CardDescription>
+                  {passwordDept.name} に参加するには<br />
+                  パスワードが必要です
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                  <Input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="パスワード"
+                    className="text-lg h-12"
+                    autoFocus
+                  />
+                  {passwordError && (
+                    <p className="text-sm text-red-600 font-semibold">
+                      パスワードが違います
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setPasswordDept(null)}
+                    >
+                      キャンセル
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      参加する
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">

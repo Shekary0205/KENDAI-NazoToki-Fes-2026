@@ -136,6 +136,15 @@ export default function DepartmentStage() {
   };
 
   const handleNext = () => {
+    // キーワード収集モード: 指定ステージクリア後にキーワードハブへ
+    if (
+      department.keywordMode?.enabled &&
+      currentStageId === department.keywordMode.afterStageId
+    ) {
+      navigate(`/department/${departmentId}/keyword-hub`);
+      return;
+    }
+
     // このステージ終了後に中間バトルがあるかチェック
     const midBattle = department.midBattles?.find(b => b.afterStageId === currentStageId);
     if (midBattle) {
@@ -555,7 +564,13 @@ export default function DepartmentStage() {
                   onClick={handleNext}
                   className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
                 >
-                  {department.midBattles?.some(b => b.afterStageId === currentStageId) ? (
+                  {department.keywordMode?.enabled &&
+                  currentStageId === department.keywordMode.afterStageId ? (
+                    <>
+                      キーワード収集へ
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  ) : department.midBattles?.some(b => b.afterStageId === currentStageId) ? (
                     <>
                       試練へ挑む
                       <ArrowRight className="w-5 h-5 ml-2" />

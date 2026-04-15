@@ -67,6 +67,26 @@ export interface MidBattleData {
   battleBgm?: string;
 }
 
+export interface KeywordRoute {
+  id: number;
+  label: string;
+  description: string;
+  correctKeyword: string;
+  routeType: "stages" | "minigame";
+  stages?: StageData[];
+}
+
+export interface KeywordModeConfig {
+  /** この学部がキーワード収集方式であることを示すフラグ */
+  enabled: true;
+  /** このステージをクリアするとキーワードハブが解禁される */
+  afterStageId: number;
+  /** 3つのキーワードルート */
+  keywords: KeywordRoute[];
+  /** 最終目的地メッセージ（全キーワード入力後） */
+  completionMessage?: string;
+}
+
 export interface DepartmentData {
   id: string;
   name: string;
@@ -75,6 +95,10 @@ export interface DepartmentData {
   icon: string;
   stages: StageData[];
   midBattles?: MidBattleData[];
+  /** この学部に入るためのパスワード */
+  unlockPassword?: string;
+  /** キーワード収集方式の設定 */
+  keywordMode?: KeywordModeConfig;
 }
 
 export const departments: DepartmentData[] = [
@@ -814,35 +838,53 @@ export const departments: DepartmentData[] = [
   {
     id: "child-education",
     name: "人間発達学部/子ども教育学科",
-    buildings: "8, 9号館",
+    buildings: "9, 10号館",
     color: "yellow",
     icon: "🎓",
+    unlockPassword: "112233",
     stages: [
       {
         id: 1,
-        location: "8号館 エントランス",
-        riddle: "子どもたちの未来を育む場所。\n「教育」という言葉を英語にすると\n「EDUCATION」。最初の文字は？",
-        hint: "EDUCATIONの1文字目",
-        answer: "E",
-        nextLocationHint: "9号館のピアノ練習室へ！"
-      },
-      {
-        id: 2,
-        location: "9号館 ピアノ練習室",
-        riddle: "音楽を奏でる場所。\nドレミファソラシドは全部で何音？",
-        hint: "ド・レ・ミ・ファ・ソ・ラ・シ・ド",
-        answer: "8",
-        nextLocationHint: "掲示板で保育実習の情報をチェック！"
-      },
-      {
-        id: 3,
-        location: "8号館 掲示板",
-        riddle: "「子ども」という言葉に\n「々」は含まれているが、これは何という記号？",
-        hint: "繰り返しを表す記号の名前",
-        answer: "おどりじ",
-        nextLocationHint: ""
+        location: "10号館エントランス",
+        riddle: "人間発達学部の学科を２つ選択しよう",
+        hint: "",
+        answer: "",
+        type: "checkbox",
+        options: ["こども教育学科", "心理学科", "社会福祉学科", "栄養学科", "医療情報学科"],
+        correctIndices: [0, 1],
+        nextLocationHint: "こども教育学科へようこそ！３つのキーワードを入手して最終試練に挑め！"
       }
-    ]
+    ],
+    keywordMode: {
+      enabled: true,
+      afterStageId: 1,
+      keywords: [
+        {
+          id: 1,
+          label: "10号館を探索",
+          description: "10号館を探索してキーワードを手に入れよう",
+          correctKeyword: "placeholder1",
+          routeType: "stages",
+          stages: []
+        },
+        {
+          id: 2,
+          label: "9号館を探索",
+          description: "9号館を探索してキーワードを手に入れよう",
+          correctKeyword: "placeholder2",
+          routeType: "stages",
+          stages: []
+        },
+        {
+          id: 3,
+          label: "ミニゲームに挑戦",
+          description: "ミニゲームをクリアしてキーワードを手に入れよう",
+          correctKeyword: "placeholder3",
+          routeType: "minigame"
+        }
+      ],
+      completionMessage: "全てのキーワードを入手！最終試練に挑め！"
+    }
   },
   {
     id: "agriculture",
@@ -1004,4 +1046,40 @@ export const loadUserAccount = (): UserAccount | null => {
   if (typeof window === 'undefined') return null;
   const saved = localStorage.getItem('userAccount');
   return saved ? JSON.parse(saved) : null;
+};
+
+// パスワード解除状態の管理
+export const getUnlockedDepartments = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem('unlockedDepartments');
+  return saved ? JSON.parse(saved) : [];
+};
+
+export const unlockDepartment = (departmentId: string): void => {
+  const unlocked = getUnlockedDepartments();
+  if (!unlocked.includes(departmentId)) {
+    unlocked.push(departmentId);
+    localStorage.setItem('unlockedDepartments', JSON.stringify(unlocked));
+  }
+};
+
+export const isDepartmentUnlocked = (departmentId: string): boolean => {
+  return getUnlockedDepartments().includes(departmentId);
+};
+
+// キーワード収集状態の管理
+export const getObtainedKeywords = (departmentId: string): Record<number, string> => {
+  if (typeof window === 'undefined') return {};
+  const saved = localStorage.getItem(`keywords_${departmentId}`);
+  return saved ? JSON.parse(saved) : {};
+};
+
+export const saveObtainedKeyword = (departmentId: string, keywordId: number, keyword: string): void => {
+  const existing = getObtainedKeywords(departmentId);
+  existing[keywordId] = keyword;
+  localStorage.setItem(`keywords_${departmentId}`, JSON.stringify(existing));
+};
+
+export const clearObtainedKeywords = (departmentId: string): void => {
+  localStorage.removeItem(`keywords_${departmentId}`);
 };
