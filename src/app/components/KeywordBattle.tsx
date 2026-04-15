@@ -43,11 +43,15 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
 type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
 
 export default function KeywordBattle() {
-  const { departmentId, routeId } = useParams<{ departmentId: string; routeId: string }>();
+  const { departmentId, routeId, battleId } = useParams<{
+    departmentId: string;
+    routeId: string;
+    battleId: string;
+  }>();
   const navigate = useNavigate();
   const department = getDepartmentById(departmentId || "");
   const keyword = department?.keywordMode?.keywords.find(k => k.id === parseInt(routeId || "0"));
-  const battleData = keyword?.battle;
+  const battleData = keyword?.battles?.find(b => b.id === parseInt(battleId || "0"));
 
   const [battleState, setBattleState] = useState<BattleState>("intro");
   const [questionQueue, setQuestionQueue] = useState<MidBattleQuestion[]>([]);

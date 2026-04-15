@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
         Component: KeywordMinigame,
       },
       {
-        path: "department/:departmentId/keyword/:routeId/battle",
+        path: "department/:departmentId/keyword/:routeId/battle/:battleId",
         Component: KeywordBattle,
       },
       {

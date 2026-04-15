@@ -27,6 +27,7 @@ export default function KeywordHub() {
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [cleared, setCleared] = useState(false);
   const [confirmRoute, setConfirmRoute] = useState<KeywordRoute | null>(null);
+  const [showKeywordModal, setShowKeywordModal] = useState<KeywordRoute | null>(null);
 
   useEffect(() => {
     switchTrack("field");
@@ -55,6 +56,11 @@ export default function KeywordHub() {
   const { keywords } = department.keywordMode;
 
   const handleRouteClick = (route: KeywordRoute) => {
+    // 既に入手済みの場合はキーワード確認モーダルを表示
+    if (obtainedKeywords[route.id]) {
+      setShowKeywordModal(route);
+      return;
+    }
     if (route.confirmMessage) {
       setConfirmRoute(route);
     } else {
@@ -176,6 +182,11 @@ export default function KeywordHub() {
                           キーワード{kw.id}: {kw.label}
                         </div>
                         <div className="text-sm text-gray-600">{kw.description}</div>
+                        {isObtained && (
+                          <div className="text-xs text-green-700 font-semibold mt-1">
+                            ✓ 入手済み（タップで確認）
+                          </div>
+                        )}
                         {!isObtained && savedStage && (
                           <div className="text-xs text-orange-600 font-semibold mt-1">
                             📌 途中保存あり（問{savedStage}から再開）
@@ -239,6 +250,36 @@ export default function KeywordHub() {
           各ルートを探索してキーワードを手に入れよう！
         </p>
       </div>
+
+      {/* キーワード確認モーダル */}
+      {showKeywordModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <Card className="max-w-sm w-full shadow-2xl border-4 border-yellow-400">
+            <CardHeader className="bg-gradient-to-r from-yellow-100 to-orange-100">
+              <div className="flex items-center gap-2">
+                <Key className="w-6 h-6 text-yellow-700" />
+                <CardTitle className="text-lg">
+                  キーワード{showKeywordModal.id}: {showKeywordModal.label}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300 text-center">
+                <p className="text-sm text-gray-600 mb-2">入手したキーワード</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {showKeywordModal.correctKeyword}
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowKeywordModal(null)}
+                className="w-full bg-yellow-600 hover:bg-yellow-700"
+              >
+                閉じる
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 確認ダイアログ */}
       {confirmRoute && (

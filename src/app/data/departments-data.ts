@@ -104,8 +104,8 @@ export interface KeywordRoute {
   stages?: StageData[];
   /** 開始時に表示する確認メッセージ */
   confirmMessage?: string;
-  /** ルート最終ステージの後に発生する戦闘 */
-  battle?: MidBattleData;
+  /** ルート内に発生する戦闘の配列。各戦闘は afterStageId で発動タイミングを指定 */
+  battles?: MidBattleData[];
 }
 
 export interface KeywordModeConfig {
@@ -951,7 +951,7 @@ export const departments: DepartmentData[] = [
                 showTutorial: true,
                 successMessage: "うきわで水から身を守った！水難を回避しました！"
               },
-              nextLocationHint: "危機はさった。階段で２階奥まで進め"
+              nextLocationHint: "危機は去った。２階奥まで進め。"
             },
             {
               id: 5,
@@ -1007,7 +1007,8 @@ export const departments: DepartmentData[] = [
               nextLocationHint: "戦闘の予感..."
             }
           ],
-          battle: {
+          battles: [
+          {
             id: 1,
             afterStageId: 7,
             enemyName: "カオスチャイルド",
@@ -1149,7 +1150,117 @@ export const departments: DepartmentData[] = [
                 explanation: "社会福祉主事任用資格は、福祉事務所のケースワーカーとして任用される際に必要とされる資格です。福祉分野で幅広く活躍できる基礎資格です。"
               }
             ]
+          },
+          {
+            id: 2,
+            afterStageId: 9,
+            enemyName: "レジェンドピアニスト",
+            enemyImage: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=400&fit=crop",
+            enemyMaxHp: 100,
+            playerMaxHp: 100,
+            damageToEnemy: 20,
+            damageToPlayer: 20,
+            randomOrder: true,
+            battleBgm: "trainerBattle",
+            questions: [
+              {
+                question: "こども教育学科の２つのコースを選べ",
+                options: ["保育・教育コース", "教員養成コース", "発達支援コース", "社会福祉コース"],
+                type: "checkbox",
+                correctIndices: [0, 1],
+                explanation: "こども教育学科は「保育・教育コース」と「教員養成コース」の2コース制です。"
+              },
+              {
+                question: "幼稚園教諭一種免許が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0],
+                explanation: "幼稚園教諭一種免許は保育・教育コースで取得できます。"
+              },
+              {
+                question: "保育士の資格が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0],
+                explanation: "保育士資格は保育・教育コースで取得できます。"
+              },
+              {
+                question: "小学校教諭一種免許が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0, 1],
+                explanation: "小学校教諭一種免許は両コースで取得可能です。"
+              },
+              {
+                question: "教員養成コースにて取得できる中学校教諭免許の科目はどれ？",
+                options: ["英語", "国語", "数学", "社会"],
+                correctIndex: 0,
+                explanation: "教員養成コースでは中学校教諭一種免許（英語）を取得できます。"
+              },
+              {
+                question: "司書教諭の免許が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [1],
+                explanation: "司書教諭の免許は教員養成コースで取得できます。"
+              },
+              {
+                question: "認定絵本士の資格が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0, 1],
+                explanation: "認定絵本士は両コースで取得できます。"
+              },
+              {
+                question: "認定ベビーシッターの資格が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0],
+                explanation: "認定ベビーシッターは保育・教育コースで取得できます。"
+              },
+              {
+                question: "レクリエーションインストラクターの資格が取得できるコースを選べ",
+                options: ["保育・教育コース", "教員養成コース"],
+                type: "checkbox",
+                correctIndices: [0, 1],
+                explanation: "レクリエーションインストラクターは両コースで取得できます。"
+              },
+              {
+                question: "SSWはなんの略？",
+                options: [
+                  "スクールソーシャルワーカー",
+                  "スクールサポートワーカー",
+                  "スタッフソーシャルワーカー",
+                  "スクールセーフティワーカー"
+                ],
+                correctIndex: 0,
+                explanation: "SSWは「スクールソーシャルワーカー（School Social Worker）」の略。いじめ・不登校・虐待など学校や家庭での問題を抱える児童生徒を支援する専門職です。"
+              },
+              {
+                question: "SCはなんの略？",
+                options: [
+                  "スクールカウンセラー",
+                  "スチューデントカウンセラー",
+                  "スクールコンサルタント",
+                  "スクールケアワーカー"
+                ],
+                correctIndex: 0,
+                explanation: "SCは「スクールカウンセラー（School Counselor）」の略。児童生徒や保護者の心理的支援、教員への助言などを行う心理専門職です。"
+              },
+              {
+                question: "SELはなんの略？",
+                options: [
+                  "ソーシャルエモーショナルラーニング（こころの教育）",
+                  "スチューデントエンゲージメントラーニング",
+                  "スクールエデュケーションリーダーシップ",
+                  "セルフエクスプレッションラーニング"
+                ],
+                correctIndex: 0,
+                explanation: "SELは「Social Emotional Learning（ソーシャル・エモーショナル・ラーニング／こころの教育）」の略。自己認識・自己管理・社会認識・対人関係・責任ある意思決定など、社会情動的スキルを育む教育です。"
+              }
+            ]
           }
+          ]
         },
         {
           id: 2,
