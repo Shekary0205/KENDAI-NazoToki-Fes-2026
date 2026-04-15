@@ -149,7 +149,7 @@ export default function DepartmentSelect() {
                   全学部クリア おめでとうございます！
                 </h2>
                 <p className="text-gray-700">
-                  1号館受付でこの画面を提示して、豪華景品を受け取ってください
+                  1号館受付でこの画面を提示して、景品を受け取ってください
                 </p>
                 <Button
                   onClick={() => navigate("/all-complete")}
@@ -167,7 +167,7 @@ export default function DepartmentSelect() {
           {departments.map((dept) => {
             const isCleared = clearedDepts.includes(dept.id);
             const colorClasses = getColorClasses(dept.color);
-            const isPublic = dept.id === "health-welfare" || dept.id === "pharmacy";
+            const isPublic = dept.id === "health-welfare" || dept.id === "pharmacy" || dept.id === "child-education";
             const hasPassword = !!dept.unlockPassword;
             const isUnlocked = isDepartmentUnlocked(dept.id);
             const isAvailable = isPublic || (hasPassword && isUnlocked);
@@ -302,7 +302,7 @@ export default function DepartmentSelect() {
             <div className="space-y-2">
               <h3 className="font-semibold text-blue-900">💡 ヒント</h3>
               <ul className="text-sm text-gray-700 space-y-1">
-                <li>• 各号館をクリアしたら、1号館受付でお菓子がもらえます</li>
+                <li>• すべての学部をクリアすると、1号館受付で景品を受け取れます</li>
                 <li>• 階段の壁や掲示板の情報がヒントになっています</li>
                 <li>• 順番は自由なので、興味のある学部から始めましょう</li>
               </ul>

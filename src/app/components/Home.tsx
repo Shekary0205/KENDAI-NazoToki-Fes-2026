@@ -56,10 +56,10 @@ export default function Home() {
               <div className="flex items-start gap-3">
                 <Trophy className="w-6 h-6 text-yellow-600 mt-1 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-lg">豪華景品をゲット！</h3>
+                  <h3 className="font-semibold text-lg">景品をゲット！</h3>
                   <p className="text-gray-600">
-                    1つの号館クリアごとに受付でお菓子がもらえます<br />
-                    全6つクリアで豪華景品をゲット！
+                    すべての学部をクリアすると<br />
+                    1号館受付で景品を受け取れます
                   </p>
                 </div>
               </div>
@@ -68,6 +68,7 @@ export default function Home() {
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
               <h3 className="font-semibold text-amber-900 mb-2">⚠️ 注意事項</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                <li>景品はすべての学部をクリアした方のみお渡しします</li>
                 <li>景品を受け取る際はスクリーンショットではなく、実際の画面を見せてください</li>
                 <li>各号館の謎解きは順不同でクリア可能です</li>
                 <li>掲示物をよく観察しながら進めましょう</li>

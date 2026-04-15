@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { CheckCircle2, Home, ArrowRight, Gift } from "lucide-react";
-import { getDepartmentById, markDepartmentAsCleared } from "../data/departments-data";
+import { CheckCircle2, Home, ArrowRight, Trophy } from "lucide-react";
+import {
+  getDepartmentById,
+  markDepartmentAsCleared,
+  getClearedDepartments,
+  getTotalDepartments,
+  isAllDepartmentsCleared,
+} from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 
 export default function DepartmentComplete() {
@@ -11,6 +17,9 @@ export default function DepartmentComplete() {
   const navigate = useNavigate();
   const department = getDepartmentById(departmentId || "");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [clearedCount, setClearedCount] = useState(0);
+  const [allCleared, setAllCleared] = useState(false);
+  const totalDepartments = getTotalDepartments();
   const { switchTrack, currentTrack } = useBgm();
 
   useEffect(() => {
@@ -25,6 +34,9 @@ export default function DepartmentComplete() {
       markDepartmentAsCleared(departmentId);
     }
     setShowConfetti(true);
+    // markDepartmentAsCleared 後のクリア数を反映
+    setClearedCount(getClearedDepartments().length);
+    setAllCleared(isAllDepartmentsCleared());
 
     // スクリーンショット防止
     const preventScreenshot = (e: KeyboardEvent) => {
@@ -36,7 +48,7 @@ export default function DepartmentComplete() {
     };
 
     document.addEventListener('keyup', preventScreenshot);
-    
+
     return () => {
       document.removeEventListener('keyup', preventScreenshot);
     };
@@ -125,33 +137,48 @@ export default function DepartmentComplete() {
               </p>
             </div>
 
-            <div className="bg-yellow-50 p-5 rounded-lg border-2 border-yellow-300">
+            {/* 進捗状況 */}
+            <div className="bg-blue-50 p-5 rounded-lg border-2 border-blue-300">
               <div className="flex items-start gap-3">
-                <Gift className="w-6 h-6 text-yellow-700 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-yellow-900 mb-2">お菓子をゲット！</h3>
-                  <p className="text-gray-700">
-                    <strong>1号館エントランスの受付</strong>で<br />
-                    この画面を提示してお菓子をもらってください
+                <Trophy className="w-6 h-6 text-blue-700 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-bold text-blue-900 mb-2">進捗状況</h3>
+                  <p className="text-gray-800 text-lg font-semibold">
+                    クリア済み: {clearedCount} / {totalDepartments} 学部
                   </p>
+                  {allCleared ? (
+                    <p className="text-gray-700 mt-2">
+                      🎉 すべての学部をクリアしました！<br />
+                      <strong>1号館エントランスの受付</strong>で景品を受け取ってください。
+                    </p>
+                  ) : (
+                    <p className="text-gray-700 mt-2">
+                      景品は<strong>すべての学部をクリア</strong>してから<br />
+                      1号館受付でお渡しします。残りの学部にも挑戦しよう！
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <p className="text-sm text-red-800 text-center font-semibold">
-                ⚠️ スクリーンショットではなく、実際の画面を見せてください
-              </p>
-            </div>
-
             <div className="space-y-3">
-              <Button
-                onClick={() => navigate("/select")}
-                className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-              >
-                <ArrowRight className="w-5 h-5 mr-2" />
-                次の学部に挑戦する
-              </Button>
+              {allCleared ? (
+                <Button
+                  onClick={() => navigate("/all-complete")}
+                  className="w-full h-12 text-lg bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                >
+                  <Trophy className="w-5 h-5 mr-2" />
+                  景品受け取り画面へ
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate("/select")}
+                  className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                >
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  次の学部に挑戦する
+                </Button>
+              )}
 
               <Button
                 onClick={() => navigate("/")}
@@ -165,9 +192,11 @@ export default function DepartmentComplete() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-gray-600 font-semibold">
-          他の学部にも挑戦して、全クリアを目指そう！
-        </p>
+        {!allCleared && (
+          <p className="text-center text-gray-600 font-semibold">
+            他の学部にも挑戦して、全クリアを目指そう！
+          </p>
+        )}
       </div>
 
       <style>{`
