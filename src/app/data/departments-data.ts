@@ -965,7 +965,7 @@ export const departments: DepartmentData[] = [
             {
               id: 5,
               location: "8号館2階",
-              riddle: "掲示板の問題を解け",
+              riddle: "本学科でさまざまなイベントを行う、子ども教育学科友達の輪を広げようプロジェクトの略称を答えろ",
               hint: "Instagramを確認しよう",
               hintUrl: "https://www.instagram.com/kendai_kodomo_chaitomo/",
               answer: "チャイとも",
