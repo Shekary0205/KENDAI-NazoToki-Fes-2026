@@ -1013,9 +1013,9 @@ export const departments: DepartmentData[] = [
             {
               id: 9,
               location: "8号館4階",
-              riddle: "張り紙の謎を解け。",
+              riddle: "数字が示す位置を読め",
               hint: "",
-              answer: "ランドセル",
+              answer: "LHR",
               nextLocationHint: "戦闘の予感..."
             }
           ],
