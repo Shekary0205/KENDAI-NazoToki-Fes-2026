@@ -1,3 +1,25 @@
+export interface ItemData {
+  id: string;
+  name: string;
+  icon: string;  // emoji or image path
+  description?: string;
+}
+
+export interface AccidentData {
+  /** 画像パス */
+  image?: string;
+  /** タイトル（例: アクシデント発生！） */
+  title: string;
+  /** 本文メッセージ */
+  message: string;
+  /** 必要なアイテムID */
+  requiredItemId: string;
+  /** チュートリアルを表示する（初回のみ） */
+  showTutorial?: boolean;
+  /** アイテム使用後の成功メッセージ */
+  successMessage?: string;
+}
+
 export interface StageData {
   id: number;
   location: string;
@@ -5,6 +27,10 @@ export interface StageData {
   hint: string;
   answer: string;
   nextLocationHint: string;
+  /** クリア時に入手するアイテム */
+  itemReward?: ItemData;
+  /** 正解後に発生するアクシデント */
+  accident?: AccidentData;
   /** 問題タイプ */
   type?: "text" | "checkbox" | "select" | "multi-input";
   /** 選択肢（checkbox / select で使用） */
@@ -867,7 +893,63 @@ export const departments: DepartmentData[] = [
           description: "8号館を探索してキーワードを手に入れよう",
           correctKeyword: "placeholder1",
           routeType: "stages",
-          stages: []
+          stages: [
+            {
+              id: 1,
+              location: "8号館エントランス",
+              riddle: "エントランス中央に聳え立つ絵画の名前を答えろ",
+              hint: "",
+              answer: "地上のいのち",
+              nextLocationHint: "左手の掲示板へ進め"
+            },
+            {
+              id: 2,
+              location: "8号館1階掲示板",
+              riddle: "黄色の数を答えろ",
+              hint: "掲示板の🟡を探せ",
+              answer: "",
+              type: "multi-input",
+              multiAnswers: [["2"], ["11"], ["5"]],
+              inputLabels: ["5の答え", "6の答え", "7の答え"],
+              itemReward: {
+                id: "ukiwa",
+                name: "うきわ",
+                icon: "🛟",
+                description: "水難を防ぐアイテム"
+              },
+              nextLocationHint: "右に進み掲示板を確認しよう"
+            },
+            {
+              id: 3,
+              location: "8号館エントランス掲示板",
+              riddle: "掲示板の謎を解け",
+              hint: "",
+              answer: "PTA",
+              itemReward: {
+                id: "bellmark",
+                name: "ベルマーク",
+                icon: "🔔",
+                description: "学校で集めるマーク"
+              },
+              nextLocationHint: "階段で２階へ進め"
+            },
+            {
+              id: 4,
+              location: "8号館2階",
+              riddle: "水汲み装置を探し、単語を入力しろ。",
+              hint: "エレベータ前",
+              answer: "教員免許",
+              accident: {
+                image: "/images/water-accident.jpg",
+                title: "アクシデント発生！",
+                message: "水が溢れ出してしまった。\nこのままでは8号館が水没してしまう。\nなんとかしよう！",
+                requiredItemId: "ukiwa",
+                showTutorial: true,
+                successMessage: "うきわで水から身を守った！水難を回避しました！"
+              },
+              nextLocationHint: "無事に水難を回避した！次の目的地へ進もう"
+            }
+          ]
         },
         {
           id: 2,
@@ -1110,4 +1192,38 @@ export const clearKeywordStageProgress = (
   routeId: number
 ): void => {
   localStorage.removeItem(`keywordProgress_${departmentId}_${routeId}`);
+};
+
+// アイテム管理
+export const getObtainedItems = (): ItemData[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem('obtainedItems');
+  return saved ? JSON.parse(saved) : [];
+};
+
+export const addItem = (item: ItemData): void => {
+  const items = getObtainedItems();
+  if (!items.find(i => i.id === item.id)) {
+    items.push(item);
+    localStorage.setItem('obtainedItems', JSON.stringify(items));
+  }
+};
+
+export const hasItem = (itemId: string): boolean => {
+  return getObtainedItems().some(i => i.id === itemId);
+};
+
+export const removeItem = (itemId: string): void => {
+  const items = getObtainedItems().filter(i => i.id !== itemId);
+  localStorage.setItem('obtainedItems', JSON.stringify(items));
+};
+
+// チュートリアル表示状態
+export const hasSeenItemTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenItemTutorial') === 'true';
+};
+
+export const markItemTutorialSeen = (): void => {
+  localStorage.setItem('seenItemTutorial', 'true');
 };
