@@ -1011,9 +1011,9 @@ export const departments: DepartmentData[] = [
             {
               id: 7,
               location: "8号館3階",
-              riddle: "「中学校」青を入れ替えて読め。",
+              riddle: "「中学校」青い部分を入れ替えて読め。",
               riddleImage: "/images/kodomo-channel-grid.png",
-              hint: "",
+              hint: "掲示板を確認しよう",
               answer: "こどもチャンネル",
               itemReward: {
                 id: "gabyou",
