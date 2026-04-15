@@ -32,6 +32,25 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
   return copy;
 };
 
+/** 選択肢をシャッフルし、correctIndex / correctIndices を再マップする */
+const shuffleQuestionOptions = (q: MidBattleQuestion): MidBattleQuestion => {
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const newOptions = order.map(i => q.options[i]);
+  const oldToNew = new Map<number, number>();
+  order.forEach((oldIdx, newIdx) => oldToNew.set(oldIdx, newIdx));
+  return {
+    ...q,
+    options: newOptions,
+    correctIndex:
+      q.correctIndex !== undefined ? oldToNew.get(q.correctIndex) : undefined,
+    correctIndices: q.correctIndices?.map(i => oldToNew.get(i) ?? i),
+  };
+};
+
 type BattleState = "intro" | "question" | "correct" | "incorrect" | "explanation" | "victory" | "defeat";
 
 export default function MidBattle() {
@@ -58,11 +77,10 @@ export default function MidBattle() {
     if (battleData) {
       setPlayerHp(battleData.playerMaxHp);
       setEnemyHp(battleData.enemyMaxHp);
-      setQuestionQueue(
-        battleData.randomOrder
-          ? shuffleArray(battleData.questions)
-          : [...battleData.questions]
-      );
+      const ordered = battleData.randomOrder
+        ? shuffleArray(battleData.questions)
+        : [...battleData.questions];
+      setQuestionQueue(ordered.map(shuffleQuestionOptions));
       setQueueIndex(0);
       setCorrectCount(0);
       setWrongCount(0);
@@ -238,11 +256,10 @@ export default function MidBattle() {
     switchTrack("trainer");
     setPlayerHp(battleData.playerMaxHp);
     setEnemyHp(battleData.enemyMaxHp);
-    setQuestionQueue(
-      battleData.randomOrder
-        ? shuffleArray(battleData.questions)
-        : [...battleData.questions]
-    );
+    const ordered = battleData.randomOrder
+      ? shuffleArray(battleData.questions)
+      : [...battleData.questions];
+    setQuestionQueue(ordered.map(shuffleQuestionOptions));
     setQueueIndex(0);
     setCorrectCount(0);
     setWrongCount(0);

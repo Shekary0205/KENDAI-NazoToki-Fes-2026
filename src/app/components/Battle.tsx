@@ -33,6 +33,27 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
   return copy;
 };
 
+/** 選択肢をシャッフルし、correctIndex / correctIndices を再マップする */
+const shuffleQuestionOptions = (q: BattleQuestion): BattleQuestion => {
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const newOptions = order.map(i => q.options[i]);
+  const oldToNew = new Map<number, number>();
+  order.forEach((oldIdx, newIdx) => oldToNew.set(oldIdx, newIdx));
+  return {
+    ...q,
+    options: newOptions,
+    correctIndex:
+      q.correctIndex !== undefined
+        ? oldToNew.get(q.correctIndex) ?? q.correctIndex
+        : q.correctIndex,
+    correctIndices: q.correctIndices?.map(i => oldToNew.get(i) ?? i),
+  };
+};
+
 export default function Battle() {
   const { departmentId } = useParams<{ departmentId: string }>();
   const navigate = useNavigate();
@@ -55,11 +76,10 @@ export default function Battle() {
     if (battleData) {
       setPlayerHp(battleData.playerMaxHp);
       setEnemyHp(battleData.enemyMaxHp);
-      setQuestionQueue(
-        battleData.randomOrder
-          ? shuffleArray(battleData.questions)
-          : [...battleData.questions]
-      );
+      const ordered = battleData.randomOrder
+        ? shuffleArray(battleData.questions)
+        : [...battleData.questions];
+      setQuestionQueue(ordered.map(shuffleQuestionOptions));
       setQueueIndex(0);
     }
   }, [battleData]);
@@ -226,11 +246,10 @@ export default function Battle() {
     switchTrack("trainer");
     setPlayerHp(battleData.playerMaxHp);
     setEnemyHp(battleData.enemyMaxHp);
-    setQuestionQueue(
-      battleData.randomOrder
-        ? shuffleArray(battleData.questions)
-        : [...battleData.questions]
-    );
+    const ordered = battleData.randomOrder
+      ? shuffleArray(battleData.questions)
+      : [...battleData.questions];
+    setQuestionQueue(ordered.map(shuffleQuestionOptions));
     setQueueIndex(0);
     setSelectedOption(null);
     setCheckedOptions(new Set());
