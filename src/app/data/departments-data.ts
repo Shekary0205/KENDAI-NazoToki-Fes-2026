@@ -1006,7 +1006,8 @@ export const departments: DepartmentData[] = [
                 title: "アクシデント発生！",
                 message: "火災が発生した。\nアイテムを使って食い止めろ！\n必要なアイテムを持たない場合、別のキーワードを探索してみよう。",
                 requiredItemId: "shoukaki",
-                successMessage: "消火器で火を消し止めた！火災を回避しました！"
+                successMessage: "消火器で火を消し止めた！火災を回避しました！",
+                image: "/images/fire-accident.jpg"
               },
               nextLocationHint: "よくがんばりました。５階へ進みましょう。"
             },
@@ -1016,6 +1017,7 @@ export const departments: DepartmentData[] = [
               riddle: "数字が示す位置を読め",
               hint: "",
               answer: "LHR",
+              riddleImage: "/images/lhr-riddle.png",
               nextLocationHint: "戦闘の予感..."
             }
           ],
