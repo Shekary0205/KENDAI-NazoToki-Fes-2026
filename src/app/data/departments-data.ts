@@ -1344,9 +1344,9 @@ export const departments: DepartmentData[] = [
             {
               id: 5,
               location: "9号館2階",
-              riddle: "張り紙の謎を解け。",
-              hint: "",
-              answer: "教職支援",
+              riddle: "欠 □\n□ 呼\n□ 滅\n共通して当てはまるものは？",
+              hint: "・",
+              answer: "点",
               accident: {
                 title: "アクシデント発生！",
                 message: "強そうな面接官が現れた！\nアイテムを使って撃退しよう。",
