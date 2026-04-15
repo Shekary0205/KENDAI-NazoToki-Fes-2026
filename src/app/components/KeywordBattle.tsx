@@ -18,11 +18,14 @@ import {
   BookOpen,
   ArrowRight,
   Key,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import {
   getDepartmentById,
   saveObtainedKeyword,
   clearKeywordStageProgress,
+  addItem,
   type MidBattleQuestion,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
@@ -246,10 +249,22 @@ export default function KeywordBattle() {
 
   const handleVictory = () => {
     wonRef.current = true;
-    // キーワードを入手して進行状況クリア
-    saveObtainedKeyword(departmentId!, keyword.id, keyword.correctKeyword);
-    clearKeywordStageProgress(departmentId!, keyword.id);
-    navigate(`/department/${departmentId}/keyword-hub`);
+    // キーワードルートは戦闘後もステージが続く可能性があるので、
+    // battle が stages の最終ステージ後なら次のステージへ、そうでなければキーワード入手
+    if (battleData.rewardItem) {
+      addItem(battleData.rewardItem);
+    }
+    const totalStages = keyword.stages?.length ?? 0;
+    const afterStageId = battleData.afterStageId;
+    // 戦闘後にまだステージがある場合は次のステージへ
+    if (afterStageId < totalStages) {
+      navigate(`/department/${departmentId}/keyword/${routeId}/stage/${afterStageId + 1}`);
+    } else {
+      // 全ステージクリア済みならキーワード入手
+      saveObtainedKeyword(departmentId!, keyword.id, keyword.correctKeyword);
+      clearKeywordStageProgress(departmentId!, keyword.id);
+      navigate(`/department/${departmentId}/keyword-hub`);
+    }
   };
 
   const playerHpPercentage = (playerHp / battleData.playerMaxHp) * 100;
@@ -360,22 +375,60 @@ export default function KeywordBattle() {
                 </p>
               </div>
 
-              <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300 text-center">
-                <div className="flex justify-center mb-3">
-                  <Key className="w-12 h-12 text-yellow-600" />
+              {/* アイテム報酬 */}
+              {battleData.rewardItem && (
+                <div className="bg-purple-50 p-5 rounded-lg border-2 border-purple-300 text-center">
+                  <div className="flex justify-center mb-2">
+                    <Sparkles className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <p className="text-sm text-purple-700 font-semibold mb-2">アイテム入手！</p>
+                  <div className="text-5xl mb-2">{battleData.rewardItem.icon}</div>
+                  <p className="text-xl font-bold text-gray-900">
+                    {battleData.rewardItem.name}
+                  </p>
+                  {battleData.rewardItem.description && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {battleData.rewardItem.description}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm text-gray-600 mb-2">キーワード入手！</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {keyword.correctKeyword}
-                </p>
-              </div>
+              )}
+
+              {/* 次の目的地 or キーワード入手 */}
+              {battleData.afterStageId < (keyword.stages?.length ?? 0) ? (
+                battleData.nextLocationHint && (
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border-4 border-blue-300 shadow-xl">
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <div className="bg-blue-500 rounded-full p-4 shadow-lg">
+                        <MapPin className="w-10 h-10 text-white" />
+                      </div>
+                      <h4 className="font-bold text-blue-900 text-2xl">次の目的地</h4>
+                      <p className="text-gray-800 text-xl font-semibold leading-relaxed whitespace-pre-line">
+                        {battleData.nextLocationHint}
+                      </p>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300 text-center">
+                  <div className="flex justify-center mb-3">
+                    <Key className="w-12 h-12 text-yellow-600" />
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">キーワード入手！</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {keyword.correctKeyword}
+                  </p>
+                </div>
+              )}
 
               <Button
                 onClick={handleVictory}
                 className="w-full h-14 text-xl bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
               >
                 <ArrowRight className="w-6 h-6 mr-2" />
-                キーワードハブに戻る
+                {battleData.afterStageId < (keyword.stages?.length ?? 0)
+                  ? "次の問題へ"
+                  : "キーワードハブに戻る"}
               </Button>
             </CardContent>
           </Card>

@@ -76,6 +76,8 @@ export interface MidBattleData {
   afterStageId: number;
   /** 勝利後に進むステージID（未指定の場合は afterStageId + 1） */
   nextStageId?: number;
+  /** 勝利時に入手するアイテム（キーワードルート戦闘用） */
+  rewardItem?: ItemData;
   enemyName: string;
   enemyImage: string;
   /** 画像のY方向シフト (例: "30%" で下に30%、"-15%" で上に15%) */
@@ -981,6 +983,14 @@ export const departments: DepartmentData[] = [
                 description: "掲示物を留めるアイテム"
               },
               nextLocationHint: "戦闘の予感..."
+            },
+            {
+              id: 8,
+              location: "8号館4階",
+              riddle: "張り紙の謎を解け。",
+              hint: "",
+              answer: "LHR",
+              nextLocationHint: ""
             }
           ],
           battle: {
@@ -994,6 +1004,13 @@ export const departments: DepartmentData[] = [
             damageToPlayer: 20,
             randomOrder: true,
             battleBgm: "trainerBattle",
+            nextLocationHint: "よくやった！4階へ進め",
+            rewardItem: {
+              id: "kyouben",
+              name: "教鞭",
+              icon: "🪄",
+              description: "教師が授業で使う指し棒"
+            },
             questions: [
               {
                 question: "こども教育学科の２つのコースを選べ",
