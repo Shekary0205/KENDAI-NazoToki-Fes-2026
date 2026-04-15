@@ -27,6 +27,7 @@ import {
   clearKeywordStageProgress,
   addItem,
   getObtainedItems,
+  removeItem,
   hasSeenItemTutorial,
   markItemTutorialSeen,
   type ItemData,
@@ -231,6 +232,10 @@ export default function KeywordRouteStage() {
   const handleUseItem = () => {
     if (!selectedItemId) return;
     if (selectedItemId === stage.accident?.requiredItemId) {
+      // 使用したアイテムを消費
+      removeItem(selectedItemId);
+      setInventory(getObtainedItems());
+      setSelectedItemId(null);
       setItemUseError(null);
       setPhase("accidentResolved");
     } else {
