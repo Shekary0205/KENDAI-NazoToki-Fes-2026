@@ -989,7 +989,7 @@ export const departments: DepartmentData[] = [
                 showTutorial: true,
                 successMessage: "うきわで水から身を守った！水難を回避しました！"
               },
-              nextLocationHint: "危機は去った。２階奥まで進め。"
+              nextLocationHint: "危機は去った。次の問題に答えろ。"
             },
             {
               id: 5,
