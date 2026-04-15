@@ -905,7 +905,7 @@ export const departments: DepartmentData[] = [
           id: 1,
           label: "8号館を探索",
           description: "8号館を探索してキーワードを手に入れよう",
-          correctKeyword: "placeholder1",
+          correctKeyword: "ランドセル",
           routeType: "stages",
           stages: [
             {
