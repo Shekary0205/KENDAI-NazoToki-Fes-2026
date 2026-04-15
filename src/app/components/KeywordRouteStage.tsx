@@ -600,15 +600,15 @@ export default function KeywordRouteStage() {
                 onClick={handleNext}
                 className="w-full h-14 text-lg bg-yellow-600 hover:bg-yellow-700"
               >
-                {currentStageId < keyword.stages.length ? (
-                  <>
-                    目的地へ到着
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                ) : keyword.battles?.some(b => b.afterStageId === currentStageId) ? (
+                {keyword.battles?.some(b => b.afterStageId === currentStageId) ? (
                   <>
                     戦闘へ挑む
                     <Swords className="w-5 h-5 ml-2" />
+                  </>
+                ) : currentStageId < keyword.stages.length ? (
+                  <>
+                    目的地へ到着
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 ) : (
                   <>
