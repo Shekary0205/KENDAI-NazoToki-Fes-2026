@@ -74,6 +74,8 @@ export interface KeywordRoute {
   correctKeyword: string;
   routeType: "stages" | "minigame";
   stages?: StageData[];
+  /** 開始時に表示する確認メッセージ */
+  confirmMessage?: string;
 }
 
 export interface KeywordModeConfig {
@@ -838,7 +840,7 @@ export const departments: DepartmentData[] = [
   {
     id: "child-education",
     name: "人間発達学部/子ども教育学科",
-    buildings: "9, 10号館",
+    buildings: "8, 9, 10号館",
     color: "yellow",
     icon: "🎓",
     unlockPassword: "112233",
@@ -861,10 +863,11 @@ export const departments: DepartmentData[] = [
       keywords: [
         {
           id: 1,
-          label: "10号館を探索",
-          description: "10号館を探索してキーワードを手に入れよう",
+          label: "8号館を探索",
+          description: "8号館を探索してキーワードを手に入れよう",
           correctKeyword: "placeholder1",
           routeType: "stages",
+          confirmMessage: "１つ目のキーワードは8号館にあり。8号館の謎解きに進みますか？",
           stages: []
         },
         {
@@ -1082,4 +1085,30 @@ export const saveObtainedKeyword = (departmentId: string, keywordId: number, key
 
 export const clearObtainedKeywords = (departmentId: string): void => {
   localStorage.removeItem(`keywords_${departmentId}`);
+};
+
+// キーワードルート進行状況の管理（途中保存）
+export const saveKeywordStageProgress = (
+  departmentId: string,
+  routeId: number,
+  stageId: number
+): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(`keywordProgress_${departmentId}_${routeId}`, String(stageId));
+};
+
+export const loadKeywordStageProgress = (
+  departmentId: string,
+  routeId: number
+): number | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem(`keywordProgress_${departmentId}_${routeId}`);
+  return saved ? parseInt(saved) : null;
+};
+
+export const clearKeywordStageProgress = (
+  departmentId: string,
+  routeId: number
+): void => {
+  localStorage.removeItem(`keywordProgress_${departmentId}_${routeId}`);
 };

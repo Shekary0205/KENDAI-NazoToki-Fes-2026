@@ -13,11 +13,14 @@ import {
   Home,
   Key,
   Trophy,
+  Save,
 } from "lucide-react";
 import {
   getDepartmentById,
   normalizeAnswer,
   saveObtainedKeyword,
+  saveKeywordStageProgress,
+  clearKeywordStageProgress,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
@@ -52,7 +55,11 @@ export default function KeywordRouteStage() {
     setFeedback(null);
     setShowNext(false);
     setKeywordObtained(false);
-  }, [currentStageId]);
+    // このステージに到達したことを自動保存
+    if (departmentId && routeId) {
+      saveKeywordStageProgress(departmentId, parseInt(routeId), currentStageId);
+    }
+  }, [currentStageId, departmentId, routeId]);
 
   if (!department || !keyword) {
     return (
@@ -136,12 +143,21 @@ export default function KeywordRouteStage() {
   const handleNext = () => {
     const isLastStage = currentStageId >= (keyword.stages?.length ?? 0);
     if (isLastStage) {
-      // 最後のステージ → キーワード入手 → ハブに戻る
+      // 最後のステージ → キーワード入手 → 進行状況クリア → ハブに戻る
       saveObtainedKeyword(departmentId!, keyword.id, keyword.correctKeyword);
+      clearKeywordStageProgress(departmentId!, keyword.id);
       setKeywordObtained(true);
     } else {
       navigate(`/department/${departmentId}/keyword/${routeId}/stage/${currentStageId + 1}`);
     }
+  };
+
+  const handleSaveAndExit = () => {
+    // 現在のステージを保存してハブに戻る
+    if (departmentId && routeId) {
+      saveKeywordStageProgress(departmentId, parseInt(routeId), currentStageId);
+    }
+    navigate(`/department/${departmentId}/keyword-hub`);
   };
 
   const progressPercentage = ((currentStageId / (keyword.stages?.length ?? 1)) * 100);
@@ -266,6 +282,16 @@ export default function KeywordRouteStage() {
                     回答する
                   </Button>
                 </form>
+
+                {/* 途中保存ボタン */}
+                <Button
+                  variant="outline"
+                  onClick={handleSaveAndExit}
+                  className="w-full h-11 border-2 border-orange-400 text-orange-700 hover:bg-orange-50"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  途中保存してキーワード選択画面に戻る
+                </Button>
               </>
             )}
 

@@ -10,6 +10,8 @@ import {
   getObtainedKeywords,
   normalizeAnswer,
   markDepartmentAsCleared,
+  loadKeywordStageProgress,
+  type KeywordRoute,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
@@ -24,6 +26,7 @@ export default function KeywordHub() {
   const [inputs, setInputs] = useState<Record<number, string>>({});
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [cleared, setCleared] = useState(false);
+  const [confirmRoute, setConfirmRoute] = useState<KeywordRoute | null>(null);
 
   useEffect(() => {
     switchTrack("field");
@@ -51,12 +54,24 @@ export default function KeywordHub() {
 
   const { keywords } = department.keywordMode;
 
-  const handleRouteClick = (routeId: number, routeType: "stages" | "minigame") => {
-    if (routeType === "minigame") {
-      navigate(`/department/${departmentId}/keyword/${routeId}/minigame`);
+  const handleRouteClick = (route: KeywordRoute) => {
+    if (route.confirmMessage) {
+      setConfirmRoute(route);
     } else {
-      navigate(`/department/${departmentId}/keyword/${routeId}/stage/1`);
+      proceedToRoute(route);
     }
+  };
+
+  const proceedToRoute = (route: KeywordRoute) => {
+    setConfirmRoute(null);
+    if (route.routeType === "minigame") {
+      navigate(`/department/${departmentId}/keyword/${route.id}/minigame`);
+      return;
+    }
+    // 途中保存があればそのステージから再開
+    const savedStage = loadKeywordStageProgress(departmentId!, route.id);
+    const startStage = savedStage ?? 1;
+    navigate(`/department/${departmentId}/keyword/${route.id}/stage/${startStage}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -134,10 +149,11 @@ export default function KeywordHub() {
             <div className="space-y-3">
               {keywords.map(kw => {
                 const isObtained = !!obtainedKeywords[kw.id];
+                const savedStage = loadKeywordStageProgress(departmentId!, kw.id);
                 return (
                   <Button
                     key={kw.id}
-                    onClick={() => handleRouteClick(kw.id, kw.routeType)}
+                    onClick={() => handleRouteClick(kw)}
                     variant="outline"
                     className={`w-full h-auto py-4 justify-start text-left ${
                       isObtained ? "bg-green-50 border-green-400" : ""
@@ -160,6 +176,11 @@ export default function KeywordHub() {
                           キーワード{kw.id}: {kw.label}
                         </div>
                         <div className="text-sm text-gray-600">{kw.description}</div>
+                        {!isObtained && savedStage && (
+                          <div className="text-xs text-orange-600 font-semibold mt-1">
+                            📌 途中保存あり（問{savedStage}から再開）
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Button>
@@ -218,6 +239,44 @@ export default function KeywordHub() {
           各ルートを探索してキーワードを手に入れよう！
         </p>
       </div>
+
+      {/* 確認ダイアログ */}
+      {confirmRoute && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <Card className="max-w-sm w-full shadow-2xl">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                キーワード{confirmRoute.id}: {confirmRoute.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-800 mb-4 whitespace-pre-line">
+                {confirmRoute.confirmMessage}
+              </p>
+              {loadKeywordStageProgress(departmentId!, confirmRoute.id) && (
+                <p className="text-sm text-orange-600 font-semibold mb-4">
+                  📌 途中保存あり: 問{loadKeywordStageProgress(departmentId!, confirmRoute.id)}から再開します
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setConfirmRoute(null)}
+                >
+                  いいえ
+                </Button>
+                <Button
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-700"
+                  onClick={() => proceedToRoute(confirmRoute)}
+                >
+                  はい
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
