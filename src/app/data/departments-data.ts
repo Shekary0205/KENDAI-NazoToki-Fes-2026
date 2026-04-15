@@ -1376,7 +1376,8 @@ export const departments: DepartmentData[] = [
                 title: "アクシデント発生！",
                 message: "ポスターが剥がれかけている！\nこのままだと飛ばされそうだ。\nアイテムを使ってなんとかしよう。",
                 requiredItemId: "gabyou",
-                successMessage: "画鋲でポスターをしっかり留めた！"
+                successMessage: "画鋲でポスターをしっかり留めた！",
+                image: "/images/kami.jpeg"
               },
               nextLocationHint: "左の扉を出て屋上スペースへ"
             },
