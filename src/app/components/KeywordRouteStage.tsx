@@ -289,30 +289,31 @@ export default function KeywordRouteStage() {
     );
   }
 
-  // アクシデント演出（フラッシュ・シェイク）
+  // アクシデント演出（控えめなフェード＋シェイク）
   if (phase === "accidentIntro") {
     return (
-      <div className="min-h-screen bg-red-600 flex items-center justify-center p-4 animate-accidentFlash">
+      <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-700 to-red-800 flex items-center justify-center p-4 animate-accidentFadeIn">
         <div className="text-center space-y-6 animate-accidentShake">
-          <AlertTriangle className="w-32 h-32 text-yellow-300 mx-auto animate-pulse" />
+          <AlertTriangle className="w-32 h-32 text-yellow-300 mx-auto" />
           <h1 className="text-6xl md:text-7xl font-black text-white drop-shadow-2xl tracking-widest">
             ⚠️ アクシデント！
           </h1>
         </div>
         <style>{`
-          @keyframes accidentFlash {
-            0%, 100% { background-color: rgb(220 38 38); }
-            25% { background-color: rgb(250 204 21); }
-            50% { background-color: rgb(220 38 38); }
-            75% { background-color: rgb(254 240 138); }
+          @keyframes accidentFadeIn {
+            0% { opacity: 0; }
+            30% { opacity: 1; }
+            100% { opacity: 1; }
           }
           @keyframes accidentShake {
-            0%, 100% { transform: translateX(0) scale(1); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-15px) scale(1.02); }
-            20%, 40%, 60%, 80% { transform: translateX(15px) scale(1.02); }
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
           }
-          .animate-accidentFlash { animation: accidentFlash 0.4s ease-in-out infinite; }
-          .animate-accidentShake { animation: accidentShake 0.5s ease-in-out infinite; }
+          .animate-accidentFadeIn { animation: accidentFadeIn 0.6s ease-out forwards; }
+          .animate-accidentShake { animation: accidentShake 0.8s ease-in-out; }
         `}</style>
       </div>
     );
