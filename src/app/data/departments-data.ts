@@ -867,7 +867,6 @@ export const departments: DepartmentData[] = [
           description: "8号館を探索してキーワードを手に入れよう",
           correctKeyword: "placeholder1",
           routeType: "stages",
-          confirmMessage: "１つ目のキーワードは8号館にあり。8号館の謎解きに進みますか？",
           stages: []
         },
         {
