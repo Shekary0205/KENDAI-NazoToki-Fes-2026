@@ -129,6 +129,29 @@ export interface KeywordModeConfig {
   completionMessage?: string;
 }
 
+/** 最終戦闘の設定（キーワード全回収後のラスボス戦用） */
+export interface FinalBattleData {
+  enemyName: string;
+  enemyImage?: string;
+  enemyImageOffsetY?: string;
+  enemyMaxHp: number;
+  playerMaxHp: number;
+  damageToEnemy: number;
+  damageToPlayer: number;
+  /** 勝利に必要な正解数 */
+  requiredCorrectCount: number;
+  /** メインで出題する問題プール */
+  questions: MidBattleQuestion[];
+  /** 敗北時に復活するために必要なアイテムID（所持していれば何度でも使える） */
+  reviveItemId?: string;
+  /** 敵HPが0になった時にトドメを刺すのに必要なアイテムID */
+  finishingItemId?: string;
+  /** 戦闘BGMトラック */
+  battleBgm?: string;
+  /** 勝利後の案内メッセージ */
+  victoryMessage?: string;
+}
+
 export interface DepartmentData {
   id: string;
   name: string;
@@ -141,6 +164,8 @@ export interface DepartmentData {
   unlockPassword?: string;
   /** キーワード収集方式の設定 */
   keywordMode?: KeywordModeConfig;
+  /** キーワード収集方式での最終戦闘 */
+  finalBattle?: FinalBattleData;
 }
 
 export const departments: DepartmentData[] = [
@@ -1524,11 +1549,119 @@ export const departments: DepartmentData[] = [
           id: 3,
           label: "ミニゲームに挑戦",
           description: "ミニゲームをクリアしてキーワードを手に入れよう",
-          correctKeyword: "placeholder3",
+          correctKeyword: "単語帳",
           routeType: "minigame"
         }
       ],
       completionMessage: "全てのキーワードを入手！最終試練に挑め！"
+    },
+    finalBattle: {
+      enemyName: "第1種ワールド教諭",
+      enemyMaxHp: 150,
+      playerMaxHp: 100,
+      damageToEnemy: 10,
+      damageToPlayer: 20,
+      requiredCorrectCount: 15,
+      reviveItemId: "kyoushi-no-kokoro",
+      finishingItemId: "kyouben",
+      battleBgm: "finalBattle",
+      victoryMessage: "最終試練を突破した！",
+      questions: [
+        {
+          question: "子ども教育学科2026年度新入生は何人？",
+          options: ["102名", "85名", "120名", "95名"],
+          correctIndex: 0,
+          explanation: "子ども教育学科2026年度の新入生は102名です。"
+        },
+        {
+          question: "2025年12月21日(日)に開催された本学科主催のクリスマスイベントの名称は？",
+          options: [
+            "健大クリスマス・イルミネーション・コンサート2025",
+            "健大クリスマスナイト2025",
+            "子ども教育学科クリスマスフェス",
+            "健大ホリデーコンサート2025"
+          ],
+          correctIndex: 0,
+          explanation: "2025年12月21日(日)に開催された本学科主催のクリスマスイベントは「健大クリスマス・イルミネーション・コンサート2025」です。"
+        },
+        {
+          question: "子ども達の体験できるクリスマスリース作りと、学生達によるブラックライトシアター、絵本の読み聞かせ、クリスマスソングの合唱が行われた本学科のイベント名は？",
+          options: [
+            "健大子どものウィンターフェスティバル",
+            "健大キッズクリスマスパーティー",
+            "子ども教育学科冬まつり",
+            "クリスマス子どもフェスタ"
+          ],
+          correctIndex: 0,
+          explanation: "「健大子どものウィンターフェスティバル」では、子ども達のクリスマスリース作り、学生達によるブラックライトシアター、絵本の読み聞かせ、クリスマスソング合唱などが行われました。"
+        },
+        {
+          question: "藤龍祭「遊びの広場」にて科学のおもしろさを子どもが体験したブースの名前は？",
+          options: ["おもしろ理科実験室", "科学探検ブース", "サイエンス広場", "理科ひろば"],
+          correctIndex: 0,
+          explanation: "「おもしろ理科実験室」は、藤龍祭「遊びの広場」にて科学のおもしろさを子ども達が体験できるブースとして出展されました。"
+        },
+        {
+          question: "本学科の学生が訪問するドイツ研修の提携大学は？",
+          options: ["ランダウ大学", "ハイデルベルク大学", "ベルリン自由大学", "ミュンヘン大学"],
+          correctIndex: 0,
+          explanation: "ランダウ大学は本学科のドイツ研修の提携大学です。"
+        },
+        {
+          question: "子ども教育学科の教員が研究者としてアカデミックな専門性を高校生に紹介することで、高等教育機関への導入教育を行うことを目的として実施されるイベントは？",
+          options: ["健大PP", "健大スクールビジット", "健大オープンレクチャー", "健大プレカレッジ"],
+          correctIndex: 0,
+          explanation: "「健大PP」は、子ども教育学科の教員が研究者としてのアカデミックな専門性を高校生に紹介し、高等教育機関への導入教育を行うことを目的としたイベントです。"
+        },
+        {
+          question: "入学式にて学歌「夢のはじまり」を披露した有志たちは何学科？",
+          options: ["子ども教育学科", "社会福祉学科", "心理学科", "健康栄養学科"],
+          correctIndex: 0,
+          explanation: "入学式にて学歌「夢のはじまり」を披露した有志たちは子ども教育学科の学生です。"
+        },
+        {
+          question: "子どもの豊かな感性や表現する力を養い、創造性を育むために、具体的な指導場面を想定して実践的に学ぶ学問は？",
+          options: ["保育内容表現", "幼児表現論", "子ども造形論", "保育表現演習"],
+          correctIndex: 0,
+          explanation: "「保育内容表現」は、子どもの豊かな感性や表現する力を養い、創造性を育むために、具体的な指導場面を想定して実践的に学ぶ学問です。"
+        },
+        {
+          question: "子ども教育学科卒業後に取得できる任用資格をすべて選べ",
+          options: [
+            "社会福祉主事任用資格",
+            "児童福祉司任用資格",
+            "精神保健福祉士",
+            "介護福祉士任用資格"
+          ],
+          type: "checkbox",
+          correctIndices: [0, 1],
+          explanation: "子ども教育学科卒業後には「社会福祉主事任用資格」と「児童福祉司任用資格」の2つの任用資格を取得できます。"
+        },
+        {
+          question: "保育教育コースの学生が一年生で経験する教育基礎実習は？",
+          options: ["幼稚園", "保育所", "小学校", "認定こども園"],
+          correctIndex: 0,
+          explanation: "保育教育コースの学生は一年生で幼稚園での教育基礎実習を経験します。"
+        },
+        {
+          question: "教員養成コースの学生が一年生で経験する教育基礎実習は？",
+          options: ["小学校・特別支援学校", "中学校・高等学校", "幼稚園・保育所", "小学校のみ"],
+          correctIndex: 0,
+          explanation: "教員養成コースの学生は一年生で小学校・特別支援学校での教育基礎実習を経験します。"
+        },
+        {
+          question: "保育教育コースの学生が二年生で経験する教育基礎実習は？",
+          options: ["保育実習（保育所）", "幼稚園実習", "施設実習", "小学校実習"],
+          correctIndex: 0,
+          explanation: "保育教育コースの学生は二年生で保育実習（保育所）を経験します。"
+        },
+        {
+          question: "幼稚園教諭1種免許は短大や専門学校でも取得可能？",
+          options: ["不可能", "可能", "短大のみ可能", "専門学校のみ可能"],
+          correctIndex: 0,
+          explanation: "幼稚園教諭1種免許は4年制大学の課程でのみ取得可能であり、短大や専門学校では取得できません。"
+        }
+      ]
     }
   },
   {
@@ -1604,6 +1737,23 @@ export const getDepartmentById = (id: string): DepartmentData | undefined => {
 };
 
 export const getTotalDepartments = () => departments.length;
+
+/** 学部内のすべての戦闘問題（midBattles + keywordMode.battles）を集めて返す。
+ *  最終戦闘のフォールバック問題プールとして使用する。 */
+export const getFallbackBattleQuestions = (departmentId: string): MidBattleQuestion[] => {
+  const dept = getDepartmentById(departmentId);
+  if (!dept) return [];
+  const questions: MidBattleQuestion[] = [];
+  dept.midBattles?.forEach(b => {
+    b.questions.forEach(q => questions.push(q));
+  });
+  dept.keywordMode?.keywords.forEach(kw => {
+    kw.battles?.forEach(b => {
+      b.questions.forEach(q => questions.push(q));
+    });
+  });
+  return questions;
+};
 
 // 答えを正規化する関数
 export const normalizeAnswer = (answer: string): string => {

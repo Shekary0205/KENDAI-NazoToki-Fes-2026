@@ -91,10 +91,16 @@ export default function KeywordHub() {
     if (allCorrect) {
       setFeedback("correct");
       fireCorrectEffect();
-      markDepartmentAsCleared(departmentId!);
       setCleared(true);
+      // 最終戦闘があれば戦闘へ、なければ完了画面へ
+      const hasFinalBattle = !!department.finalBattle;
       setTimeout(() => {
-        navigate(`/department/${departmentId}/complete`);
+        if (hasFinalBattle) {
+          navigate(`/department/${departmentId}/final-battle`);
+        } else {
+          markDepartmentAsCleared(departmentId!);
+          navigate(`/department/${departmentId}/complete`);
+        }
       }, 2000);
     } else {
       setFeedback("incorrect");
