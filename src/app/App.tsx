@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import Opening from "./components/Opening";
@@ -6,10 +6,23 @@ import { BgmProvider } from "./context/BgmContext";
 import InAppBrowserGuard from "./components/InAppBrowserGuard";
 import AccountSetup from "./components/AccountSetup";
 import { loadUserAccount } from "./data/departments-data";
+import { registerAccountToServer } from "./utils/supabase";
 
 export default function App() {
   const [hasAccount, setHasAccount] = useState(() => !!loadUserAccount());
   const [showOpening, setShowOpening] = useState(true);
+
+  // 既存ユーザーをサーバーに同期（1セッション1回）
+  useEffect(() => {
+    if (!hasAccount) return;
+    if (sessionStorage.getItem("accountSyncedThisSession") === "true") return;
+    const account = loadUserAccount();
+    if (account) {
+      registerAccountToServer(account.studentId, account.name).then(() => {
+        sessionStorage.setItem("accountSyncedThisSession", "true");
+      });
+    }
+  }, [hasAccount]);
 
   if (!hasAccount) {
     return (

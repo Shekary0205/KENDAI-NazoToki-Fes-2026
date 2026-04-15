@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { saveUserAccount } from "../data/departments-data";
+import { registerAccountToServer } from "../utils/supabase";
 
 interface AccountSetupProps {
   onComplete: () => void;
@@ -11,11 +12,17 @@ interface AccountSetupProps {
 export default function AccountSetup({ onComplete }: AccountSetupProps) {
   const [studentId, setStudentId] = useState("");
   const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentId.trim() || !name.trim()) return;
-    saveUserAccount(studentId.trim(), name.trim());
+    if (!studentId.trim() || !name.trim() || submitting) return;
+    setSubmitting(true);
+    const sid = studentId.trim();
+    const nm = name.trim();
+    // サーバーに送信（失敗してもローカル登録は進める）
+    await registerAccountToServer(sid, nm);
+    saveUserAccount(sid, nm);
     onComplete();
   };
 
@@ -67,17 +74,17 @@ export default function AccountSetup({ onComplete }: AccountSetupProps) {
 
               <Button
                 type="submit"
-                disabled={!studentId.trim() || !name.trim()}
+                disabled={!studentId.trim() || !name.trim() || submitting}
                 className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
               >
-                はじめる
+                {submitting ? "登録中..." : "はじめる"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-gray-400">
-          入力された情報はこの端末内にのみ保存されます
+          入力された情報はイベント参加者集計のために使用されます
         </p>
       </div>
     </div>
