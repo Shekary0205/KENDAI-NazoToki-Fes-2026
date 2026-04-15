@@ -18,6 +18,10 @@ export interface AccidentData {
   showTutorial?: boolean;
   /** アイテム使用後の成功メッセージ */
   successMessage?: string;
+  /** アクシデント解決後に入手するアイテム */
+  rewardItem?: ItemData;
+  /** アクシデント解決後のアイテム入手時メッセージ */
+  rewardMessage?: string;
 }
 
 export interface StageData {
@@ -43,6 +47,10 @@ export interface StageData {
   multiAnswers?: string[][];
   /** multi-input 形式: 各入力ボックスのラベル */
   inputLabels?: string[];
+  /** multi-input 順不同モード: このボックス数だけ表示し、どの入力も multiAnswers のいずれかと一致すればOK */
+  unorderedAnswerCount?: number;
+  /** テキスト入力の代替正解（正規化した結果がこのいずれかに一致すればOK） */
+  alternateAnswers?: string[];
   /** 正解後の解説 */
   explanation?: string;
   /** 次の目的地の補足説明（タイトルと本文） */
@@ -1279,7 +1287,7 @@ export const departments: DepartmentData[] = [
               type: "checkbox",
               options: [
                 "国際交流センター",
-                "ボランティアサポートセンター",
+                "VSC",
                 "キャリアサポートセンター",
                 "教職支援センター",
                 "学生ホール",
@@ -1288,6 +1296,90 @@ export const departments: DepartmentData[] = [
               ],
               correctIndices: [0, 1, 2, 3, 4],
               nextLocationHint: "9号館へようこそ。次の問題へ進め"
+            },
+            {
+              id: 2,
+              location: "9号館1階",
+              riddle: "国際交流センターにて毎週金曜日に開催されている海外学生との交流イベントの名前は？",
+              hint: "",
+              answer: "Global Cafe",
+              alternateAnswers: ["Global cafe", "global cafe", "GLOBAL CAFE", "グローバルカフェ"],
+              nextLocationHint: "次の問題へ進め"
+            },
+            {
+              id: 3,
+              location: "9号館1階",
+              riddle: "VSCはなんの略？",
+              hint: "",
+              answer: "ボランティアサポートセンター",
+              nextLocationHint: "次の問題へ進め"
+            },
+            {
+              id: 4,
+              location: "9号館1階",
+              riddle: "キャリアサポートセンターで受け付けているものの例を２つ答えろ",
+              hint: "",
+              answer: "",
+              type: "multi-input",
+              unorderedAnswerCount: 2,
+              multiAnswers: [
+                ["名刺作成"],
+                ["模擬面接"],
+                ["受験報告書"],
+                ["オンラインブース履歴書添削"]
+              ],
+              inputLabels: ["1つ目の答え", "2つ目の答え"],
+              itemReward: {
+                id: "rirekisho",
+                name: "履歴書",
+                icon: "📄",
+                description: "就職活動に欠かせない書類"
+              },
+              nextLocationHint: "おめでとう。2階へ進もう。"
+            },
+            {
+              id: 5,
+              location: "9号館2階",
+              riddle: "張り紙の謎を解け。",
+              hint: "",
+              answer: "教職支援",
+              accident: {
+                title: "アクシデント発生！",
+                message: "強そうな面接官が現れた！\nアイテムを使って撃退しよう。",
+                requiredItemId: "rirekisho",
+                showTutorial: true,
+                successMessage: "履歴書を差し出したら面接官は去っていった！",
+                rewardItem: {
+                  id: "shoukaki",
+                  name: "消火器",
+                  icon: "🧯",
+                  description: "火災を食い止めるアイテム"
+                },
+                rewardMessage: "面接官が何かを落としていった、、"
+              },
+              nextLocationHint: "なんとかなった、、3階へ進もう。"
+            },
+            {
+              id: 6,
+              location: "9号館3階",
+              riddle: "この階層の掲示板には何枚の掲示物がはられている？",
+              hint: "",
+              answer: "9",
+              accident: {
+                title: "アクシデント発生！",
+                message: "ポスターが剥がれかけている！\nこのままだと飛ばされそうだ。\nアイテムを使ってなんとかしよう。",
+                requiredItemId: "gabyou",
+                successMessage: "画鋲でポスターをしっかり留めた！"
+              },
+              nextLocationHint: "左の扉を出て屋上スペースへ"
+            },
+            {
+              id: 7,
+              location: "9号館屋上",
+              riddle: "レンガ裏に一輪だけ咲く赤い花は何の花？",
+              hint: "",
+              answer: "チューリップ",
+              nextLocationHint: "戦闘の予感..."
             }
           ]
         },

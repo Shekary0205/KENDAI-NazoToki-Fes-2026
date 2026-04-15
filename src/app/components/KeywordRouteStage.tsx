@@ -48,6 +48,7 @@ type Phase =
   | "itemTutorial"
   | "itemSelect"
   | "accidentResolved"
+  | "accidentReward"
   | "nextLocation"
   | "keywordObtained";
 
@@ -82,7 +83,8 @@ export default function KeywordRouteStage() {
 
   useEffect(() => {
     setUserAnswer("");
-    setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
+    const inputCount = stage?.unorderedAnswerCount ?? stage?.multiAnswers?.length ?? 0;
+    setMultiInputs(Array(inputCount).fill(""));
     setShowHint(false);
     setFeedback(null);
     setCheckedOptions(new Set());
@@ -194,8 +196,11 @@ export default function KeywordRouteStage() {
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const normalizedUser = normalizeAnswer(userAnswer);
-    const normalizedCorrect = normalizeAnswer(stage.answer);
-    if (normalizedUser === normalizedCorrect) {
+    const acceptableAnswers = [stage.answer, ...(stage.alternateAnswers || [])];
+    const isCorrect = acceptableAnswers.some(
+      a => normalizeAnswer(a) === normalizedUser
+    );
+    if (isCorrect) {
       setFeedback("correct");
       fireCorrectEffect();
       proceedAfterCorrect();
@@ -208,11 +213,41 @@ export default function KeywordRouteStage() {
   const handleMultiInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!stage.multiAnswers) return;
-    const allCorrect = stage.multiAnswers.every((acceptable, i) => {
-      const userVal = normalizeAnswer(multiInputs[i] || "");
-      return acceptable.some(a => normalizeAnswer(a) === userVal);
-    });
-    if (allCorrect) {
+
+    let isCorrect = false;
+    if (stage.unorderedAnswerCount) {
+      // 順不同モード: 各入力ボックスが multiAnswers のいずれかに一致し、
+      // かつ異なる正解であることを確認
+      const count = stage.unorderedAnswerCount;
+      const matchedIndices: Set<number> = new Set();
+      let allMatched = true;
+      for (let i = 0; i < count; i++) {
+        const userVal = normalizeAnswer(multiInputs[i] || "");
+        if (!userVal) {
+          allMatched = false;
+          break;
+        }
+        const matchIndex = stage.multiAnswers.findIndex(
+          (acceptable, idx) =>
+            !matchedIndices.has(idx) &&
+            acceptable.some(a => normalizeAnswer(a) === userVal)
+        );
+        if (matchIndex === -1) {
+          allMatched = false;
+          break;
+        }
+        matchedIndices.add(matchIndex);
+      }
+      isCorrect = allMatched;
+    } else {
+      // 順序モード: 各入力ボックスが対応するインデックスの答えに一致
+      isCorrect = stage.multiAnswers.every((acceptable, i) => {
+        const userVal = normalizeAnswer(multiInputs[i] || "");
+        return acceptable.some(a => normalizeAnswer(a) === userVal);
+      });
+    }
+
+    if (isCorrect) {
       setFeedback("correct");
       fireCorrectEffect();
       proceedAfterCorrect();
@@ -488,36 +523,43 @@ export default function KeywordRouteStage() {
               )}
 
               {/* 複数入力ボックス */}
-              {stage.type === "multi-input" && stage.multiAnswers && (
-                <form onSubmit={handleMultiInputSubmit} className="space-y-4">
-                  {stage.multiAnswers.map((_, index) => (
-                    <div key={index}>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        {stage.inputLabels?.[index] || `答え ${index + 1}`}
-                      </label>
-                      <Input
-                        type="text"
-                        value={multiInputs[index] || ""}
-                        onChange={(e) => {
-                          const next = [...multiInputs];
-                          next[index] = e.target.value;
-                          setMultiInputs(next);
-                        }}
-                        placeholder="答えを入力..."
-                        className="text-lg h-12"
-                        autoFocus={index === 0}
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-lg bg-yellow-600 hover:bg-yellow-700"
-                    disabled={multiInputs.some(v => !v.trim())}
-                  >
-                    回答する
-                  </Button>
-                </form>
-              )}
+              {stage.type === "multi-input" && stage.multiAnswers && (() => {
+                const inputCount = stage.unorderedAnswerCount ?? stage.multiAnswers.length;
+                const activeInputs = multiInputs.slice(0, inputCount);
+                const allFilled =
+                  activeInputs.length === inputCount &&
+                  activeInputs.every(v => v && v.trim());
+                return (
+                  <form onSubmit={handleMultiInputSubmit} className="space-y-4">
+                    {Array.from({ length: inputCount }).map((_, index) => (
+                      <div key={index}>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          {stage.inputLabels?.[index] || `答え ${index + 1}`}
+                        </label>
+                        <Input
+                          type="text"
+                          value={multiInputs[index] || ""}
+                          onChange={(e) => {
+                            const next = [...multiInputs];
+                            next[index] = e.target.value;
+                            setMultiInputs(next);
+                          }}
+                          placeholder="答えを入力..."
+                          className="text-lg h-12"
+                          autoFocus={index === 0}
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="submit"
+                      className="w-full h-12 text-lg bg-yellow-600 hover:bg-yellow-700"
+                      disabled={!allFilled}
+                    >
+                      回答する
+                    </Button>
+                  </form>
+                );
+              })()}
 
               {/* チェックリスト形式 */}
               {stage.type === "checkbox" && stage.options && (
@@ -685,8 +727,54 @@ export default function KeywordRouteStage() {
                 </p>
               </div>
               <Button
-                onClick={() => setPhase("nextLocation")}
+                onClick={() => {
+                  // アクシデント報酬があればそれを表示、なければ次の目的地へ
+                  if (stage.accident?.rewardItem) {
+                    addItem(stage.accident.rewardItem);
+                    setInventory(getObtainedItems());
+                    setPhase("accidentReward");
+                  } else {
+                    setPhase("nextLocation");
+                  }
+                }}
                 className="w-full h-12 text-lg bg-green-600 hover:bg-green-700"
+              >
+                続ける
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* アクシデント報酬画面 */}
+        {phase === "accidentReward" && stage.accident?.rewardItem && (
+          <Card className="shadow-2xl border-4 border-purple-400">
+            <CardContent className="space-y-6 pt-8 text-center">
+              <div className="flex justify-center">
+                <div className="bg-purple-500 rounded-full p-6 shadow-xl animate-bounce">
+                  <Sparkles className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              {stage.accident.rewardMessage && (
+                <p className="text-lg text-gray-700 font-semibold whitespace-pre-line">
+                  {stage.accident.rewardMessage}
+                </p>
+              )}
+              <h2 className="text-2xl font-bold text-purple-900">アイテム入手！</h2>
+              <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-300">
+                <div className="text-7xl mb-3">{stage.accident.rewardItem.icon}</div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stage.accident.rewardItem.name}
+                </p>
+                {stage.accident.rewardItem.description && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    {stage.accident.rewardItem.description}
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={() => setPhase("nextLocation")}
+                className="w-full h-12 text-lg bg-purple-600 hover:bg-purple-700"
               >
                 続ける
                 <ArrowRight className="w-5 h-5 ml-2" />
