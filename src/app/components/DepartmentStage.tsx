@@ -291,6 +291,15 @@ export default function DepartmentStage() {
                   <p className="text-lg whitespace-pre-line text-gray-800 leading-relaxed">
                     {stage.riddle}
                   </p>
+                  {stage.riddleImage && (
+                    <div className="mt-4 flex justify-center">
+                      <img
+                        src={stage.riddleImage}
+                        alt="謎の画像"
+                        className="max-w-full h-auto rounded-lg shadow-md border-2 border-amber-300"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* ヒント */}

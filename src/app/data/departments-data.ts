@@ -64,6 +64,8 @@ export interface StageData {
   bgm?: string;
   /** ヒントに付与するリンクURL */
   hintUrl?: string;
+  /** 謎文の下に表示する画像パス */
+  riddleImage?: string;
 }
 
 export interface MidBattleQuestion {
@@ -983,6 +985,7 @@ export const departments: DepartmentData[] = [
               id: 7,
               location: "8号館3階",
               riddle: "「中学校」青を入れ替えて読め。",
+              riddleImage: "/images/kodomo-channel-grid.png",
               hint: "",
               answer: "こどもチャンネル",
               itemReward: {
@@ -996,9 +999,9 @@ export const departments: DepartmentData[] = [
             {
               id: 8,
               location: "8号館4階",
-              riddle: "張り紙の謎を解け。",
+              riddle: "黙ってじっくりと物事を考え込むことを何という？",
               hint: "",
-              answer: "LHR",
+              answer: "沈思黙考",
               accident: {
                 title: "アクシデント発生！",
                 message: "火災が発生した。\nアイテムを使って食い止めろ！\n必要なアイテムを持たない場合、別のキーワードを探索してみよう。",
