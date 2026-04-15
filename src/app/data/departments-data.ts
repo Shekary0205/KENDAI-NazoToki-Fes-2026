@@ -982,9 +982,9 @@ export const departments: DepartmentData[] = [
             {
               id: 7,
               location: "8号館3階",
-              riddle: "掲示板の謎を解け",
+              riddle: "「中学校」青を入れ替えて読め。",
               hint: "",
-              answer: "健大子どもチャンネル",
+              answer: "こどもチャンネル",
               itemReward: {
                 id: "gabyou",
                 name: "画鋲",
