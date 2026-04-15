@@ -544,6 +544,16 @@ export default function KeywordRouteStage() {
                 <Package className="w-5 h-5 mr-2" />
                 アイテムを使う
               </Button>
+
+              {/* 途中保存ボタン */}
+              <Button
+                variant="outline"
+                onClick={handleSaveAndExit}
+                className="w-full h-11 border-2 border-orange-400 text-orange-700 hover:bg-orange-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                途中保存してキーワード選択画面に戻る
+              </Button>
             </CardContent>
           </Card>
         )}
