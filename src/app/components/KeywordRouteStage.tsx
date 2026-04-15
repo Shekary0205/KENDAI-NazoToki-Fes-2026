@@ -38,7 +38,7 @@ import {
   type ItemData,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
-import { fireCorrectEffect } from "../utils/confetti";
+import { fireCorrectEffect, fireAccidentClearEffect } from "../utils/confetti";
 
 type Phase =
   | "question"
@@ -325,6 +325,7 @@ export default function KeywordRouteStage() {
         clearKeywordStagePhase(departmentId, parseInt(routeId));
       }
       setPhase("accidentResolved");
+      fireAccidentClearEffect();
     } else {
       setItemUseError("そのアイテムではこのアクシデントは解決できない...");
       setTimeout(() => setItemUseError(null), 2500);
