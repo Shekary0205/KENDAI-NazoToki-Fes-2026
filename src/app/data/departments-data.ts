@@ -1274,7 +1274,7 @@ export const departments: DepartmentData[] = [
           id: 2,
           label: "9号館を探索",
           description: "9号館を探索してキーワードを手に入れよう",
-          correctKeyword: "placeholder2",
+          correctKeyword: "生徒手帳",
           routeType: "stages",
           confirmMessage: "エントランスから左へ進み、ドアを出て隣の号館へ移動しろ。",
           stages: [
@@ -1380,6 +1380,34 @@ export const departments: DepartmentData[] = [
               hint: "",
               answer: "チューリップ",
               nextLocationHint: "戦闘の予感..."
+            },
+            {
+              id: 8,
+              location: "9号館屋上",
+              riddle: "本学でベルマーク運動を行っている学生団体の名称は？",
+              hint: "",
+              answer: "べるふぁみ",
+              accident: {
+                title: "アクシデント発生！",
+                message: "ベルマークを回収ボックスに投入しよう！\nベルマーク１点は一円に換算することができるぞ！",
+                requiredItemId: "bellmark",
+                successMessage: "ベルマークを回収ボックスに投入した！"
+              },
+              nextLocationHint: "次の問題に答えよう。"
+            },
+            {
+              id: 9,
+              location: "9号館屋上",
+              riddle: "藤龍祭にて、子ども教育学科有志が出展する遊びのブースの名称を答えろ",
+              hint: "",
+              answer: "遊びの広場",
+              itemReward: {
+                id: "kyoushi-no-kokoro",
+                name: "教師の心",
+                icon: "❤️",
+                description: "教師としての情熱"
+              },
+              nextLocationHint: ""
             }
           ],
           battles: [
@@ -1394,6 +1422,7 @@ export const departments: DepartmentData[] = [
               damageToPlayer: 20,
               randomOrder: true,
               battleBgm: "trainerBattle",
+              nextLocationHint: "おめでとう。次の問題へ進め。",
               questions: [
                 {
                   question: "専門の職員が常駐し、教職課程の履修、実習支援、就職活動をトータルでサポートするセンターの名前は？",
