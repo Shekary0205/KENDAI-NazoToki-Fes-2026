@@ -1355,6 +1355,7 @@ export const departments: DepartmentData[] = [
                 requiredItemId: "rirekisho",
                 showTutorial: true,
                 successMessage: "履歴書を差し出したら面接官は去っていった！",
+                image: "/images/mensetu.jpg",
                 rewardItem: {
                   id: "shoukaki",
                   name: "消火器",
