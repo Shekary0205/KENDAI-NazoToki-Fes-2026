@@ -134,8 +134,8 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
-      // 農学部: アイテム入手タイミングで満腹度回復
-      if (isCrop && departmentId) {
+      // 農学部: recoversFullness フラグがあるステージのみ満腹度回復
+      if (isCrop && departmentId && stage.recoversFullness) {
         const latestCrop = getCropState(departmentId);
         if (latestCrop.seeded) {
           const updated = digestCrop(departmentId);
@@ -294,7 +294,7 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
-      if (isCrop && departmentId) {
+      if (isCrop && departmentId && stage.recoversFullness) {
         const latestCrop = getCropState(departmentId);
         if (latestCrop.seeded) {
           const updated = digestCrop(departmentId);
@@ -352,7 +352,7 @@ export default function DepartmentStage() {
   const colorClasses = getColorClasses(department.color);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4 py-8">
+    <div key={`${departmentId}-${stageId}`} className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">

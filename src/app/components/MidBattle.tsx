@@ -19,7 +19,7 @@ import {
   ArrowRight,
   MapPin
 } from "lucide-react";
-import { getDepartmentById, addItem, type MidBattleQuestion } from "../data/departments-data";
+import { getDepartmentById, addItem, isCropDepartment, getCropState, digestCrop, type MidBattleQuestion } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -274,6 +274,11 @@ export default function MidBattle() {
     // アイテム報酬を付与
     if (battleData.rewardItem) addItem(battleData.rewardItem);
     if (battleData.rewardItems) battleData.rewardItems.forEach(item => addItem(item));
+    // 農学部: 満腹度回復
+    if (departmentId && battleData.recoversFullness && isCropDepartment(departmentId)) {
+      const crop = getCropState(departmentId);
+      if (crop.seeded) digestCrop(departmentId);
+    }
     const nextStageId = battleData.nextStageId ?? battleData.afterStageId + 1;
     const hasNextStage = department.stages.some(s => s.id === nextStageId);
     if (hasNextStage) {

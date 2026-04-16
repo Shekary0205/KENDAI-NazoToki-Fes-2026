@@ -70,6 +70,8 @@ export interface StageData {
   hintUrl?: string;
   /** 謎文の下に表示する画像パス */
   riddleImage?: string;
+  /** アイテム入手時に作物の満腹度を回復するかどうか（農学部用） */
+  recoversFullness?: boolean;
   /** 正解後に発生する育成アクション（農学部の栽培シミュレーター用） */
   cultivationAction?: CultivationAction;
 }
@@ -129,6 +131,8 @@ export interface MidBattleData {
   nextLocationHint?: string;
   /** 戦闘中に再生するBGMトラック（未指定の場合は "battle"） */
   battleBgm?: string;
+  /** 報酬アイテム入手時に作物の満腹度を回復するか */
+  recoversFullness?: boolean;
 }
 
 export interface KeywordRoute {
@@ -1749,6 +1753,7 @@ export const departments: DepartmentData[] = [
           { id: "agr-chili", name: "唐辛子", icon: "🌶️", description: "辛い刺激" },
           { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
         ],
+        recoversFullness: true,
         nextLocationHint: "２階奥まで進め"
       },
       {
@@ -1761,6 +1766,7 @@ export const departments: DepartmentData[] = [
           { id: "agr-banana", name: "バナナ", icon: "🍌", description: "栄養満点の果物" },
           { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
         ],
+        recoversFullness: true,
         nextLocationHint: "３階へ進め"
       },
       {
@@ -1806,6 +1812,7 @@ export const departments: DepartmentData[] = [
           { id: "agr-silica-water", name: "シリカ水", icon: "💎", description: "ミネラル豊富な水" },
           { id: "agr-hydrogen-water", name: "水素水", icon: "🫧", description: "水素たっぷりの水" }
         ],
+        recoversFullness: true,
         nextLocationHint: "５階奥へ進め"
       },
       {
@@ -1837,6 +1844,7 @@ export const departments: DepartmentData[] = [
         damageToPlayer: 20,
         randomOrder: true,
         nextLocationHint: "よくやった。４階へ進め",
+        recoversFullness: true,
         rewardItems: [
           { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂" },
           { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱" },
@@ -2019,14 +2027,10 @@ export const feedCrop = (departmentId: string): CropState => {
   return state;
 };
 
-/** アイテム入手タイミングを記録し、2回に1回満腹度を回復する */
+/** 満腹度を1フィード分（34）回復する */
 export const digestCrop = (departmentId: string): CropState => {
   const state = getCropState(departmentId);
-  state.rewardTimings += 1;
-  // 偶数回目（2回に1回）のタイミングで回復
-  if (state.rewardTimings % 2 === 0) {
-    state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM);
-  }
+  state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM);
   saveCropState(departmentId, state);
   return state;
 };
