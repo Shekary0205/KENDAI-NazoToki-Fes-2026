@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
-import { Home, CheckCircle2, PlayCircle, Lock } from "lucide-react";
+import { Home, CheckCircle2, PlayCircle, Lock, LogIn } from "lucide-react";
 import {
   departments,
   getClearedDepartments,
@@ -11,8 +11,14 @@ import {
   loadGameProgress,
   isDepartmentUnlocked,
   unlockDepartment,
+  saveUserAccount,
+  setClearedDepartmentsLocally,
   type DepartmentData,
 } from "../data/departments-data";
+import {
+  verifyAccountLogin,
+  fetchClearedDepartmentsFromServer,
+} from "../utils/supabase";
 import { useEffect, useState } from "react";
 import { useBgm } from "../context/BgmContext";
 
@@ -24,7 +30,48 @@ export default function DepartmentSelect() {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  // ログインモーダル用のステート
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginStudentId, setLoginStudentId] = useState("");
+  const [loginName, setLoginName] = useState("");
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { switchTrack } = useBgm();
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginStudentId.trim() || !loginName.trim() || loginSubmitting) return;
+    setLoginSubmitting(true);
+    setLoginError(null);
+    const sid = loginStudentId.trim();
+    const nm = loginName.trim();
+
+    const ok = await verifyAccountLogin(sid, nm);
+    if (!ok) {
+      setLoginSubmitting(false);
+      setLoginError(
+        "該当するアカウントが見つかりません。学籍番号と氏名を確認してください。"
+      );
+      return;
+    }
+    // ログイン成功 → アカウント情報を保存してクリア状況を同期
+    saveUserAccount(sid, nm);
+    try {
+      const clearedDeptIds = await fetchClearedDepartmentsFromServer(sid);
+      setClearedDepartmentsLocally(clearedDeptIds);
+    } catch (err) {
+      console.error("Failed to sync progress on login:", err);
+    }
+    // 画面を再読み込みして全状態をリフレッシュ
+    window.location.reload();
+  };
+
+  const handleOpenLoginModal = () => {
+    setLoginStudentId("");
+    setLoginName("");
+    setLoginError(null);
+    setShowLoginModal(true);
+  };
 
   const handleDepartmentClick = (dept: DepartmentData) => {
     // パスワード付きの学部で未解除の場合
@@ -88,7 +135,7 @@ export default function DepartmentSelect() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -97,9 +144,20 @@ export default function DepartmentSelect() {
             <Home className="w-4 h-4 mr-2" />
             ホーム
           </Button>
-          <Badge variant="secondary" className="text-base px-4 py-2">
-            {clearedDepts.length} / {departments.length} クリア
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenLoginModal}
+              className="border-green-300 text-green-700 hover:bg-green-50"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              ログイン
+            </Button>
+            <Badge variant="secondary" className="text-base px-4 py-2">
+              {clearedDepts.length} / {departments.length} クリア
+            </Badge>
+          </div>
         </div>
 
         <div className="text-center space-y-2">
@@ -248,6 +306,89 @@ export default function DepartmentSelect() {
             );
           })}
         </div>
+
+        {/* ログインモーダル */}
+        {showLoginModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+            <Card className="max-w-sm w-full shadow-2xl border-2 border-green-300">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+                <div className="flex items-center gap-2">
+                  <LogIn className="w-5 h-5 text-green-700" />
+                  <CardTitle className="text-lg">ログイン</CardTitle>
+                </div>
+                <CardDescription>
+                  学籍番号と氏名を入力すると、<br />
+                  サーバーに保存された進行状況を呼び出せます
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      学籍番号
+                    </label>
+                    <Input
+                      type="text"
+                      value={loginStudentId}
+                      onChange={(e) => {
+                        setLoginStudentId(e.target.value);
+                        setLoginError(null);
+                      }}
+                      placeholder="例: 2610001"
+                      className="text-lg h-12"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      氏名
+                    </label>
+                    <Input
+                      type="text"
+                      value={loginName}
+                      onChange={(e) => {
+                        setLoginName(e.target.value);
+                        setLoginError(null);
+                      }}
+                      placeholder="例: 健大 太郎"
+                      className="text-lg h-12"
+                    />
+                    <p className="text-xs text-gray-500">
+                      登録時と完全に同じ表記で入力してください
+                    </p>
+                  </div>
+                  {loginError && (
+                    <p className="text-sm text-red-600 font-semibold bg-red-50 border border-red-200 rounded-md p-3">
+                      {loginError}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowLoginModal(false)}
+                      disabled={loginSubmitting}
+                    >
+                      キャンセル
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      disabled={
+                        !loginStudentId.trim() ||
+                        !loginName.trim() ||
+                        loginSubmitting
+                      }
+                    >
+                      {loginSubmitting ? "ログイン中..." : "ログイン"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* パスワード入力モーダル */}
         {passwordDept && (
