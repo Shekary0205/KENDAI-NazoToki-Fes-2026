@@ -2018,11 +2018,14 @@ export const feedCrop = (departmentId: string): CropState => {
   return state;
 };
 
-/** アイテム入手時に満腹度を回復する（アイテム数分だけ呼ぶ） */
+/** アイテム入手時に満腹度を回復する（2個入手につき1回分回復） */
 export const digestCrop = (departmentId: string, itemCount: number = 1): CropState => {
   const state = getCropState(departmentId);
-  state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM * itemCount);
-  saveCropState(departmentId, state);
+  const recoveryCount = Math.floor(itemCount / 2);
+  if (recoveryCount > 0) {
+    state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM * recoveryCount);
+    saveCropState(departmentId, state);
+  }
   return state;
 };
 
