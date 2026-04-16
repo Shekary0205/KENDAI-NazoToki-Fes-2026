@@ -16,14 +16,21 @@ import {
   CheckSquare,
   Square,
   BookOpen,
-  Sparkles
 } from "lucide-react";
 import {
   getDepartmentById,
   normalizeAnswer,
-  getPlantGrowth,
-  setPlantGrowth,
-  getPlantVisual,
+  isCropDepartment,
+  getCropState,
+  feedCrop,
+  digestCrop,
+  getCropVisual,
+  getCropGrowthLevel,
+  getCropEvolution,
+  CROP_FEED_ITEMS,
+  CROP_FULLNESS_MAX,
+  type CropState,
+  type FeedItemId,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
@@ -45,14 +52,13 @@ export default function DepartmentStage() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [multiInputs, setMultiInputs] = useState<string[]>([]);
-  // 農学部 育成シミュレーター用
-  const [plantGrowth, setPlantGrowthState] = useState<number>(() =>
-    departmentId ? getPlantGrowth(departmentId) : 0
+  // 農学部 育成シミュレーター v2
+  const isCrop = departmentId ? isCropDepartment(departmentId) : false;
+  const [cropState, setCropStateLocal] = useState<CropState>(() =>
+    departmentId ? getCropState(departmentId) : { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 }
   );
-  const [showCultivation, setShowCultivation] = useState(false);
-  const [cultivationCompleted, setCultivationCompleted] = useState(false);
-  // この学部が育成シミュレーターを含むかどうか
-  const hasCultivation = !!department?.stages.some(s => s.cultivationAction);
+  const [feedAnimation, setFeedAnimation] = useState<string | null>(null);
+  const [feedToast, setFeedToast] = useState<string | null>(null);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -70,12 +76,16 @@ export default function DepartmentStage() {
     setShowExplanation(false);
     setSelectedOption(null);
     setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
-    setShowCultivation(false);
-    setCultivationCompleted(false);
-    if (departmentId) {
-      setPlantGrowthState(getPlantGrowth(departmentId));
+    setFeedAnimation(null);
+    setFeedToast(null);
+    // ステージクリア時に満腹度を回復
+    if (departmentId && isCrop && currentStageId > 1) {
+      const updated = digestCrop(departmentId);
+      setCropStateLocal(updated);
+    } else if (departmentId && isCrop) {
+      setCropStateLocal(getCropState(departmentId));
     }
-  }, [currentStageId, departmentId]);
+  }, [currentStageId, departmentId, isCrop]);
 
   if (!department || !stage) {
     return (
@@ -98,10 +108,6 @@ export default function DepartmentStage() {
   const handleCorrectAnswerAdvance = () => {
     if (stage.explanation) {
       setShowExplanation(true);
-      return;
-    }
-    if (stage.cultivationAction) {
-      setShowCultivation(true);
       return;
     }
     if (stage.skipNextLocationScreen) {
@@ -224,10 +230,6 @@ export default function DepartmentStage() {
 
   const handleExplanationNext = () => {
     setShowExplanation(false);
-    if (stage.cultivationAction) {
-      setShowCultivation(true);
-      return;
-    }
     if (stage.skipNextLocationScreen) {
       handleNext();
     } else {
@@ -235,24 +237,25 @@ export default function DepartmentStage() {
     }
   };
 
-  // 育成アクションを実行する
-  const handleCultivationAction = () => {
-    if (!stage.cultivationAction || !departmentId) return;
-    const newGrowth = stage.cultivationAction.nextGrowth;
-    setPlantGrowth(departmentId, newGrowth);
-    setPlantGrowthState(newGrowth);
-    setCultivationCompleted(true);
-    fireCorrectEffect();
-  };
-
-  const handleCultivationContinue = () => {
-    if (stage.skipNextLocationScreen) {
-      setShowCultivation(false);
-      handleNext();
+  // 作物にフィードを与える
+  const handleFeedCrop = (feedId: FeedItemId) => {
+    if (!departmentId || cropState.fullness >= CROP_FULLNESS_MAX) return;
+    const prevLevel = getCropGrowthLevel(cropState);
+    const updated = feedCrop(departmentId, feedId);
+    setCropStateLocal(updated);
+    const newLevel = getCropGrowthLevel(updated);
+    // アニメーション
+    setFeedAnimation(feedId);
+    setTimeout(() => setFeedAnimation(null), 600);
+    // レベルアップ通知
+    if (newLevel > prevLevel) {
+      const visual = getCropVisual(updated);
+      setFeedToast(`🎉 作物が「${visual.label}」に成長した！`);
     } else {
-      setShowCultivation(false);
-      setShowNext(true);
+      const item = CROP_FEED_ITEMS.find(i => i.id === feedId);
+      setFeedToast(`${item?.icon} ${item?.label}をあげた！`);
     }
+    setTimeout(() => setFeedToast(null), 2000);
   };
 
   const progressPercentage = (currentStageId / department.stages.length) * 100;
@@ -303,41 +306,75 @@ export default function DepartmentStage() {
           </p>
         </div>
 
-        {/* 育成シミュレーター 作物ステータス
-           * 成長度が 0（まだ種もまいていない）時点では非表示 */}
-        {hasCultivation && plantGrowth > 0 && (() => {
-          const visual = getPlantVisual(plantGrowth);
-          const percent = (plantGrowth / 5) * 100;
+        {/* 農学部 育成シミュレーター — 作物パネル */}
+        {isCrop && cropState.totalFeeds > 0 && (() => {
+          const visual = getCropVisual(cropState);
+          const fullnessPercent = (cropState.fullness / CROP_FULLNESS_MAX) * 100;
+          const isFull = cropState.fullness >= CROP_FULLNESS_MAX;
+          const evo = getCropEvolution(cropState);
+          const evoLabel: Record<string, string> = { water: "💧水タイプ", sun: "☀️太陽タイプ", fert: "🧪栄養タイプ", none: "" };
           return (
-            <Card className="bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50 border-2 border-green-300 shadow-md">
+            <Card className={`border-2 shadow-md transition-all ${feedAnimation ? "animate-shake border-yellow-400 bg-yellow-50" : "border-green-300 bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50"}`}>
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-full overflow-hidden border-4 border-green-400 bg-white shadow-md flex items-center justify-center">
+                  {/* 作物アイコン */}
+                  <div className={`flex-shrink-0 w-20 h-20 rounded-full overflow-hidden border-4 shadow-lg bg-white flex items-center justify-center ${feedAnimation ? "border-yellow-400" : "border-green-400"}`}>
                     {visual.image ? (
-                      <img
-                        src={visual.image}
-                        alt={visual.label}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={visual.image} alt={visual.label} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-4xl">{visual.emoji}</span>
+                      <span className="text-4xl">🌱</span>
                     )}
                   </div>
-                  <div className="flex-1 space-y-1">
+                  <div className="flex-1 space-y-1.5">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-green-900 text-sm">
-                        育成中の作物
-                      </h3>
-                      <span className={`text-sm font-semibold ${visual.color}`}>
-                        {visual.label}
+                      <h3 className="font-bold text-green-900 text-sm">育成中の作物</h3>
+                      <span className={`text-xs font-semibold ${visual.color}`}>
+                        {visual.label} {evo !== "none" && `(${evoLabel[evo]})`}
                       </span>
                     </div>
-                    <Progress value={percent} className="h-2" />
-                    <p className="text-xs text-gray-600 text-right">
-                      成長度 {plantGrowth} / 5
-                    </p>
+                    {/* 満腹メーター */}
+                    <div className="space-y-0.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-600">満腹度</span>
+                        <span className={isFull ? "text-red-600 font-bold" : "text-gray-600"}>
+                          {isFull ? "おなかいっぱい！" : `${cropState.fullness} / ${CROP_FULLNESS_MAX}`}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className={`h-2.5 rounded-full transition-all duration-500 ${
+                            isFull ? "bg-red-500" : cropState.fullness > 70 ? "bg-yellow-500" : "bg-green-500"
+                          }`}
+                          style={{ width: `${fullnessPercent}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
+                {/* フィードアイテム */}
+                <div className="flex items-center justify-center gap-3 mt-3">
+                  {CROP_FEED_ITEMS.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleFeedCrop(item.id)}
+                      disabled={isFull}
+                      className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl border-2 transition-all
+                        ${isFull
+                          ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
+                          : "border-green-300 bg-white hover:bg-green-50 hover:border-green-500 active:scale-95 shadow-sm"
+                        }`}
+                    >
+                      <span className="text-2xl">{item.icon}</span>
+                      <span className="text-xs font-semibold text-gray-700">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+                {/* フィードトースト */}
+                {feedToast && (
+                  <div className="mt-2 text-center text-sm font-bold text-green-800 bg-green-100 border border-green-300 rounded-lg py-1.5 animate-pulse">
+                    {feedToast}
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
@@ -358,8 +395,8 @@ export default function DepartmentStage() {
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
-            {/* 謎・ヒントは次の目的地画面・育成フェーズ・解説画面では非表示 */}
-            {!showNext && !showCultivation && !showExplanation && (
+            {/* 謎・ヒントは次の目的地画面・解説画面では非表示 */}
+            {!showNext && !showExplanation && (
               <>
                 {/* 謎 */}
                 <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
@@ -457,99 +494,8 @@ export default function DepartmentStage() {
               </div>
             )}
 
-            {/* 育成フェーズ（農学部 栽培シミュレーター） */}
-            {showCultivation && stage.cultivationAction && (() => {
-              const action = stage.cultivationAction;
-              const beforeVisual = getPlantVisual(action.requiredGrowth);
-              const afterVisual = getPlantVisual(action.nextGrowth);
-              return (
-                <div className="space-y-6">
-                  {!cultivationCompleted ? (
-                    <>
-                      <div className="text-center space-y-3">
-                        <div className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-5 shadow-xl animate-pulse">
-                          <Sparkles className="w-10 h-10 text-white" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-green-900">
-                          {action.title}
-                        </h2>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-300 shadow-lg text-center space-y-4">
-                        <div className="flex items-center justify-center">
-                          <div className="w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden border-8 border-green-400 shadow-2xl bg-white flex items-center justify-center animate-bounce">
-                            {beforeVisual.image ? (
-                              <img
-                                src={beforeVisual.image}
-                                alt={beforeVisual.label}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-9xl">{beforeVisual.emoji}</span>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-lg text-gray-800 whitespace-pre-line leading-relaxed">
-                          {action.description}
-                        </p>
-                      </div>
-
-                      <Button
-                        onClick={handleCultivationAction}
-                        className="w-full h-16 text-2xl bg-gradient-to-r from-green-600 via-emerald-600 to-lime-600 hover:from-green-700 hover:via-emerald-700 hover:to-lime-700 shadow-lg"
-                      >
-                        <span className="text-3xl mr-3">{action.icon}</span>
-                        {action.label}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-center space-y-3">
-                        <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-5 shadow-xl animate-bounce">
-                          <CheckCircle2 className="w-10 h-10 text-white" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-orange-900">
-                          成功！
-                        </h2>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl border-4 border-orange-300 shadow-lg text-center space-y-4">
-                        <div className="flex items-center justify-center">
-                          <div className="w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden border-8 border-orange-400 shadow-2xl bg-white flex items-center justify-center">
-                            {afterVisual.image ? (
-                              <img
-                                src={afterVisual.image}
-                                alt={afterVisual.label}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-9xl">{afterVisual.emoji}</span>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xl text-gray-800 whitespace-pre-line font-semibold leading-relaxed">
-                          {action.successMessage}
-                        </p>
-                        <p className={`text-lg font-bold ${afterVisual.color}`}>
-                          作物の状態: {afterVisual.label}
-                        </p>
-                      </div>
-
-                      <Button
-                        onClick={handleCultivationContinue}
-                        className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
-                      >
-                        次へ進む
-                        <ArrowRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              );
-            })()}
-
             {/* 回答フォーム */}
-            {!showNext && !showExplanation && !showCultivation ? (
+            {!showNext && !showExplanation ? (
               <>
                 {/* テキスト入力形式 */}
                 {(!stage.type || stage.type === "text") && (

@@ -1693,103 +1693,58 @@ export const departments: DepartmentData[] = [
     stages: [
       {
         id: 1,
-        location: "農学部エントランス",
+        location: "10号館エントランス",
         riddle: "農学部の学科を答えろ",
         hint: "",
         answer: "",
         type: "select",
         options: ["生物生産学科", "農学科", "農芸化学科", "応用生物科学科"],
         correctIndex: 0,
-        nextLocationHint: "畑に種を植えに行こう！",
-        cultivationAction: {
-          icon: "🌱",
-          label: "種を植える",
-          title: "種まきの時間だ！",
-          description: "畑に種を植えよう。\n君の旅とともに育っていくぞ。",
-          requiredGrowth: 0,
-          nextGrowth: 1,
-          successMessage: "種を植えた！\n小さな芽が顔を出した。"
-        }
+        nextLocationHint: "次の問題へ進もう"
       },
       {
         id: 2,
         location: "畑エリア",
-        riddle: "[プロトタイプ用の仮問題]\n植物の光合成で放出される気体は？",
+        riddle: "[プロトタイプ]\n植物の光合成で放出される気体は？",
         hint: "O₂",
-        answer: "酸素",
+        answer: "",
         type: "select",
         options: ["酸素", "二酸化炭素", "窒素", "水素"],
         correctIndex: 0,
-        nextLocationHint: "苗が水を欲しがっている...",
-        cultivationAction: {
-          icon: "💧",
-          label: "水をあげる",
-          title: "水やりの時間だ！",
-          description: "苗はのどが渇いている。\nたっぷりと水をあげよう。",
-          requiredGrowth: 1,
-          nextGrowth: 2,
-          successMessage: "水をたっぷりあげた！\n若葉がぐんと開いた。"
-        }
+        nextLocationHint: "次の問題へ進もう"
       },
       {
         id: 3,
         location: "温室",
-        riddle: "[プロトタイプ用の仮問題]\n日光を受けて植物が栄養を作る働きを何という？",
+        riddle: "[プロトタイプ]\n日光を受けて植物が栄養を作る働きを何という？",
         hint: "光＋合成",
-        answer: "光合成",
+        answer: "",
         type: "select",
         options: ["光合成", "呼吸", "蒸散", "発酵"],
         correctIndex: 0,
-        nextLocationHint: "苗にたっぷり日光を当てよう",
-        cultivationAction: {
-          icon: "☀️",
-          label: "日光を当てる",
-          title: "日光浴の時間だ！",
-          description: "苗には太陽の光が必要だ。\n温室の窓を開けよう。",
-          requiredGrowth: 2,
-          nextGrowth: 3,
-          successMessage: "日光をたっぷり浴びた！\n苗がぐんぐん育った。"
-        }
+        nextLocationHint: "次の問題へ進もう"
       },
       {
         id: 4,
         location: "資材倉庫",
-        riddle: "[プロトタイプ用の仮問題]\n植物の三大栄養素のうち、葉の成長に使われるのは？",
+        riddle: "[プロトタイプ]\n植物の三大栄養素のうち、葉の成長に使われるのは？",
         hint: "N（窒素）",
-        answer: "窒素",
+        answer: "",
         type: "select",
         options: ["窒素", "リン酸", "カリウム", "カルシウム"],
         correctIndex: 0,
-        nextLocationHint: "そろそろ肥料を与えるタイミングだ",
-        cultivationAction: {
-          icon: "🧪",
-          label: "肥料をあげる",
-          title: "施肥の時間だ！",
-          description: "栄養豊富な肥料で\n実りを後押ししよう。",
-          requiredGrowth: 3,
-          nextGrowth: 4,
-          successMessage: "肥料を与えた！\nついに実がなった。"
-        }
+        nextLocationHint: "次の問題へ進もう"
       },
       {
         id: 5,
         location: "収穫エリア",
-        riddle: "[プロトタイプ用の仮問題]\n「五穀豊穣」に含まれる作物を選べ",
+        riddle: "[プロトタイプ]\n「五穀豊穣」に含まれる作物を選べ",
         hint: "",
         answer: "",
         type: "select",
         options: ["米", "ゴマ", "そば", "とうもろこし"],
         correctIndex: 0,
-        nextLocationHint: "ついに収穫の時が来た！",
-        cultivationAction: {
-          icon: "🌾",
-          label: "収穫する",
-          title: "収穫の時間だ！",
-          description: "育てた作物を刈り取ろう。\n長い旅の成果を手にするんだ。",
-          requiredGrowth: 4,
-          nextGrowth: 5,
-          successMessage: "見事に収穫できた！\n育成シミュレーター完了！"
-        }
+        nextLocationHint: ""
       }
     ]
   },
@@ -1891,40 +1846,97 @@ export const setClearedDepartmentsLocally = (deptIds: string[]): void => {
   localStorage.setItem('clearedDepartments', JSON.stringify(deptIds));
 };
 
-// ===== 農学部 育成シミュレーター =====
-/** 作物の育成段階（0=未開始〜5=収穫完了） */
-export const getPlantGrowth = (departmentId: string): number => {
-  if (typeof window === 'undefined') return 0;
-  const raw = localStorage.getItem(`plantGrowth_${departmentId}`);
-  return raw ? parseInt(raw, 10) : 0;
+// ===== 農学部 育成シミュレーター v2 =====
+export interface CropState {
+  totalFeeds: number;
+  waterFeeds: number;
+  sunFeeds: number;
+  fertFeeds: number;
+  fullness: number; // 0〜100
+}
+
+export const CROP_FULLNESS_PER_FEED = 35;
+export const CROP_FULLNESS_RECOVERY = 25;
+export const CROP_FULLNESS_MAX = 100;
+
+/** フィードアイテム定義 */
+export const CROP_FEED_ITEMS = [
+  { id: "water", icon: "💧", label: "水" },
+  { id: "sun", icon: "☀️", label: "光" },
+  { id: "fert", icon: "🧪", label: "肥料" },
+] as const;
+
+export type FeedItemId = typeof CROP_FEED_ITEMS[number]["id"];
+
+export const getCropState = (departmentId: string): CropState => {
+  if (typeof window === 'undefined') return { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
+  const raw = localStorage.getItem(`cropState_${departmentId}`);
+  if (raw) return JSON.parse(raw);
+  return { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
 };
 
-export const setPlantGrowth = (departmentId: string, growth: number): void => {
+export const saveCropState = (departmentId: string, state: CropState): void => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(`plantGrowth_${departmentId}`, String(growth));
+  localStorage.setItem(`cropState_${departmentId}`, JSON.stringify(state));
 };
 
-export const resetPlantGrowth = (departmentId: string): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(`plantGrowth_${departmentId}`);
+/** フィードを与える（満腹チェック済み前提で呼ぶ） */
+export const feedCrop = (departmentId: string, feedId: FeedItemId): CropState => {
+  const state = getCropState(departmentId);
+  state.totalFeeds += 1;
+  if (feedId === "water") state.waterFeeds += 1;
+  else if (feedId === "sun") state.sunFeeds += 1;
+  else if (feedId === "fert") state.fertFeeds += 1;
+  state.fullness = Math.min(CROP_FULLNESS_MAX, state.fullness + CROP_FULLNESS_PER_FEED);
+  saveCropState(departmentId, state);
+  return state;
 };
 
-/** 育成段階の表示情報（image があれば絵文字の代わりに画像を表示する） */
-export const getPlantVisual = (growth: number): {
-  emoji: string;
+/** ステージクリア時に満腹度を回復する */
+export const digestCrop = (departmentId: string): CropState => {
+  const state = getCropState(departmentId);
+  state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY);
+  saveCropState(departmentId, state);
+  return state;
+};
+
+/** 作物の成長段階（見た目に影響） */
+export const getCropGrowthLevel = (state: CropState): number => {
+  const t = state.totalFeeds;
+  if (t === 0) return 0;
+  if (t <= 2) return 1;
+  if (t <= 4) return 2;
+  return 3;
+};
+
+/** 支配的なフィードタイプから進化名を返す */
+export const getCropEvolution = (state: CropState): string => {
+  if (state.totalFeeds === 0) return "none";
+  const { waterFeeds, sunFeeds, fertFeeds } = state;
+  if (waterFeeds >= sunFeeds && waterFeeds >= fertFeeds) return "water";
+  if (sunFeeds >= waterFeeds && sunFeeds >= fertFeeds) return "sun";
+  return "fert";
+};
+
+/** 育成段階の画像とラベル */
+export const getCropVisual = (state: CropState): {
+  image: string;
   label: string;
   color: string;
-  image?: string;
 } => {
-  switch (growth) {
-    case 0: return { emoji: "🏞️", label: "畑", color: "text-gray-600" };
-    case 1: return { emoji: "🌱", label: "発芽", color: "text-green-600", image: "/images/tane1.png" };
-    case 2: return { emoji: "🌿", label: "若葉", color: "text-green-700" };
-    case 3: return { emoji: "🪴", label: "苗", color: "text-emerald-700" };
-    case 4: return { emoji: "🌾", label: "実りの時", color: "text-yellow-700" };
-    case 5: return { emoji: "🎁", label: "収穫完了", color: "text-orange-700" };
-    default: return { emoji: "🏞️", label: "畑", color: "text-gray-600" };
+  const level = getCropGrowthLevel(state);
+  switch (level) {
+    case 0: return { image: "", label: "種まき前", color: "text-gray-500" };
+    case 1: return { image: "/images/tane1.png", label: "発芽", color: "text-green-600" };
+    case 2: return { image: "/images/tane2.png", label: "若葉", color: "text-green-700" };
+    case 3: return { image: "/images/tane3.png", label: "成長中", color: "text-emerald-700" };
+    default: return { image: "/images/tane1.png", label: "発芽", color: "text-green-600" };
   }
+};
+
+/** この学部が育成シミュレーターを使うかどうか */
+export const isCropDepartment = (departmentId: string): boolean => {
+  return departmentId === "agriculture";
 };
 
 export const isDepartmentCleared = (departmentId: string): boolean => {
