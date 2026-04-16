@@ -1983,7 +1983,8 @@ export interface CropState {
 }
 
 export const CROP_FULLNESS_PER_FEED = 34;
-export const CROP_FULLNESS_RECOVERY = 25;
+/** アイテム1つ入手ごとの満腹度回復量（1フィード分） */
+export const CROP_FULLNESS_RECOVERY_PER_ITEM = 34;
 export const CROP_FULLNESS_MAX = 100;
 
 const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0 };
@@ -2017,10 +2018,10 @@ export const feedCrop = (departmentId: string): CropState => {
   return state;
 };
 
-/** ステージクリア時に満腹度を回復する */
-export const digestCrop = (departmentId: string): CropState => {
+/** アイテム入手時に満腹度を回復する（アイテム数分だけ呼ぶ） */
+export const digestCrop = (departmentId: string, itemCount: number = 1): CropState => {
   const state = getCropState(departmentId);
-  state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY);
+  state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM * itemCount);
   saveCropState(departmentId, state);
   return state;
 };

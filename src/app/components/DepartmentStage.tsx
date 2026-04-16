@@ -88,11 +88,7 @@ export default function DepartmentStage() {
     setSeedingDone(false);
     setShowItemRewards(false);
     setInventory(getObtainedItems());
-    // ステージクリア時に満腹度を回復
-    if (departmentId && isCrop && currentStageId > 1) {
-      const updated = digestCrop(departmentId);
-      setCropStateLocal(updated);
-    } else if (departmentId && isCrop) {
+    if (departmentId && isCrop) {
       setCropStateLocal(getCropState(departmentId));
     }
   }, [currentStageId, departmentId, isCrop]);
@@ -138,6 +134,11 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
+      // 農学部: アイテム入手ごとに満腹度回復
+      if (isCrop && departmentId && cropState.seeded) {
+        const updated = digestCrop(departmentId, rewards.length);
+        setCropStateLocal(updated);
+      }
       setShowItemRewards(true);
       return;
     }
@@ -290,6 +291,10 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
+      if (isCrop && departmentId && cropState.seeded) {
+        const updated = digestCrop(departmentId, rewards.length);
+        setCropStateLocal(updated);
+      }
       setShowItemRewards(true);
       return;
     }
