@@ -1414,7 +1414,8 @@ export const departments: DepartmentData[] = [
               id: 8,
               location: "9号館屋上",
               riddle: "本学でベルマーク運動を行っている学生団体の名称は？",
-              hint: "",
+              hint: "リンクを確認しよう",
+              hintUrl: "https://www.takasaki-u.ac.jp/contribution/volunteer/student-vlunteer-jisseki",
               answer: "べるふぁみ",
               accident: {
                 title: "アクシデント発生！",
