@@ -453,14 +453,14 @@ export default function DepartmentStage() {
                     </div>
                   </div>
                 </div>
-                {/* 所持アイテム一覧（フィード用） */}
-                {inventory.length > 0 && (
+                {/* 所持アイテム一覧（フィード用・農学部アイテムのみ） */}
+                {inventory.filter(i => i.id.startsWith("agr-")).length > 0 && (
                   <div className="mt-3">
                     <p className="text-xs text-gray-600 font-semibold mb-2 text-center">
                       アイテムをタップして作物にあげよう
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      {inventory.map((item, idx) => {
+                      {inventory.filter(i => i.id.startsWith("agr-")).map((item, idx) => {
                         const stat = getItemStat(item.id);
                         const statInfo = stat ? CROP_STAT_INFO[stat] : null;
                         return (
@@ -487,7 +487,7 @@ export default function DepartmentStage() {
                     </div>
                   </div>
                 )}
-                {inventory.length === 0 && (
+                {inventory.filter(i => i.id.startsWith("agr-")).length === 0 && (
                   <p className="mt-3 text-center text-xs text-gray-500">
                     アイテムがありません。謎を解いて入手しよう！
                   </p>

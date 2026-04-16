@@ -72,7 +72,9 @@ export default function KeywordRouteStage() {
   const [showHint, setShowHint] = useState(false);
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [phase, setPhase] = useState<Phase>("question");
-  const [inventory, setInventory] = useState<ItemData[]>([]);
+  const [inventoryRaw, setInventory] = useState<ItemData[]>([]);
+  // 農学部アイテム（agr-）を除外して表示
+  const inventory = inventoryRaw.filter(i => !i.id.startsWith("agr-"));
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [itemUseError, setItemUseError] = useState<string | null>(null);
   const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
