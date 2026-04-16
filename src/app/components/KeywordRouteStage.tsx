@@ -462,6 +462,11 @@ export default function KeywordRouteStage() {
                 <CardDescription className="text-base font-semibold text-gray-900">
                   現在地
                 </CardDescription>
+                {/8号館[45]階|9号館4階/.test(stage.location) && (
+                  <span className="text-xs text-red-600 font-semibold ml-auto">
+                    研究室前ではお静かに。
+                  </span>
+                )}
               </div>
               <CardTitle className="text-3xl text-gray-900">{stage.location}</CardTitle>
             </CardHeader>
