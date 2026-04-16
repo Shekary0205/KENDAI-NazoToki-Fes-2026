@@ -933,7 +933,7 @@ export const departments: DepartmentData[] = [
     stages: [
       {
         id: 1,
-        location: "10号館エントランス",
+        location: "8号館エントランス",
         riddle: "人間発達学部の学科を２つ選択しよう",
         hint: "",
         answer: "",
