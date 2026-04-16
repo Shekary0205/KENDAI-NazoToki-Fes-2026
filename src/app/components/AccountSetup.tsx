@@ -34,7 +34,20 @@ export default function AccountSetup({ onComplete }: AccountSetupProps) {
     const nm = name.trim();
 
     if (mode === "signup") {
-      // 新規登録: サーバーに送信 → ローカルに保存
+      // 新規登録: すでに同じ学籍番号+氏名の組み合わせがあればログイン扱い
+      const alreadyExists = await verifyAccountLogin(sid, nm);
+      if (alreadyExists) {
+        saveUserAccount(sid, nm);
+        try {
+          const clearedDeptIds = await fetchClearedDepartmentsFromServer(sid);
+          setClearedDepartmentsLocally(clearedDeptIds);
+        } catch (err) {
+          console.error("Failed to sync progress during signup→login:", err);
+        }
+        onComplete();
+        return;
+      }
+      // 新規アカウント作成
       await registerAccountToServer(sid, nm);
       saveUserAccount(sid, nm);
       onComplete();
