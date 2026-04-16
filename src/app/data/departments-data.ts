@@ -1438,8 +1438,8 @@ export const departments: DepartmentData[] = [
             {
               id: 7,
               location: "9号館屋上",
-              riddle: "レンガ裏に一輪だけ咲く赤い花は何の花？",
-              hint: "",
+              riddle: "レンガ裏に一輪だけ咲く赤い花は何の花？（到着したらヒント必読！）",
+              hint: "雨で花が散りました。正解は🌷",
               answer: "チューリップ",
               nextLocationHint: "戦闘の予感..."
             },
