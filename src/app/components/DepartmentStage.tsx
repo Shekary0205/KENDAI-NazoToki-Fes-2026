@@ -710,7 +710,7 @@ export default function DepartmentStage() {
                       </div>
                       <p className="text-xl text-gray-800 font-semibold">
                         種を植えた！<br />
-                        💧水・☀️光・🧪肥料をあげて育てよう。
+                        アイテムをあげて育てていこう。
                       </p>
                     </div>
 
