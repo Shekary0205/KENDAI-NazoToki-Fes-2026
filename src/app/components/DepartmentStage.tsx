@@ -15,9 +15,16 @@ import {
   Home,
   CheckSquare,
   Square,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from "lucide-react";
-import { getDepartmentById, normalizeAnswer } from "../data/departments-data";
+import {
+  getDepartmentById,
+  normalizeAnswer,
+  getPlantGrowth,
+  setPlantGrowth,
+  getPlantVisual,
+} from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -38,6 +45,14 @@ export default function DepartmentStage() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [multiInputs, setMultiInputs] = useState<string[]>([]);
+  // 農学部 育成シミュレーター用
+  const [plantGrowth, setPlantGrowthState] = useState<number>(() =>
+    departmentId ? getPlantGrowth(departmentId) : 0
+  );
+  const [showCultivation, setShowCultivation] = useState(false);
+  const [cultivationCompleted, setCultivationCompleted] = useState(false);
+  // この学部が育成シミュレーターを含むかどうか
+  const hasCultivation = !!department?.stages.some(s => s.cultivationAction);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -55,7 +70,12 @@ export default function DepartmentStage() {
     setShowExplanation(false);
     setSelectedOption(null);
     setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
-  }, [currentStageId]);
+    setShowCultivation(false);
+    setCultivationCompleted(false);
+    if (departmentId) {
+      setPlantGrowthState(getPlantGrowth(departmentId));
+    }
+  }, [currentStageId, departmentId]);
 
   if (!department || !stage) {
     return (
@@ -74,6 +94,23 @@ export default function DepartmentStage() {
     );
   }
 
+  // 正解後に進むフェーズを決定する共通ハンドラ
+  const handleCorrectAnswerAdvance = () => {
+    if (stage.explanation) {
+      setShowExplanation(true);
+      return;
+    }
+    if (stage.cultivationAction) {
+      setShowCultivation(true);
+      return;
+    }
+    if (stage.skipNextLocationScreen) {
+      handleNext();
+      return;
+    }
+    setShowNext(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -83,13 +120,7 @@ export default function DepartmentStage() {
     if (normalizedUserAnswer === normalizedCorrectAnswer) {
       setFeedback("correct");
       fireCorrectEffect();
-      if (stage.explanation) {
-        setShowExplanation(true);
-      } else if (stage.skipNextLocationScreen) {
-        handleNext();
-      } else {
-        setShowNext(true);
-      }
+      handleCorrectAnswerAdvance();
     } else {
       setFeedback("incorrect");
       setTimeout(() => setFeedback(null), 2000);
@@ -118,13 +149,7 @@ export default function DepartmentStage() {
     if (isCorrect) {
       setFeedback("correct");
       fireCorrectEffect();
-      if (stage.explanation) {
-        setShowExplanation(true);
-      } else if (stage.skipNextLocationScreen) {
-        handleNext();
-      } else {
-        setShowNext(true);
-      }
+      handleCorrectAnswerAdvance();
     } else {
       setFeedback("incorrect");
       setTimeout(() => {
@@ -166,13 +191,7 @@ export default function DepartmentStage() {
       setSelectedOption(index);
       setFeedback("correct");
       fireCorrectEffect();
-      if (stage.explanation) {
-        setShowExplanation(true);
-      } else if (stage.skipNextLocationScreen) {
-        handleNext();
-      } else {
-        setShowNext(true);
-      }
+      handleCorrectAnswerAdvance();
     } else {
       setSelectedOption(index);
       setFeedback("incorrect");
@@ -196,13 +215,7 @@ export default function DepartmentStage() {
     if (allCorrect) {
       setFeedback("correct");
       fireCorrectEffect();
-      if (stage.explanation) {
-        setShowExplanation(true);
-      } else if (stage.skipNextLocationScreen) {
-        handleNext();
-      } else {
-        setShowNext(true);
-      }
+      handleCorrectAnswerAdvance();
     } else {
       setFeedback("incorrect");
       setTimeout(() => setFeedback(null), 2000);
@@ -211,10 +224,33 @@ export default function DepartmentStage() {
 
   const handleExplanationNext = () => {
     setShowExplanation(false);
-    // 次の目的地画面をスキップする場合は直接次の問題へ
+    if (stage.cultivationAction) {
+      setShowCultivation(true);
+      return;
+    }
     if (stage.skipNextLocationScreen) {
       handleNext();
     } else {
+      setShowNext(true);
+    }
+  };
+
+  // 育成アクションを実行する
+  const handleCultivationAction = () => {
+    if (!stage.cultivationAction || !departmentId) return;
+    const newGrowth = stage.cultivationAction.nextGrowth;
+    setPlantGrowth(departmentId, newGrowth);
+    setPlantGrowthState(newGrowth);
+    setCultivationCompleted(true);
+    fireCorrectEffect();
+  };
+
+  const handleCultivationContinue = () => {
+    if (stage.skipNextLocationScreen) {
+      setShowCultivation(false);
+      handleNext();
+    } else {
+      setShowCultivation(false);
       setShowNext(true);
     }
   };
@@ -267,6 +303,35 @@ export default function DepartmentStage() {
           </p>
         </div>
 
+        {/* 育成シミュレーター 作物ステータス */}
+        {hasCultivation && (() => {
+          const visual = getPlantVisual(plantGrowth);
+          const percent = (plantGrowth / 5) * 100;
+          return (
+            <Card className="bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50 border-2 border-green-300 shadow-md">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-5xl flex-shrink-0">{visual.emoji}</div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="font-bold text-green-900 text-sm">
+                        育成中の作物
+                      </h3>
+                      <span className={`text-sm font-semibold ${visual.color}`}>
+                        {visual.label}
+                      </span>
+                    </div>
+                    <Progress value={percent} className="h-2" />
+                    <p className="text-xs text-gray-600 text-right">
+                      成長度 {plantGrowth} / 5
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* メインカード */}
         <Card className="shadow-xl">
           <CardHeader className={`bg-gradient-to-r ${colorClasses.from} ${colorClasses.to}`}>
@@ -282,8 +347,8 @@ export default function DepartmentStage() {
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
-            {/* 謎・ヒントは次の目的地画面では非表示 */}
-            {!showNext && (
+            {/* 謎・ヒントは次の目的地画面・育成フェーズ・解説画面では非表示 */}
+            {!showNext && !showCultivation && !showExplanation && (
               <>
                 {/* 謎 */}
                 <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
@@ -381,8 +446,77 @@ export default function DepartmentStage() {
               </div>
             )}
 
+            {/* 育成フェーズ（農学部 栽培シミュレーター） */}
+            {showCultivation && stage.cultivationAction && (() => {
+              const action = stage.cultivationAction;
+              const beforeVisual = getPlantVisual(action.requiredGrowth);
+              const afterVisual = getPlantVisual(action.nextGrowth);
+              return (
+                <div className="space-y-6">
+                  {!cultivationCompleted ? (
+                    <>
+                      <div className="text-center space-y-3">
+                        <div className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-5 shadow-xl animate-pulse">
+                          <Sparkles className="w-10 h-10 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-green-900">
+                          {action.title}
+                        </h2>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-300 shadow-lg text-center space-y-4">
+                        <div className="text-8xl animate-bounce">
+                          {beforeVisual.emoji}
+                        </div>
+                        <p className="text-lg text-gray-800 whitespace-pre-line leading-relaxed">
+                          {action.description}
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={handleCultivationAction}
+                        className="w-full h-16 text-2xl bg-gradient-to-r from-green-600 via-emerald-600 to-lime-600 hover:from-green-700 hover:via-emerald-700 hover:to-lime-700 shadow-lg"
+                      >
+                        <span className="text-3xl mr-3">{action.icon}</span>
+                        {action.label}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-center space-y-3">
+                        <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-5 shadow-xl animate-bounce">
+                          <CheckCircle2 className="w-10 h-10 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-orange-900">
+                          成功！
+                        </h2>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl border-4 border-orange-300 shadow-lg text-center space-y-4">
+                        <div className="text-8xl">{afterVisual.emoji}</div>
+                        <p className="text-xl text-gray-800 whitespace-pre-line font-semibold leading-relaxed">
+                          {action.successMessage}
+                        </p>
+                        <p className={`text-lg font-bold ${afterVisual.color}`}>
+                          作物の状態: {afterVisual.label}
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={handleCultivationContinue}
+                        className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
+                      >
+                        次へ進む
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* 回答フォーム */}
-            {!showNext && !showExplanation ? (
+            {!showNext && !showExplanation && !showCultivation ? (
               <>
                 {/* テキスト入力形式 */}
                 {(!stage.type || stage.type === "text") && (
