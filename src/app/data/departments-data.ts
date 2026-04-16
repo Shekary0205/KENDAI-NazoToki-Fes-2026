@@ -133,6 +133,12 @@ export interface MidBattleData {
   battleBgm?: string;
   /** 報酬アイテム入手時に作物の満腹度を回復するか */
   recoversFullness?: boolean;
+  /** 作物バトルモード（ポケモン風対面バトル） */
+  cropBattle?: boolean;
+  /** 敵作物の名称 */
+  enemyCropName?: string;
+  /** 敵作物の画像パス */
+  enemyCropImage?: string;
 }
 
 export interface KeywordRoute {
@@ -1836,8 +1842,11 @@ export const departments: DepartmentData[] = [
       {
         id: 1,
         afterStageId: 8,
-        enemyName: "10号館の番人",
-        enemyImage: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=400&fit=crop",
+        cropBattle: true,
+        enemyCropName: "ダークフラワー",
+        enemyCropImage: "/images/tane3.png",
+        enemyName: "ダークフラワー",
+        enemyImage: "/images/tane3.png",
         enemyMaxHp: 100,
         playerMaxHp: 100,
         damageToEnemy: 20,
@@ -1880,6 +1889,65 @@ export const departments: DepartmentData[] = [
             options: ["堆肥", "化学肥料", "種", "水"],
             correctIndex: 1,
             explanation: "有機農業では化学肥料の使用が禁止されています。"
+          }
+        ]
+      },
+      {
+        id: 2,
+        afterStageId: 13,
+        cropBattle: true,
+        enemyCropName: "キングフラワー",
+        enemyCropImage: "/images/tane3.png",
+        enemyName: "キングフラワー",
+        enemyImage: "/images/tane3.png",
+        enemyMaxHp: 150,
+        playerMaxHp: 100,
+        damageToEnemy: 15,
+        damageToPlayer: 20,
+        randomOrder: true,
+        battleBgm: "finalBattle",
+        questions: [
+          {
+            question: "[プロトタイプ] 光合成に必要な3要素は？",
+            options: ["水・二酸化炭素・光", "酸素・窒素・光", "水・酸素・土", "光・窒素・リン"],
+            correctIndex: 0,
+            explanation: "光合成には水・二酸化炭素・光の3要素が必要です。"
+          },
+          {
+            question: "[プロトタイプ] 日本の食料自給率(カロリーベース)はおよそ？",
+            options: ["38%", "55%", "72%", "85%"],
+            correctIndex: 0,
+            explanation: "日本のカロリーベース食料自給率は約38%です。"
+          },
+          {
+            question: "[プロトタイプ] 世界で最も生産量が多い穀物は？",
+            options: ["トウモロコシ", "米", "小麦", "大麦"],
+            correctIndex: 0,
+            explanation: "トウモロコシは世界で最も生産量が多い穀物です。"
+          },
+          {
+            question: "[プロトタイプ] 連作障害を防ぐ農法は？",
+            options: ["輪作", "直播", "密植", "施肥"],
+            correctIndex: 0,
+            explanation: "輪作は連作障害を防ぐために異なる作物を交互に栽培する農法です。"
+          },
+          {
+            question: "[プロトタイプ] 植物ホルモン「オーキシン」の主な作用は？",
+            options: ["細胞の伸長促進", "開花の促進", "落葉の促進", "果実の着色"],
+            correctIndex: 0,
+            explanation: "オーキシンは細胞の伸長を促進する植物ホルモンです。"
+          },
+          {
+            question: "[プロトタイプ] SDGsの目標2は？",
+            options: ["飢餓をゼロに", "貧困をなくそう", "すべての人に健康と福祉を", "質の高い教育をみんなに"],
+            correctIndex: 0,
+            explanation: "SDGs目標2は「飢餓をゼロに」です。"
+          },
+          {
+            question: "[プロトタイプ] 群馬県の名産品でないものは？",
+            options: ["みかん", "こんにゃく", "キャベツ", "ほうれん草"],
+            correctIndex: 0,
+            explanation: "みかんは主に愛媛県・和歌山県が名産地です。"
           }
         ]
       }

@@ -20,6 +20,7 @@ import {
   MapPin
 } from "lucide-react";
 import { getDepartmentById, addItem, isCropDepartment, getCropState, digestCrop, type MidBattleQuestion } from "../data/departments-data";
+import CropBattle from "./CropBattle";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -95,6 +96,11 @@ export default function MidBattle() {
       }
     };
   }, [switchTrack]);
+
+  // 作物バトルモードの場合は専用コンポーネントに委譲
+  if (department && battleData?.cropBattle && departmentId) {
+    return <CropBattle departmentId={departmentId} battleData={battleData} department={department} />;
+  }
 
   if (!department || !battleData) {
     return (
