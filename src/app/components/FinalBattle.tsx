@@ -66,6 +66,7 @@ type BattleState =
   | "correct"
   | "incorrect"
   | "explanation"
+  | "defeated"
   | "defeat"
   | "finishingBlow"
   | "finishingAnimation"
@@ -157,10 +158,10 @@ export default function FinalBattle() {
       setBattleState("finishingBlow");
       return;
     }
-    // プレイヤーHP 0 → 敗北（復活可能）
+    // プレイヤーHP 0 → 敗北演出 → 復活選択
     if (playerHpAfter <= 0) {
       switchTrack("trainer");
-      setBattleState("defeat");
+      setBattleState("defeated");
       return;
     }
     // 次の問題がない → キューを拡張（フォールバックで補充）
@@ -386,7 +387,43 @@ export default function FinalBattle() {
     );
   }
 
-  // ===== 敗北画面（復活可能） =====
+  // ===== 通常の敗北演出（次へボタンで復活選択画面へ） =====
+  if (battleState === "defeated") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-200 via-gray-100 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-gray-500 rounded-full p-8 shadow-2xl">
+                <Skull className="w-20 h-20 text-white" />
+              </div>
+            </div>
+            <h1 className="text-5xl font-bold text-gray-700">敗北...</h1>
+          </div>
+
+          <Card className="shadow-2xl border-2 border-gray-400">
+            <CardContent className="space-y-6 pt-8">
+              <div className="text-center space-y-3">
+                <p className="text-2xl font-bold text-gray-800">
+                  {finalBattle.enemyName}に敗れた...
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setBattleState("defeat")}
+                className="w-full h-14 text-xl bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800"
+              >
+                <ArrowRight className="w-6 h-6 mr-2" />
+                次へ
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== 復活選択画面 =====
   if (battleState === "defeat") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-300 via-gray-100 to-pink-100 flex items-center justify-center p-4">
