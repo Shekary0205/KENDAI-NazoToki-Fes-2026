@@ -57,7 +57,7 @@ export default function DepartmentStage() {
   // 農学部 育成シミュレーター v2
   const isCrop = departmentId ? isCropDepartment(departmentId) : false;
   const [cropState, setCropStateLocal] = useState<CropState>(() =>
-    departmentId ? getCropState(departmentId) : { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 }
+    departmentId ? getCropState(departmentId) : { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0 }
   );
   const [feedAnimation, setFeedAnimation] = useState<string | null>(null);
   const [feedToast, setFeedToast] = useState<string | null>(null);
@@ -134,10 +134,13 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
-      // 農学部: アイテム入手ごとに満腹度回復
-      if (isCrop && departmentId && cropState.seeded) {
-        const updated = digestCrop(departmentId);
-        setCropStateLocal(updated);
+      // 農学部: アイテム入手タイミングで満腹度回復
+      if (isCrop && departmentId) {
+        const latestCrop = getCropState(departmentId);
+        if (latestCrop.seeded) {
+          const updated = digestCrop(departmentId);
+          setCropStateLocal(updated);
+        }
       }
       setShowItemRewards(true);
       return;
@@ -291,9 +294,12 @@ export default function DepartmentStage() {
     if (rewards.length > 0) {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
-      if (isCrop && departmentId && cropState.seeded) {
-        const updated = digestCrop(departmentId);
-        setCropStateLocal(updated);
+      if (isCrop && departmentId) {
+        const latestCrop = getCropState(departmentId);
+        if (latestCrop.seeded) {
+          const updated = digestCrop(departmentId);
+          setCropStateLocal(updated);
+        }
       }
       setShowItemRewards(true);
       return;
