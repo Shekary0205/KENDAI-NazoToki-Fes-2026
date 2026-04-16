@@ -303,15 +303,26 @@ export default function DepartmentStage() {
           </p>
         </div>
 
-        {/* 育成シミュレーター 作物ステータス */}
-        {hasCultivation && (() => {
+        {/* 育成シミュレーター 作物ステータス
+           * 成長度が 0（まだ種もまいていない）時点では非表示 */}
+        {hasCultivation && plantGrowth > 0 && (() => {
           const visual = getPlantVisual(plantGrowth);
           const percent = (plantGrowth / 5) * 100;
           return (
             <Card className="bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50 border-2 border-green-300 shadow-md">
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-4">
-                  <div className="text-5xl flex-shrink-0">{visual.emoji}</div>
+                  <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
+                    {visual.image ? (
+                      <img
+                        src={visual.image}
+                        alt={visual.label}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-5xl">{visual.emoji}</span>
+                    )}
+                  </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-baseline justify-between">
                       <h3 className="font-bold text-green-900 text-sm">
@@ -465,8 +476,16 @@ export default function DepartmentStage() {
                       </div>
 
                       <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-300 shadow-lg text-center space-y-4">
-                        <div className="text-8xl animate-bounce">
-                          {beforeVisual.emoji}
+                        <div className="flex items-center justify-center animate-bounce">
+                          {beforeVisual.image ? (
+                            <img
+                              src={beforeVisual.image}
+                              alt={beforeVisual.label}
+                              className="w-40 h-40 object-contain"
+                            />
+                          ) : (
+                            <span className="text-8xl">{beforeVisual.emoji}</span>
+                          )}
                         </div>
                         <p className="text-lg text-gray-800 whitespace-pre-line leading-relaxed">
                           {action.description}
@@ -493,7 +512,17 @@ export default function DepartmentStage() {
                       </div>
 
                       <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl border-4 border-orange-300 shadow-lg text-center space-y-4">
-                        <div className="text-8xl">{afterVisual.emoji}</div>
+                        <div className="flex items-center justify-center">
+                          {afterVisual.image ? (
+                            <img
+                              src={afterVisual.image}
+                              alt={afterVisual.label}
+                              className="w-40 h-40 object-contain"
+                            />
+                          ) : (
+                            <span className="text-8xl">{afterVisual.emoji}</span>
+                          )}
+                        </div>
                         <p className="text-xl text-gray-800 whitespace-pre-line font-semibold leading-relaxed">
                           {action.successMessage}
                         </p>

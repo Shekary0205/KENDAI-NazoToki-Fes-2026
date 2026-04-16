@@ -1909,11 +1909,16 @@ export const resetPlantGrowth = (departmentId: string): void => {
   localStorage.removeItem(`plantGrowth_${departmentId}`);
 };
 
-/** 育成段階の表示情報 */
-export const getPlantVisual = (growth: number): { emoji: string; label: string; color: string } => {
+/** 育成段階の表示情報（image があれば絵文字の代わりに画像を表示する） */
+export const getPlantVisual = (growth: number): {
+  emoji: string;
+  label: string;
+  color: string;
+  image?: string;
+} => {
   switch (growth) {
     case 0: return { emoji: "🏞️", label: "畑", color: "text-gray-600" };
-    case 1: return { emoji: "🌱", label: "発芽", color: "text-green-600" };
+    case 1: return { emoji: "🌱", label: "発芽", color: "text-green-600", image: "/images/tane1.png" };
     case 2: return { emoji: "🌿", label: "若葉", color: "text-green-700" };
     case 3: return { emoji: "🪴", label: "苗", color: "text-emerald-700" };
     case 4: return { emoji: "🌾", label: "実りの時", color: "text-yellow-700" };
