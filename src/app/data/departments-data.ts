@@ -1982,7 +1982,7 @@ export interface CropState {
   fullness: number; // 0〜100
 }
 
-export const CROP_FULLNESS_PER_FEED = 20;
+export const CROP_FULLNESS_PER_FEED = 34;
 export const CROP_FULLNESS_RECOVERY = 25;
 export const CROP_FULLNESS_MAX = 100;
 
