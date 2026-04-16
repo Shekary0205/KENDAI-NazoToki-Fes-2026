@@ -776,7 +776,7 @@ export const departments: DepartmentData[] = [
         id: 5,
         location: "2階左奥",
         riddle: "３つの張り紙の答えを入力しろ",
-        hint: "1階を探索してみよう",
+        hint: "○○イベントサー○○\n1階を探索してみよう。",
         answer: "",
         type: "multi-input",
         multiAnswers: [
