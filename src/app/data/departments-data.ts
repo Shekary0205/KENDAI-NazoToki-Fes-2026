@@ -33,8 +33,10 @@ export interface StageData {
   hint: string;
   answer: string;
   nextLocationHint: string;
-  /** クリア時に入手するアイテム */
+  /** クリア時に入手するアイテム（単一） */
   itemReward?: ItemData;
+  /** クリア時に入手するアイテム（複数） */
+  itemRewards?: ItemData[];
   /** 正解後に発生するアクシデント */
   accident?: AccidentData;
   /** 問題タイプ */
@@ -108,8 +110,10 @@ export interface MidBattleData {
   afterStageId: number;
   /** 勝利後に進むステージID（未指定の場合は afterStageId + 1） */
   nextStageId?: number;
-  /** 勝利時に入手するアイテム（キーワードルート戦闘用） */
+  /** 勝利時に入手するアイテム（単一） */
   rewardItem?: ItemData;
+  /** 勝利時に入手するアイテム（複数） */
+  rewardItems?: ItemData[];
   enemyName: string;
   enemyImage: string;
   /** 画像のY方向シフト (例: "30%" で下に30%、"-15%" で上に15%) */
@@ -1705,47 +1709,171 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 2,
-        location: "畑エリア",
-        riddle: "[プロトタイプ]\n植物の光合成で放出される気体は？",
-        hint: "O₂",
-        answer: "",
-        type: "select",
-        options: ["酸素", "二酸化炭素", "窒素", "水素"],
-        correctIndex: 0,
-        nextLocationHint: "次の問題へ進もう"
+        location: "10号館1階",
+        riddle: "自動販売機の謎を解け",
+        hint: "",
+        answer: "DNA",
+        itemReward: { id: "agr-water", name: "水", icon: "💧", description: "作物に水をあげよう" },
+        nextLocationHint: "１階売店へ進め"
       },
       {
         id: 3,
-        location: "温室",
-        riddle: "[プロトタイプ]\n日光を受けて植物が栄養を作る働きを何という？",
-        hint: "光＋合成",
-        answer: "",
-        type: "select",
-        options: ["光合成", "呼吸", "蒸散", "発酵"],
-        correctIndex: 0,
-        nextLocationHint: "次の問題へ進もう"
+        location: "10号館1階売店",
+        riddle: "農学部売店の名称を答えろ",
+        hint: "",
+        answer: "MARUZEN SHOP",
+        alternateAnswers: ["MARUZENSHOP", "マルゼンショップ"],
+        itemReward: { id: "agr-nutrient", name: "栄養剤", icon: "💊", description: "作物に栄養を与えよう" },
+        nextLocationHint: "次の問題へ進め"
       },
       {
         id: 4,
-        location: "資材倉庫",
-        riddle: "[プロトタイプ]\n植物の三大栄養素のうち、葉の成長に使われるのは？",
-        hint: "N（窒素）",
-        answer: "",
-        type: "select",
-        options: ["窒素", "リン酸", "カリウム", "カルシウム"],
-        correctIndex: 0,
-        nextLocationHint: "次の問題へ進もう"
+        location: "10号館1階売店",
+        riddle: "売店の謎を解け",
+        hint: "",
+        answer: "あ",
+        itemRewards: [
+          { id: "agr-17ice", name: "17アイス", icon: "🍦", description: "冷たくて甘い" },
+          { id: "agr-energy", name: "エナドリ", icon: "⚡", description: "元気が出る飲み物" },
+          { id: "agr-textbook", name: "参考書", icon: "📚", description: "知識の源" }
+        ],
+        nextLocationHint: "階段で２階へ進め"
       },
       {
         id: 5,
-        location: "収穫エリア",
-        riddle: "[プロトタイプ]\n「五穀豊穣」に含まれる作物を選べ",
+        location: "10号館2階",
+        riddle: "２階掲示板の謎を解け",
         hint: "",
-        answer: "",
-        type: "select",
-        options: ["米", "ゴマ", "そば", "とうもろこし"],
-        correctIndex: 0,
+        answer: "あ",
+        itemRewards: [
+          { id: "agr-chili", name: "唐辛子", icon: "🌶️", description: "辛い刺激" },
+          { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
+        ],
+        nextLocationHint: "２階奥まで進め"
+      },
+      {
+        id: 6,
+        location: "10号館2階奥",
+        riddle: "２階奥での謎を解け",
+        hint: "",
+        answer: "あ",
+        itemRewards: [
+          { id: "agr-banana", name: "バナナ", icon: "🍌", description: "栄養満点の果物" },
+          { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
+        ],
+        nextLocationHint: "３階へ進め"
+      },
+      {
+        id: 7,
+        location: "10号館3階",
+        riddle: "３階掲示板の謎を解け",
+        hint: "",
+        answer: "あ",
+        nextLocationHint: "３階奥まで進め"
+      },
+      {
+        id: 8,
+        location: "10号館3階奥",
+        riddle: "３階奥での謎を解け",
+        hint: "",
+        answer: "あ",
+        nextLocationHint: "戦闘の予感..."
+      },
+      {
+        id: 9,
+        location: "10号館4階",
+        riddle: "４階での謎を解け",
+        hint: "",
+        answer: "あ",
+        nextLocationHint: "４階奥へ進め"
+      },
+      {
+        id: 10,
+        location: "10号館4階奥",
+        riddle: "４階奥での謎を解け",
+        hint: "",
+        answer: "あ",
+        nextLocationHint: "よくやった。５階へ進め。"
+      },
+      {
+        id: 11,
+        location: "10号館5階",
+        riddle: "５階での謎を解け",
+        hint: "",
+        answer: "あ",
+        itemRewards: [
+          { id: "agr-natural-water", name: "天然水", icon: "🏔️", description: "自然の恵み" },
+          { id: "agr-silica-water", name: "シリカ水", icon: "💎", description: "ミネラル豊富な水" },
+          { id: "agr-hydrogen-water", name: "水素水", icon: "🫧", description: "水素たっぷりの水" }
+        ],
+        nextLocationHint: "５階奥へ進め"
+      },
+      {
+        id: 12,
+        location: "10号館5階奥",
+        riddle: "５階奥での謎を解け",
+        hint: "",
+        answer: "あ",
+        nextLocationHint: "次は最上階。６階へ進め。"
+      },
+      {
+        id: 13,
+        location: "10号館6階",
+        riddle: "６階での謎を解け",
+        hint: "",
+        answer: "あ",
         nextLocationHint: ""
+      }
+    ],
+    midBattles: [
+      {
+        id: 1,
+        afterStageId: 8,
+        enemyName: "10号館の番人",
+        enemyImage: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=400&fit=crop",
+        enemyMaxHp: 100,
+        playerMaxHp: 100,
+        damageToEnemy: 20,
+        damageToPlayer: 20,
+        randomOrder: true,
+        nextLocationHint: "よくやった。４階へ進め",
+        rewardItems: [
+          { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂" },
+          { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱" },
+          { id: "agr-warrior-heart", name: "戦士の心", icon: "⚔️", description: "戦う勇気" }
+        ],
+        questions: [
+          {
+            question: "日本の農業従事者の平均年齢はおよそ何歳？",
+            options: ["50歳", "60歳", "68歳", "75歳"],
+            correctIndex: 2,
+            explanation: "日本の農業従事者の平均年齢は約68歳です。"
+          },
+          {
+            question: "日本で最も生産量が多い野菜は？",
+            options: ["キャベツ", "大根", "玉ねぎ", "トマト"],
+            correctIndex: 1,
+            explanation: "日本で最も生産量が多い野菜は大根です。"
+          },
+          {
+            question: "群馬県の農業生産額が全国1位の作物は？",
+            options: ["こんにゃく芋", "りんご", "米", "キャベツ"],
+            correctIndex: 0,
+            explanation: "群馬県はこんにゃく芋の生産量が全国1位です。"
+          },
+          {
+            question: "稲作で「田植え」が行われる時期は？",
+            options: ["3月〜4月", "5月〜6月", "7月〜8月", "9月〜10月"],
+            correctIndex: 1,
+            explanation: "田植えは一般的に5月〜6月に行われます。"
+          },
+          {
+            question: "「有機農業」で使用が禁止されているものは？",
+            options: ["堆肥", "化学肥料", "種", "水"],
+            correctIndex: 1,
+            explanation: "有機農業では化学肥料の使用が禁止されています。"
+          }
+        ]
       }
     ]
   },
@@ -1849,28 +1977,16 @@ export const setClearedDepartmentsLocally = (deptIds: string[]): void => {
 
 // ===== 農学部 育成シミュレーター v2 =====
 export interface CropState {
-  seeded: boolean;   // 種を植えたかどうか
+  seeded: boolean;
   totalFeeds: number;
-  waterFeeds: number;
-  sunFeeds: number;
-  fertFeeds: number;
   fullness: number; // 0〜100
 }
 
-export const CROP_FULLNESS_PER_FEED = 35;
+export const CROP_FULLNESS_PER_FEED = 20;
 export const CROP_FULLNESS_RECOVERY = 25;
 export const CROP_FULLNESS_MAX = 100;
 
-/** フィードアイテム定義 */
-export const CROP_FEED_ITEMS = [
-  { id: "water", icon: "💧", label: "水" },
-  { id: "sun", icon: "☀️", label: "光" },
-  { id: "fert", icon: "🧪", label: "肥料" },
-] as const;
-
-export type FeedItemId = typeof CROP_FEED_ITEMS[number]["id"];
-
-const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
+const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0 };
 
 export const getCropState = (departmentId: string): CropState => {
   if (typeof window === 'undefined') return { ...DEFAULT_CROP };
@@ -1892,13 +2008,10 @@ export const saveCropState = (departmentId: string, state: CropState): void => {
   localStorage.setItem(`cropState_${departmentId}`, JSON.stringify(state));
 };
 
-/** フィードを与える（満腹チェック済み前提で呼ぶ） */
-export const feedCrop = (departmentId: string, feedId: FeedItemId): CropState => {
+/** アイテムを作物に与える */
+export const feedCrop = (departmentId: string): CropState => {
   const state = getCropState(departmentId);
   state.totalFeeds += 1;
-  if (feedId === "water") state.waterFeeds += 1;
-  else if (feedId === "sun") state.sunFeeds += 1;
-  else if (feedId === "fert") state.fertFeeds += 1;
   state.fullness = Math.min(CROP_FULLNESS_MAX, state.fullness + CROP_FULLNESS_PER_FEED);
   saveCropState(departmentId, state);
   return state;
@@ -1919,15 +2032,6 @@ export const getCropGrowthLevel = (state: CropState): number => {
   if (t <= 2) return 1;
   if (t <= 4) return 2;
   return 3;
-};
-
-/** 支配的なフィードタイプから進化名を返す */
-export const getCropEvolution = (state: CropState): string => {
-  if (state.totalFeeds === 0) return "none";
-  const { waterFeeds, sunFeeds, fertFeeds } = state;
-  if (waterFeeds >= sunFeeds && waterFeeds >= fertFeeds) return "water";
-  if (sunFeeds >= waterFeeds && sunFeeds >= fertFeeds) return "sun";
-  return "fert";
 };
 
 /** 育成段階の画像とラベル */

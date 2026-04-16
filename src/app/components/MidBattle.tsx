@@ -19,7 +19,7 @@ import {
   ArrowRight,
   MapPin
 } from "lucide-react";
-import { getDepartmentById, type MidBattleQuestion } from "../data/departments-data";
+import { getDepartmentById, addItem, type MidBattleQuestion } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -271,6 +271,9 @@ export default function MidBattle() {
 
   const handleVictory = () => {
     wonRef.current = true;
+    // アイテム報酬を付与
+    if (battleData.rewardItem) addItem(battleData.rewardItem);
+    if (battleData.rewardItems) battleData.rewardItems.forEach(item => addItem(item));
     const nextStageId = battleData.nextStageId ?? battleData.afterStageId + 1;
     const hasNextStage = department.stages.some(s => s.id === nextStageId);
     if (hasNextStage) {
@@ -412,6 +415,31 @@ export default function MidBattle() {
                   中間試練を突破しました！
                 </p>
               </div>
+
+              {/* アイテム報酬 */}
+              {(battleData.rewardItem || battleData.rewardItems) && (
+                <div className="bg-purple-50 p-5 rounded-lg border-2 border-purple-300 space-y-2">
+                  <h3 className="text-center font-bold text-purple-900 mb-3">🎁 アイテム入手！</h3>
+                  {battleData.rewardItem && (
+                    <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-200">
+                      <span className="text-3xl">{battleData.rewardItem.icon}</span>
+                      <div>
+                        <p className="font-bold text-gray-900">{battleData.rewardItem.name}</p>
+                        {battleData.rewardItem.description && <p className="text-xs text-gray-600">{battleData.rewardItem.description}</p>}
+                      </div>
+                    </div>
+                  )}
+                  {battleData.rewardItems?.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-200">
+                      <span className="text-3xl">{item.icon}</span>
+                      <div>
+                        <p className="font-bold text-gray-900">{item.name}</p>
+                        {item.description && <p className="text-xs text-gray-600">{item.description}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {battleData.nextLocationHint && (
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-10 rounded-2xl border-4 border-blue-300 shadow-xl">

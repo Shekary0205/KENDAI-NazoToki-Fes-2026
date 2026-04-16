@@ -27,11 +27,12 @@ import {
   digestCrop,
   getCropVisual,
   getCropGrowthLevel,
-  getCropEvolution,
-  CROP_FEED_ITEMS,
   CROP_FULLNESS_MAX,
+  getObtainedItems,
+  addItem,
+  removeItem,
   type CropState,
-  type FeedItemId,
+  type ItemData,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
@@ -62,6 +63,8 @@ export default function DepartmentStage() {
   const [feedToast, setFeedToast] = useState<string | null>(null);
   const [showSeeding, setShowSeeding] = useState(false);
   const [seedingDone, setSeedingDone] = useState(false);
+  const [inventory, setInventory] = useState<ItemData[]>(() => getObtainedItems());
+  const [showItemRewards, setShowItemRewards] = useState(false);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -83,6 +86,8 @@ export default function DepartmentStage() {
     setFeedToast(null);
     setShowSeeding(false);
     setSeedingDone(false);
+    setShowItemRewards(false);
+    setInventory(getObtainedItems());
     // ステージクリア時に満腹度を回復
     if (departmentId && isCrop && currentStageId > 1) {
       const updated = digestCrop(departmentId);
@@ -109,6 +114,14 @@ export default function DepartmentStage() {
     );
   }
 
+  // 全報酬アイテムを取得するヘルパー
+  const getAllRewards = (): ItemData[] => {
+    const rewards: ItemData[] = [];
+    if (stage.itemReward) rewards.push(stage.itemReward);
+    if (stage.itemRewards) rewards.push(...stage.itemRewards);
+    return rewards;
+  };
+
   // 正解後に進むフェーズを決定する共通ハンドラ
   const handleCorrectAnswerAdvance = () => {
     if (stage.explanation) {
@@ -118,6 +131,14 @@ export default function DepartmentStage() {
     // 農学部ステージ1正解 → 種まきフェーズ
     if (isCrop && currentStageId === 1 && !cropState.seeded) {
       setShowSeeding(true);
+      return;
+    }
+    // アイテム報酬がある場合は報酬画面を表示
+    const rewards = getAllRewards();
+    if (rewards.length > 0) {
+      rewards.forEach(item => addItem(item));
+      setInventory(getObtainedItems());
+      setShowItemRewards(true);
       return;
     }
     if (stage.skipNextLocationScreen) {
@@ -259,6 +280,19 @@ export default function DepartmentStage() {
 
   const handleExplanationNext = () => {
     setShowExplanation(false);
+    // 農学部ステージ1 → 種まき
+    if (isCrop && currentStageId === 1 && !cropState.seeded) {
+      setShowSeeding(true);
+      return;
+    }
+    // アイテム報酬がある場合
+    const rewards = getAllRewards();
+    if (rewards.length > 0) {
+      rewards.forEach(item => addItem(item));
+      setInventory(getObtainedItems());
+      setShowItemRewards(true);
+      return;
+    }
     if (stage.skipNextLocationScreen) {
       handleNext();
     } else {
@@ -266,26 +300,29 @@ export default function DepartmentStage() {
     }
   };
 
-  // 作物にフィードを与える
-  const handleFeedCrop = (feedId: FeedItemId) => {
+  // 所持アイテムを作物に与える
+  const handleFeedCrop = (item: ItemData) => {
     if (!departmentId || cropState.fullness >= CROP_FULLNESS_MAX) return;
     const prevLevel = getCropGrowthLevel(cropState);
-    const updated = feedCrop(departmentId, feedId);
+    // アイテムをインベントリから削除
+    removeItem(item.id);
+    setInventory(getObtainedItems());
+    // 作物の成長
+    const updated = feedCrop(departmentId);
     setCropStateLocal(updated);
     const newLevel = getCropGrowthLevel(updated);
     // アニメーション
-    setFeedAnimation(feedId);
+    setFeedAnimation(item.id);
     setTimeout(() => setFeedAnimation(null), 600);
-    // レベルアップ通知
     if (newLevel > prevLevel) {
       const visual = getCropVisual(updated);
       setFeedToast(`🎉 作物が「${visual.label}」に成長した！`);
     } else {
-      const item = CROP_FEED_ITEMS.find(i => i.id === feedId);
-      setFeedToast(`${item?.icon} ${item?.label}をあげた！`);
+      setFeedToast(`${item.icon} ${item.name}をあげた！`);
     }
     setTimeout(() => setFeedToast(null), 2000);
   };
+
 
   const progressPercentage = (currentStageId / department.stages.length) * 100;
 
@@ -340,8 +377,6 @@ export default function DepartmentStage() {
           const visual = getCropVisual(cropState);
           const fullnessPercent = (cropState.fullness / CROP_FULLNESS_MAX) * 100;
           const isFull = cropState.fullness >= CROP_FULLNESS_MAX;
-          const evo = getCropEvolution(cropState);
-          const evoLabel: Record<string, string> = { water: "💧水タイプ", sun: "☀️太陽タイプ", fert: "🧪栄養タイプ", none: "" };
           return (
             <Card className={`border-2 shadow-md transition-all ${feedAnimation ? "animate-shake border-yellow-400 bg-yellow-50" : "border-green-300 bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50"}`}>
               <CardContent className="pt-4 pb-4">
@@ -358,7 +393,7 @@ export default function DepartmentStage() {
                     <div className="flex items-baseline justify-between">
                       <h3 className="font-bold text-green-900 text-sm">育成中の作物</h3>
                       <span className={`text-xs font-semibold ${visual.color}`}>
-                        {visual.label} {evo !== "none" && `(${evoLabel[evo]})`}
+                        {visual.label}
                       </span>
                     </div>
                     {/* 満腹メーター */}
@@ -380,24 +415,36 @@ export default function DepartmentStage() {
                     </div>
                   </div>
                 </div>
-                {/* フィードアイテム */}
-                <div className="flex items-center justify-center gap-3 mt-3">
-                  {CROP_FEED_ITEMS.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleFeedCrop(item.id)}
-                      disabled={isFull}
-                      className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl border-2 transition-all
-                        ${isFull
-                          ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
-                          : "border-green-300 bg-white hover:bg-green-50 hover:border-green-500 active:scale-95 shadow-sm"
-                        }`}
-                    >
-                      <span className="text-2xl">{item.icon}</span>
-                      <span className="text-xs font-semibold text-gray-700">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
+                {/* 所持アイテム一覧（フィード用） */}
+                {inventory.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-600 font-semibold mb-2 text-center">
+                      アイテムをタップして作物にあげよう
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {inventory.map((item, idx) => (
+                        <button
+                          key={`${item.id}-${idx}`}
+                          onClick={() => handleFeedCrop(item)}
+                          disabled={isFull}
+                          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border-2 transition-all min-w-[60px]
+                            ${isFull
+                              ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
+                              : "border-green-300 bg-white hover:bg-green-50 hover:border-green-500 active:scale-95 shadow-sm"
+                            }`}
+                        >
+                          <span className="text-xl">{item.icon}</span>
+                          <span className="text-[10px] font-semibold text-gray-700 leading-tight">{item.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {inventory.length === 0 && (
+                  <p className="mt-3 text-center text-xs text-gray-500">
+                    アイテムがありません。謎を解いて入手しよう！
+                  </p>
+                )}
                 {/* フィードトースト */}
                 {feedToast && (
                   <div className="mt-2 text-center text-sm font-bold text-green-800 bg-green-100 border border-green-300 rounded-lg py-1.5 animate-pulse">
@@ -424,8 +471,8 @@ export default function DepartmentStage() {
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
-            {/* 謎・ヒントは次の目的地画面・解説画面・種まき画面では非表示 */}
-            {!showNext && !showExplanation && !showSeeding && (
+            {/* 謎・ヒントは各フェーズ画面では非表示 */}
+            {!showNext && !showExplanation && !showSeeding && !showItemRewards && (
               <>
                 {/* 謎 */}
                 <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
@@ -523,6 +570,48 @@ export default function DepartmentStage() {
               </div>
             )}
 
+            {/* アイテム入手画面 */}
+            {showItemRewards && (() => {
+              const rewards = getAllRewards();
+              return (
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <div className="inline-block bg-purple-500 rounded-full p-4 shadow-xl animate-bounce">
+                      <CheckCircle2 className="w-10 h-10 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-purple-900">アイテム入手！</h2>
+                  </div>
+                  <div className="bg-purple-50 p-6 rounded-xl border-2 border-purple-300 space-y-3">
+                    {rewards.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-purple-200">
+                        <span className="text-3xl">{item.icon}</span>
+                        <div>
+                          <p className="font-bold text-gray-900">{item.name}</p>
+                          {item.description && <p className="text-xs text-gray-600">{item.description}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {isCrop && cropState.seeded && (
+                    <p className="text-center text-sm text-green-700 font-semibold">
+                      💡 入手したアイテムは作物にあげることができます
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => {
+                      setShowItemRewards(false);
+                      if (stage.skipNextLocationScreen) handleNext();
+                      else setShowNext(true);
+                    }}
+                    className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
+                  >
+                    次へ進む
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              );
+            })()}
+
             {/* 種まきフェーズ（農学部ステージ1正解後） */}
             {showSeeding && (
               <div className="space-y-6">
@@ -586,7 +675,7 @@ export default function DepartmentStage() {
             )}
 
             {/* 回答フォーム */}
-            {!showNext && !showExplanation && !showSeeding ? (
+            {!showNext && !showExplanation && !showSeeding && !showItemRewards ? (
               <>
                 {/* テキスト入力形式 */}
                 {(!stage.type || stage.type === "text") && (
