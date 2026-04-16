@@ -927,7 +927,7 @@ export const departments: DepartmentData[] = [
   {
     id: "child-education",
     name: "人間発達学部/子ども教育学科",
-    buildings: "8, 9, 10号館",
+    buildings: "8, 9号館",
     color: "yellow",
     icon: "🎓",
     stages: [
@@ -1686,7 +1686,7 @@ export const departments: DepartmentData[] = [
   {
     id: "agriculture",
     name: "農学部",
-    buildings: "未定号館",
+    buildings: "10号館",
     color: "orange",
     icon: "🌾",
     unlockPassword: "112233",
