@@ -991,11 +991,11 @@ export const departments: DepartmentData[] = [
                 icon: "🛟",
                 description: "水難を防ぐアイテム"
               },
-              nextLocationHint: "右に進み掲示板を確認しよう"
+              nextLocationHint: "右に進み掲示板を確認しよう。"
             },
             {
               id: 3,
-              location: "8号館エントランス掲示板",
+              location: "8号館エントランス",
               riddle: "Oの次。Qの前\nSの次。Uの前\nBの前",
               hint: "アルファベット",
               answer: "PTA",
