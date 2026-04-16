@@ -1397,7 +1397,7 @@ export const departments: DepartmentData[] = [
               id: 6,
               location: "9号館3階",
               riddle: "紅蝶の導く言葉を紡げ",
-              hint: "",
+              hint: "蝶が向いている場所を確認しよう",
               answer: "remember",
               accident: {
                 title: "アクシデント発生！",
