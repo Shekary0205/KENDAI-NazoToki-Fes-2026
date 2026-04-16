@@ -1666,32 +1666,20 @@ export const departments: DepartmentData[] = [
   {
     id: "agriculture",
     name: "農学部",
-    buildings: "10号館",
+    buildings: "未定号館",
     color: "orange",
     icon: "🌾",
+    unlockPassword: "112233",
     stages: [
       {
         id: 1,
-        location: "10号館 エントランス",
-        riddle: "農業と食の未来を学ぶ。\n「農学」の「農」という漢字は\n何部首？",
-        hint: "「のうにょう」という部首です",
-        answer: "のうにょう",
-        nextLocationHint: "実験農場の案内図を見に行こう！"
-      },
-      {
-        id: 2,
-        location: "10号館 農場案内図",
-        riddle: "四季を表す言葉「春夏秋冬」。\n最初と最後の文字を組み合わせると？",
-        hint: "「春」と「冬」を合わせる",
-        answer: "春冬",
-        nextLocationHint: "研究室の掲示物へ！"
-      },
-      {
-        id: 3,
-        location: "10号館 研究室前",
-        riddle: "「AGRICULTURE（農業）」という単語に\n「CULTURE（文化）」という単語が隠れている。\n最初に取る必要がある文字は？",
-        hint: "AGRICULTUREの最初の4文字",
-        answer: "AGRI",
+        location: "農学部エントランス",
+        riddle: "農学部の学科を答えろ",
+        hint: "",
+        answer: "",
+        type: "select",
+        options: ["生物生産学科", "農学科", "農芸化学科", "応用生物科学科"],
+        correctIndex: 0,
         nextLocationHint: ""
       }
     ]
