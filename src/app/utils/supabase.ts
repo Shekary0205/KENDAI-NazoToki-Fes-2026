@@ -63,6 +63,31 @@ export async function recordClearedDepartmentToServer(
   }
 }
 
+/** 学籍番号 + 氏名の組み合わせで既存アカウントを検証する。
+ *  見つかれば true（ログイン成功）、見つからなければ false を返す。 */
+export async function verifyAccountLogin(
+  studentId: string,
+  name: string
+): Promise<boolean> {
+  try {
+    const url =
+      `${SUPABASE_URL}/rest/v1/accounts` +
+      `?student_id=eq.${encodeURIComponent(studentId)}` +
+      `&name=eq.${encodeURIComponent(name)}` +
+      `&select=student_id&limit=1`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: baseHeaders,
+    });
+    if (!res.ok) return false;
+    const rows: Array<{ student_id: string }> = await res.json();
+    return rows.length > 0;
+  } catch (err) {
+    console.error("Account login verification failed:", err);
+    return false;
+  }
+}
+
 /** サーバー上に保存されている、指定ユーザーのクリア済み学部IDリストを取得する。 */
 export async function fetchClearedDepartmentsFromServer(
   studentId: string

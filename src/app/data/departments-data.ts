@@ -1787,6 +1787,13 @@ export const markDepartmentAsCleared = (departmentId: string): void => {
   }
 };
 
+/** ログイン時などに、サーバーから取得したクリア済み学部リストをローカルに書き戻す
+ *  （サーバーへの再送信は行わない） */
+export const setClearedDepartmentsLocally = (deptIds: string[]): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('clearedDepartments', JSON.stringify(deptIds));
+};
+
 export const isDepartmentCleared = (departmentId: string): boolean => {
   return getClearedDepartments().includes(departmentId);
 };
