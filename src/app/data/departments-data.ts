@@ -1363,7 +1363,8 @@ export const departments: DepartmentData[] = [
               location: "9号館1階",
               riddle: "VSCはなんの略？",
               hint: "",
-              answer: "ボランティアサポートセンター",
+              answer: "ボランティア・市民活動支援センター",
+              alternateAnswers: ["ボランティア市民活動支援センター"],
               nextLocationHint: "次の問題へ進め"
             },
             {
