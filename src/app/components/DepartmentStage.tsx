@@ -16,6 +16,7 @@ import {
   CheckSquare,
   Square,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 import {
   getDepartmentById,
@@ -70,6 +71,8 @@ export default function DepartmentStage() {
   const [seedingDone, setSeedingDone] = useState(false);
   const [inventory, setInventory] = useState<ItemData[]>(() => getObtainedItems());
   const [showItemRewards, setShowItemRewards] = useState(false);
+  const [showGrowthScreen, setShowGrowthScreen] = useState(false);
+  const [growthScreenVisual, setGrowthScreenVisual] = useState<{ image: string; label: string } | null>(null);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -336,14 +339,18 @@ export default function DepartmentStage() {
     setFeedAnimation(item.id);
     setTimeout(() => setFeedAnimation(null), 600);
     if (newLevel > prevLevel) {
+      // レベルアップ → 成長画面を表示
       const visual = getCropVisual(updated);
-      setFeedToast(`🎉 作物が「${visual.label}」に成長した！`);
+      fireCorrectEffect();
+      setGrowthScreenVisual({ image: visual.image, label: visual.label });
+      setShowGrowthScreen(true);
     } else if (statLabel) {
       setFeedToast(`${item.icon} ${item.name}をあげた！ ${statLabel.icon}${statLabel.label}+1`);
+      setTimeout(() => setFeedToast(null), 2500);
     } else {
       setFeedToast(`${item.icon} ${item.name}をあげた！`);
+      setTimeout(() => setFeedToast(null), 2500);
     }
-    setTimeout(() => setFeedToast(null), 2500);
   };
 
 
@@ -950,6 +957,53 @@ export default function DepartmentStage() {
           掲示物をよく見て、謎を解き明かそう！
         </p>
       </div>
+
+      {/* 作物成長画面（フルスクリーンオーバーレイ） */}
+      {showGrowthScreen && growthScreenVisual && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="max-w-sm w-full space-y-6">
+            <div className="text-center space-y-3">
+              <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-5 shadow-2xl animate-bounce">
+                <Sparkles className="w-12 h-12 text-white" />
+              </div>
+              <h2 className="text-4xl font-bold text-white drop-shadow-lg">
+                成長した！
+              </h2>
+            </div>
+
+            <Card className="shadow-2xl border-4 border-green-400">
+              <CardContent className="pt-8 pb-8 text-center space-y-5">
+                <div className="flex justify-center">
+                  <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-green-400 shadow-2xl bg-white flex items-center justify-center">
+                    {growthScreenVisual.image
+                      ? <img src={growthScreenVisual.image} alt={growthScreenVisual.label} className="w-full h-full object-cover" />
+                      : <span className="text-8xl">🌱</span>
+                    }
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-green-900">
+                  作物が「{growthScreenVisual.label}」に成長した！
+                </p>
+                {getCropEvolutionName(cropState) && (
+                  <p className="text-lg font-semibold text-purple-700">
+                    ✨ {getCropEvolutionName(cropState)} に進化！
+                  </p>
+                )}
+                <Button
+                  onClick={() => {
+                    setShowGrowthScreen(false);
+                    setGrowthScreenVisual(null);
+                  }}
+                  className="w-full h-14 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                >
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  戻る
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
