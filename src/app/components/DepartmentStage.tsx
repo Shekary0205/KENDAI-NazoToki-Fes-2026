@@ -27,12 +27,16 @@ import {
   digestCrop,
   getCropVisual,
   getCropGrowthLevel,
+  getCropEvolutionName,
+  getItemStat,
   CROP_FULLNESS_MAX,
+  CROP_STAT_INFO,
   getObtainedItems,
   addItem,
   removeItem,
   type CropState,
   type ItemData,
+  type CropStat,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
@@ -57,7 +61,7 @@ export default function DepartmentStage() {
   // 農学部 育成シミュレーター v2
   const isCrop = departmentId ? isCropDepartment(departmentId) : false;
   const [cropState, setCropStateLocal] = useState<CropState>(() =>
-    departmentId ? getCropState(departmentId) : { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0 }
+    departmentId ? getCropState(departmentId) : { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0, kindness: 0, strength: 0, wisdom: 0 }
   );
   const [feedAnimation, setFeedAnimation] = useState<string | null>(null);
   const [feedToast, setFeedToast] = useState<string | null>(null);
@@ -318,20 +322,25 @@ export default function DepartmentStage() {
     // アイテムをインベントリから削除
     removeItem(item.id);
     setInventory(getObtainedItems());
-    // 作物の成長
-    const updated = feedCrop(departmentId);
+    // 作物の成長（ステータスも加算）
+    const updated = feedCrop(departmentId, item.id);
     setCropStateLocal(updated);
     const newLevel = getCropGrowthLevel(updated);
+    // ステータス情報
+    const stat = getItemStat(item.id);
+    const statLabel = stat ? CROP_STAT_INFO[stat] : null;
     // アニメーション
     setFeedAnimation(item.id);
     setTimeout(() => setFeedAnimation(null), 600);
     if (newLevel > prevLevel) {
       const visual = getCropVisual(updated);
       setFeedToast(`🎉 作物が「${visual.label}」に成長した！`);
+    } else if (statLabel) {
+      setFeedToast(`${item.icon} ${item.name}をあげた！ ${statLabel.icon}${statLabel.label}+1`);
     } else {
       setFeedToast(`${item.icon} ${item.name}をあげた！`);
     }
-    setTimeout(() => setFeedToast(null), 2000);
+    setTimeout(() => setFeedToast(null), 2500);
   };
 
 
@@ -388,6 +397,7 @@ export default function DepartmentStage() {
           const visual = getCropVisual(cropState);
           const fullnessPercent = (cropState.fullness / CROP_FULLNESS_MAX) * 100;
           const isFull = cropState.fullness >= CROP_FULLNESS_MAX;
+          const evoName = getCropEvolutionName(cropState);
           return (
             <Card className={`border-2 shadow-md transition-all ${feedAnimation ? "animate-shake border-yellow-400 bg-yellow-50" : "border-green-300 bg-gradient-to-r from-green-50 via-emerald-50 to-lime-50"}`}>
               <CardContent className="pt-4 pb-4">
@@ -402,10 +412,24 @@ export default function DepartmentStage() {
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-green-900 text-sm">育成中の作物</h3>
+                      <h3 className="font-bold text-green-900 text-sm">
+                        {evoName ?? "育成中の作物"}
+                      </h3>
                       <span className={`text-xs font-semibold ${visual.color}`}>
                         {visual.label}
                       </span>
+                    </div>
+                    {/* ステータスバー */}
+                    <div className="flex items-center gap-3 text-xs">
+                      {(["kindness", "strength", "wisdom"] as CropStat[]).map(stat => {
+                        const info = CROP_STAT_INFO[stat];
+                        const val = cropState[stat];
+                        return (
+                          <span key={stat} className={`font-semibold ${val >= 3 ? info.color : "text-gray-500"}`}>
+                            {info.icon}{val}
+                          </span>
+                        );
+                      })}
                     </div>
                     {/* 満腹メーター */}
                     <div className="space-y-0.5">
@@ -433,21 +457,30 @@ export default function DepartmentStage() {
                       アイテムをタップして作物にあげよう
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      {inventory.map((item, idx) => (
-                        <button
-                          key={`${item.id}-${idx}`}
-                          onClick={() => handleFeedCrop(item)}
-                          disabled={isFull}
-                          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border-2 transition-all min-w-[60px]
-                            ${isFull
-                              ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
-                              : "border-green-300 bg-white hover:bg-green-50 hover:border-green-500 active:scale-95 shadow-sm"
-                            }`}
-                        >
-                          <span className="text-xl">{item.icon}</span>
-                          <span className="text-[10px] font-semibold text-gray-700 leading-tight">{item.name}</span>
-                        </button>
-                      ))}
+                      {inventory.map((item, idx) => {
+                        const stat = getItemStat(item.id);
+                        const statInfo = stat ? CROP_STAT_INFO[stat] : null;
+                        return (
+                          <button
+                            key={`${item.id}-${idx}`}
+                            onClick={() => handleFeedCrop(item)}
+                            disabled={isFull}
+                            className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border-2 transition-all min-w-[60px]
+                              ${isFull
+                                ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
+                                : "border-green-300 bg-white hover:bg-green-50 hover:border-green-500 active:scale-95 shadow-sm"
+                              }`}
+                          >
+                            <span className="text-xl">{item.icon}</span>
+                            <span className="text-[10px] font-semibold text-gray-700 leading-tight">{item.name}</span>
+                            {statInfo && (
+                              <span className={`text-[9px] font-bold ${statInfo.color}`}>
+                                {statInfo.icon}{statInfo.label}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

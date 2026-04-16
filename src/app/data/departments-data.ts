@@ -1984,19 +1984,43 @@ export const setClearedDepartmentsLocally = (deptIds: string[]): void => {
 };
 
 // ===== 農学部 育成シミュレーター v2 =====
+export type CropStat = "kindness" | "strength" | "wisdom";
+
 export interface CropState {
   seeded: boolean;
   totalFeeds: number;
   fullness: number; // 0〜100
-  rewardTimings: number; // アイテム入手タイミングの累計回数
+  rewardTimings: number;
+  /** 各ステータスの蓄積値 */
+  kindness: number;  // 優しさ
+  strength: number;  // 強さ
+  wisdom: number;    // 賢さ
 }
+
+/** アイテムIDごとのステータス対応表 */
+const ITEM_STAT_MAP: Record<string, CropStat> = {
+  "agr-17ice": "kindness",
+  "agr-melon": "kindness",
+  "agr-natural-water": "kindness",
+  "agr-energy": "strength",
+  "agr-chili": "strength",
+  "agr-banana": "strength",
+  "agr-hydrogen-water": "strength",
+  "agr-textbook": "wisdom",
+  "agr-rice": "wisdom",
+  "agr-silica-water": "wisdom",
+};
+
+export const getItemStat = (itemId: string): CropStat | null => {
+  return ITEM_STAT_MAP[itemId] ?? null;
+};
 
 export const CROP_FULLNESS_PER_FEED = 34;
 /** アイテム1つ入手ごとの満腹度回復量（1フィード分） */
 export const CROP_FULLNESS_RECOVERY_PER_ITEM = 34;
 export const CROP_FULLNESS_MAX = 100;
 
-const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0 };
+const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0, kindness: 0, strength: 0, wisdom: 0 };
 
 export const getCropState = (departmentId: string): CropState => {
   if (typeof window === 'undefined') return { ...DEFAULT_CROP };
@@ -2018,11 +2042,16 @@ export const saveCropState = (departmentId: string, state: CropState): void => {
   localStorage.setItem(`cropState_${departmentId}`, JSON.stringify(state));
 };
 
-/** アイテムを作物に与える */
-export const feedCrop = (departmentId: string): CropState => {
+/** アイテムを作物に与える（ステータスも加算） */
+export const feedCrop = (departmentId: string, itemId?: string): CropState => {
   const state = getCropState(departmentId);
   state.totalFeeds += 1;
   state.fullness = Math.min(CROP_FULLNESS_MAX, state.fullness + CROP_FULLNESS_PER_FEED);
+  // ステータス加算
+  if (itemId) {
+    const stat = getItemStat(itemId);
+    if (stat) state[stat] += 1;
+  }
   saveCropState(departmentId, state);
   return state;
 };
@@ -2060,6 +2089,22 @@ export const getCropVisual = (state: CropState): {
     case 3: return { image: "/images/tane3.png", label: "成長中", color: "text-emerald-700" };
     default: return { image: "/images/tane1.png", label: "発芽", color: "text-green-600" };
   }
+};
+
+/** 支配的ステータスに応じた進化名を返す（3以上で進化） */
+export const getCropEvolutionName = (state: CropState): string | null => {
+  const { kindness, strength, wisdom } = state;
+  if (kindness >= 3 && kindness >= strength && kindness >= wisdom) return "優しさフラワー";
+  if (strength >= 3 && strength >= kindness && strength >= wisdom) return "つよさフラワー";
+  if (wisdom >= 3 && wisdom >= kindness && wisdom >= strength) return "かしこさフラワー";
+  return null;
+};
+
+/** ステータスの表示情報 */
+export const CROP_STAT_INFO: Record<CropStat, { label: string; icon: string; color: string }> = {
+  kindness: { label: "優しさ", icon: "💗", color: "text-pink-600" },
+  strength: { label: "強さ", icon: "💪", color: "text-red-600" },
+  wisdom:   { label: "賢さ", icon: "📖", color: "text-blue-600" },
 };
 
 /** この学部が育成シミュレーターを使うかどうか */
