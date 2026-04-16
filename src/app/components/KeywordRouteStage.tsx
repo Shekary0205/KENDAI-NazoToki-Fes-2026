@@ -460,7 +460,7 @@ export default function KeywordRouteStage() {
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-6 h-6 text-gray-700" />
                 <CardDescription className="text-base font-semibold text-gray-900">
-                  目的地
+                  現在地
                 </CardDescription>
               </div>
               <CardTitle className="text-3xl text-gray-900">{stage.location}</CardTitle>
