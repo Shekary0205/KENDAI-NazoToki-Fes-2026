@@ -1353,15 +1353,9 @@ export const departments: DepartmentData[] = [
               riddle: "キャリアサポートセンターで受け付けているものの例を２つ答えろ",
               hint: "",
               answer: "",
-              type: "multi-input",
-              unorderedAnswerCount: 2,
-              multiAnswers: [
-                ["名刺作成"],
-                ["模擬面接"],
-                ["受験報告書"],
-                ["オンラインブース履歴書添削"]
-              ],
-              inputLabels: ["1つ目の答え", "2つ目の答え"],
+              type: "checkbox",
+              options: ["名刺作成", "模擬面接", "奨学金申請", "パソコン修理"],
+              correctIndices: [0, 1],
               itemReward: {
                 id: "rirekisho",
                 name: "履歴書",
