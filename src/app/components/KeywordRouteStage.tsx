@@ -35,6 +35,7 @@ import {
   removeItem,
   hasSeenItemTutorial,
   markItemTutorialSeen,
+  pushStateSnapshot,
   type ItemData,
 } from "../data/departments-data";
 import { useBgm } from "../context/BgmContext";
@@ -82,6 +83,8 @@ export default function KeywordRouteStage() {
   }, [switchTrack]);
 
   useEffect(() => {
+    // ブラウザバック対策: このステージの初期状態を history.state に保存
+    pushStateSnapshot();
     setUserAnswer("");
     const inputCount = stage?.unorderedAnswerCount ?? stage?.multiAnswers?.length ?? 0;
     setMultiInputs(Array(inputCount).fill(""));

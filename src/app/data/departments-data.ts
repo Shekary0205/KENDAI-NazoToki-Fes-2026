@@ -2374,3 +2374,45 @@ export const hasSeenItemTutorial = (): boolean => {
 export const markItemTutorialSeen = (): void => {
   localStorage.setItem('seenItemTutorial', 'true');
 };
+
+// ===== ブラウザバック対策：ステート・スナップショット =====
+// 各ステージ表示時に localStorage の状態を history.state に保存し、
+// ブラウザバック時に復元することでアイテム消失を防ぐ。
+
+/** 現在の localStorage 状態を history.state にスナップショット保存する */
+export const pushStateSnapshot = (): void => {
+  if (typeof window === 'undefined') return;
+  const snapshot: Record<string, string | null> = {};
+  // アイテム
+  snapshot['obtainedItems'] = localStorage.getItem('obtainedItems');
+  // 作物ステート（全学部分）
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('cropState_')) {
+      snapshot[key] = localStorage.getItem(key);
+    }
+  }
+  try {
+    const current = window.history.state ?? {};
+    window.history.replaceState({ ...current, __snapshot: snapshot }, '');
+  } catch {
+    // replaceState が失敗しても無視
+  }
+};
+
+/** history.state からスナップショットを復元する */
+export const restoreStateSnapshot = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const snapshot = window.history.state?.__snapshot as Record<string, string | null> | undefined;
+    if (!snapshot) return false;
+    for (const [key, value] of Object.entries(snapshot)) {
+      if (value !== null && value !== undefined) {
+        localStorage.setItem(key, value);
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};

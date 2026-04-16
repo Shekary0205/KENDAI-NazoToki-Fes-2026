@@ -34,6 +34,7 @@ import {
   getObtainedItems,
   addItem,
   removeItem,
+  pushStateSnapshot,
   type CropState,
   type ItemData,
   type CropStat,
@@ -77,6 +78,8 @@ export default function DepartmentStage() {
   }, [switchTrack, stage]);
 
   useEffect(() => {
+    // ブラウザバック対策: このステージの初期状態を history.state に保存
+    pushStateSnapshot();
     setUserAnswer("");
     setShowHint(false);
     setFeedback(null);

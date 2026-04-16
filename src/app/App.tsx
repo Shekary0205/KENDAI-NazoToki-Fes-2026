@@ -5,12 +5,21 @@ import Opening from "./components/Opening";
 import { BgmProvider } from "./context/BgmContext";
 import InAppBrowserGuard from "./components/InAppBrowserGuard";
 import AccountSetup from "./components/AccountSetup";
-import { loadUserAccount, getClearedDepartments } from "./data/departments-data";
+import { loadUserAccount, getClearedDepartments, restoreStateSnapshot } from "./data/departments-data";
 import { registerAccountToServer, recordClearedDepartmentToServer } from "./utils/supabase";
 
 export default function App() {
   const [hasAccount, setHasAccount] = useState(() => !!loadUserAccount());
   const [showOpening, setShowOpening] = useState(true);
+
+  // ブラウザバック時にスナップショットから復元
+  useEffect(() => {
+    const handlePopState = () => {
+      restoreStateSnapshot();
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // 既存ユーザーをサーバーに同期（1セッション1回）
   useEffect(() => {
