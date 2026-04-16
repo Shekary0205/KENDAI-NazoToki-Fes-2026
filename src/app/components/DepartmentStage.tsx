@@ -540,7 +540,7 @@ export default function DepartmentStage() {
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-300 shadow-lg text-center">
                       <div className="flex items-center justify-center">
                         <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-green-400 shadow-2xl bg-white flex items-center justify-center">
-                          <img src="/images/tane1.png" alt="種" className="w-full h-full object-cover" />
+                          <img src="/images/tane0.png" alt="種" className="w-full h-full object-cover" />
                         </div>
                       </div>
                     </div>
@@ -564,11 +564,11 @@ export default function DepartmentStage() {
                     <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl border-4 border-orange-300 shadow-lg text-center space-y-4">
                       <div className="flex items-center justify-center">
                         <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-orange-400 shadow-2xl bg-white flex items-center justify-center">
-                          <img src="/images/tane1.png" alt="発芽" className="w-full h-full object-cover" />
+                          <img src="/images/tane0.png" alt="種" className="w-full h-full object-cover" />
                         </div>
                       </div>
                       <p className="text-xl text-gray-800 font-semibold">
-                        小さな芽が顔を出した！<br />
+                        種を植えた！<br />
                         💧水・☀️光・🧪肥料をあげて育てよう。
                       </p>
                     </div>

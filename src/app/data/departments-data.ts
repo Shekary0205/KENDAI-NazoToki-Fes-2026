@@ -1939,7 +1939,7 @@ export const getCropVisual = (state: CropState): {
   const level = getCropGrowthLevel(state);
   switch (level) {
     case 0: return state.seeded
-      ? { image: "/images/tane1.png", label: "種まき済み", color: "text-green-500" }
+      ? { image: "/images/tane0.png", label: "種まき済み", color: "text-green-500" }
       : { image: "", label: "種まき前", color: "text-gray-500" };
     case 1: return { image: "/images/tane1.png", label: "発芽", color: "text-green-600" };
     case 2: return { image: "/images/tane2.png", label: "若葉", color: "text-green-700" };
