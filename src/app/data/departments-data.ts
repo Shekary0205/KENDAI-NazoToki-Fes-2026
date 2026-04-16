@@ -1027,7 +1027,7 @@ export const departments: DepartmentData[] = [
               id: 8,
               location: "8号館4階",
               riddle: "黙ってじっくりと物事を考え込むことを何という？",
-              hint: "",
+              hint: "研究室を調べてみよう",
               answer: "沈思黙考",
               accident: {
                 title: "アクシデント発生！",
