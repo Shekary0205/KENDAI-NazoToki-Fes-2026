@@ -1848,6 +1848,7 @@ export const setClearedDepartmentsLocally = (deptIds: string[]): void => {
 
 // ===== 農学部 育成シミュレーター v2 =====
 export interface CropState {
+  seeded: boolean;   // 種を植えたかどうか
   totalFeeds: number;
   waterFeeds: number;
   sunFeeds: number;
@@ -1868,11 +1869,21 @@ export const CROP_FEED_ITEMS = [
 
 export type FeedItemId = typeof CROP_FEED_ITEMS[number]["id"];
 
+const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
+
 export const getCropState = (departmentId: string): CropState => {
-  if (typeof window === 'undefined') return { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
+  if (typeof window === 'undefined') return { ...DEFAULT_CROP };
   const raw = localStorage.getItem(`cropState_${departmentId}`);
-  if (raw) return JSON.parse(raw);
-  return { totalFeeds: 0, waterFeeds: 0, sunFeeds: 0, fertFeeds: 0, fullness: 0 };
+  if (raw) return { ...DEFAULT_CROP, ...JSON.parse(raw) };
+  return { ...DEFAULT_CROP };
+};
+
+/** 種を植える */
+export const seedCrop = (departmentId: string): CropState => {
+  const state = getCropState(departmentId);
+  state.seeded = true;
+  saveCropState(departmentId, state);
+  return state;
 };
 
 export const saveCropState = (departmentId: string, state: CropState): void => {
@@ -1926,7 +1937,9 @@ export const getCropVisual = (state: CropState): {
 } => {
   const level = getCropGrowthLevel(state);
   switch (level) {
-    case 0: return { image: "", label: "種まき前", color: "text-gray-500" };
+    case 0: return state.seeded
+      ? { image: "/images/tane1.png", label: "種まき済み", color: "text-green-500" }
+      : { image: "", label: "種まき前", color: "text-gray-500" };
     case 1: return { image: "/images/tane1.png", label: "発芽", color: "text-green-600" };
     case 2: return { image: "/images/tane2.png", label: "若葉", color: "text-green-700" };
     case 3: return { image: "/images/tane3.png", label: "成長中", color: "text-emerald-700" };

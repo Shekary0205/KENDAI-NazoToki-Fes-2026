@@ -22,6 +22,7 @@ import {
   normalizeAnswer,
   isCropDepartment,
   getCropState,
+  seedCrop,
   feedCrop,
   digestCrop,
   getCropVisual,
@@ -59,6 +60,8 @@ export default function DepartmentStage() {
   );
   const [feedAnimation, setFeedAnimation] = useState<string | null>(null);
   const [feedToast, setFeedToast] = useState<string | null>(null);
+  const [showSeeding, setShowSeeding] = useState(false);
+  const [seedingDone, setSeedingDone] = useState(false);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -78,6 +81,8 @@ export default function DepartmentStage() {
     setMultiInputs(stage?.multiAnswers ? stage.multiAnswers.map(() => "") : []);
     setFeedAnimation(null);
     setFeedToast(null);
+    setShowSeeding(false);
+    setSeedingDone(false);
     // ステージクリア時に満腹度を回復
     if (departmentId && isCrop && currentStageId > 1) {
       const updated = digestCrop(departmentId);
@@ -110,11 +115,35 @@ export default function DepartmentStage() {
       setShowExplanation(true);
       return;
     }
+    // 農学部ステージ1正解 → 種まきフェーズ
+    if (isCrop && currentStageId === 1 && !cropState.seeded) {
+      setShowSeeding(true);
+      return;
+    }
     if (stage.skipNextLocationScreen) {
       handleNext();
       return;
     }
     setShowNext(true);
+  };
+
+  // 種を植える
+  const handleSeedPlant = () => {
+    if (!departmentId) return;
+    const updated = seedCrop(departmentId);
+    setCropStateLocal(updated);
+    setSeedingDone(true);
+    fireCorrectEffect();
+  };
+
+  const handleSeedingContinue = () => {
+    setShowSeeding(false);
+    setSeedingDone(false);
+    if (stage.skipNextLocationScreen) {
+      handleNext();
+    } else {
+      setShowNext(true);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -306,8 +335,8 @@ export default function DepartmentStage() {
           </p>
         </div>
 
-        {/* 農学部 育成シミュレーター — 作物パネル */}
-        {isCrop && cropState.totalFeeds > 0 && (() => {
+        {/* 農学部 育成シミュレーター — 作物パネル（種まき後のみ表示） */}
+        {isCrop && cropState.seeded && (() => {
           const visual = getCropVisual(cropState);
           const fullnessPercent = (cropState.fullness / CROP_FULLNESS_MAX) * 100;
           const isFull = cropState.fullness >= CROP_FULLNESS_MAX;
@@ -395,8 +424,8 @@ export default function DepartmentStage() {
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
-            {/* 謎・ヒントは次の目的地画面・解説画面では非表示 */}
-            {!showNext && !showExplanation && (
+            {/* 謎・ヒントは次の目的地画面・解説画面・種まき画面では非表示 */}
+            {!showNext && !showExplanation && !showSeeding && (
               <>
                 {/* 謎 */}
                 <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
@@ -494,8 +523,70 @@ export default function DepartmentStage() {
               </div>
             )}
 
+            {/* 種まきフェーズ（農学部ステージ1正解後） */}
+            {showSeeding && (
+              <div className="space-y-6">
+                {!seedingDone ? (
+                  <>
+                    <div className="text-center space-y-3">
+                      <h2 className="text-3xl font-bold text-green-900">
+                        🌱 種まきの時間だ！
+                      </h2>
+                      <p className="text-lg text-gray-700">
+                        畑に種を植えよう。<br />君の旅とともに育っていくぞ。
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-4 border-green-300 shadow-lg text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-green-400 shadow-2xl bg-white flex items-center justify-center">
+                          <img src="/images/tane1.png" alt="種" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleSeedPlant}
+                      className="w-full h-16 text-2xl bg-gradient-to-r from-green-600 via-emerald-600 to-lime-600 hover:from-green-700 hover:via-emerald-700 hover:to-lime-700 shadow-lg"
+                    >
+                      <span className="text-3xl mr-3">🌱</span>
+                      種を植える
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center space-y-3">
+                      <h2 className="text-3xl font-bold text-orange-900">
+                        🎉 種を植えた！
+                      </h2>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl border-4 border-orange-300 shadow-lg text-center space-y-4">
+                      <div className="flex items-center justify-center">
+                        <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-orange-400 shadow-2xl bg-white flex items-center justify-center">
+                          <img src="/images/tane1.png" alt="発芽" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                      <p className="text-xl text-gray-800 font-semibold">
+                        小さな芽が顔を出した！<br />
+                        💧水・☀️光・🧪肥料をあげて育てよう。
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleSeedingContinue}
+                      className={`w-full h-14 text-lg ${colorClasses.bg} hover:opacity-90`}
+                    >
+                      次へ進む
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* 回答フォーム */}
-            {!showNext && !showExplanation ? (
+            {!showNext && !showExplanation && !showSeeding ? (
               <>
                 {/* テキスト入力形式 */}
                 {(!stage.type || stage.type === "text") && (
