@@ -1980,6 +1980,7 @@ export interface CropState {
   seeded: boolean;
   totalFeeds: number;
   fullness: number; // 0〜100
+  rewardTimings: number; // アイテム入手タイミングの累計回数
 }
 
 export const CROP_FULLNESS_PER_FEED = 34;
@@ -1987,7 +1988,7 @@ export const CROP_FULLNESS_PER_FEED = 34;
 export const CROP_FULLNESS_RECOVERY_PER_ITEM = 34;
 export const CROP_FULLNESS_MAX = 100;
 
-const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0 };
+const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0 };
 
 export const getCropState = (departmentId: string): CropState => {
   if (typeof window === 'undefined') return { ...DEFAULT_CROP };
@@ -2018,14 +2019,15 @@ export const feedCrop = (departmentId: string): CropState => {
   return state;
 };
 
-/** アイテム入手時に満腹度を回復する（2個入手につき1回分回復） */
-export const digestCrop = (departmentId: string, itemCount: number = 1): CropState => {
+/** アイテム入手タイミングを記録し、2回に1回満腹度を回復する */
+export const digestCrop = (departmentId: string): CropState => {
   const state = getCropState(departmentId);
-  const recoveryCount = Math.floor(itemCount / 2);
-  if (recoveryCount > 0) {
-    state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM * recoveryCount);
-    saveCropState(departmentId, state);
+  state.rewardTimings += 1;
+  // 偶数回目（2回に1回）のタイミングで回復
+  if (state.rewardTimings % 2 === 0) {
+    state.fullness = Math.max(0, state.fullness - CROP_FULLNESS_RECOVERY_PER_ITEM);
   }
+  saveCropState(departmentId, state);
   return state;
 };
 

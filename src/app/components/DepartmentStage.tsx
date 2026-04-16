@@ -136,7 +136,7 @@ export default function DepartmentStage() {
       setInventory(getObtainedItems());
       // 農学部: アイテム入手ごとに満腹度回復
       if (isCrop && departmentId && cropState.seeded) {
-        const updated = digestCrop(departmentId, rewards.length);
+        const updated = digestCrop(departmentId);
         setCropStateLocal(updated);
       }
       setShowItemRewards(true);
@@ -292,7 +292,7 @@ export default function DepartmentStage() {
       rewards.forEach(item => addItem(item));
       setInventory(getObtainedItems());
       if (isCrop && departmentId && cropState.seeded) {
-        const updated = digestCrop(departmentId, rewards.length);
+        const updated = digestCrop(departmentId);
         setCropStateLocal(updated);
       }
       setShowItemRewards(true);
