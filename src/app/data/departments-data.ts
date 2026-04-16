@@ -910,7 +910,6 @@ export const departments: DepartmentData[] = [
     buildings: "8, 9, 10号館",
     color: "yellow",
     icon: "🎓",
-    unlockPassword: "112233",
     stages: [
       {
         id: 1,
