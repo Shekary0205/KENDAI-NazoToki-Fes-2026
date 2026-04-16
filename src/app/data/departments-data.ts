@@ -2062,6 +2062,8 @@ export interface CropState {
   kindness: number;  // 優しさ
   strength: number;  // 強さ
   wisdom: number;    // 賢さ
+  /** ユーザーがつけた作物の名前 */
+  nickname?: string;
 }
 
 /** アイテムIDごとのステータス対応表 */

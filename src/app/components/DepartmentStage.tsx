@@ -29,6 +29,7 @@ import {
   getCropVisual,
   getCropGrowthLevel,
   getCropEvolutionName,
+  saveCropState,
   getItemStat,
   CROP_FULLNESS_MAX,
   CROP_STAT_INFO,
@@ -72,7 +73,8 @@ export default function DepartmentStage() {
   const [inventory, setInventory] = useState<ItemData[]>(() => getObtainedItems());
   const [showItemRewards, setShowItemRewards] = useState(false);
   const [showGrowthScreen, setShowGrowthScreen] = useState(false);
-  const [growthScreenVisual, setGrowthScreenVisual] = useState<{ image: string; label: string } | null>(null);
+  const [growthScreenVisual, setGrowthScreenVisual] = useState<{ image: string; label: string; level: number } | null>(null);
+  const [cropNicknameInput, setCropNicknameInput] = useState("");
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -342,7 +344,8 @@ export default function DepartmentStage() {
       // レベルアップ → 成長画面を表示
       const visual = getCropVisual(updated);
       fireCorrectEffect();
-      setGrowthScreenVisual({ image: visual.image, label: visual.label });
+      setGrowthScreenVisual({ image: visual.image, label: visual.label, level: newLevel });
+      setCropNicknameInput("");
       setShowGrowthScreen(true);
     } else if (statLabel) {
       setFeedToast(`${item.icon} ${item.name}をあげた！ ${statLabel.icon}${statLabel.label}+1`);
@@ -423,7 +426,7 @@ export default function DepartmentStage() {
                   <div className="flex-1 space-y-1.5">
                     <div className="flex items-baseline justify-between">
                       <h3 className="font-bold text-green-900 text-sm">
-                        {evoName ?? "育成中の作物"}
+                        {evoName ?? cropState.nickname ?? "育成中の作物"}
                       </h3>
                       <span className={`text-xs font-semibold ${visual.color}`}>
                         {visual.label}
@@ -989,15 +992,41 @@ export default function DepartmentStage() {
                     ✨ {getCropEvolutionName(cropState)} に進化！
                   </p>
                 )}
+
+                {/* 発芽時（レベル1）に名前をつける */}
+                {growthScreenVisual.level === 1 && (
+                  <div className="bg-green-50 p-4 rounded-xl border-2 border-green-300 space-y-3">
+                    <p className="text-sm font-semibold text-green-900">
+                      🌱 作物に名前をつけよう！
+                    </p>
+                    <Input
+                      type="text"
+                      value={cropNicknameInput}
+                      onChange={(e) => setCropNicknameInput(e.target.value)}
+                      placeholder="例: たねまる"
+                      className="text-lg h-12"
+                      maxLength={10}
+                    />
+                    <p className="text-xs text-gray-500">あとから変更はできません</p>
+                  </div>
+                )}
+
                 <Button
                   onClick={() => {
+                    // 発芽時に名前を保存
+                    if (growthScreenVisual.level === 1 && cropNicknameInput.trim() && departmentId) {
+                      const latest = getCropState(departmentId);
+                      latest.nickname = cropNicknameInput.trim();
+                      saveCropState(departmentId, latest);
+                      setCropStateLocal(latest);
+                    }
                     setShowGrowthScreen(false);
                     setGrowthScreenVisual(null);
                   }}
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   <ArrowRight className="w-5 h-5 mr-2" />
-                  戻る
+                  {growthScreenVisual.level === 1 && cropNicknameInput.trim() ? "名前を決定！" : "戻る"}
                 </Button>
               </CardContent>
             </Card>
