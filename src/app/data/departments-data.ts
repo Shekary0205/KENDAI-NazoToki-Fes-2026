@@ -1435,8 +1435,10 @@ export const departments: DepartmentData[] = [
               id: 9,
               location: "9号館屋上",
               riddle: "藤龍祭にて、子ども教育学科有志が出展する遊びのブースの名称を答えろ",
-              hint: "",
+              hint: "リンクを確認しよう",
+              hintUrl: "https://www.takasaki-u.ac.jp/faculty_information/138179.html?ref=/news/kodomo",
               answer: "遊びの広場",
+              alternateAnswers: ["あそびのひろば"],
               itemReward: {
                 id: "kyoushi-no-kokoro",
                 name: "教師の心",
