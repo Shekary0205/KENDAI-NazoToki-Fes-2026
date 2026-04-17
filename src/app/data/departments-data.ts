@@ -1720,6 +1720,7 @@ export const departments: DepartmentData[] = [
         id: 2,
         location: "10号館1階",
         riddle: "自動販売機の謎を解け",
+        riddleImage: "/images/dna.png",
         hint: "商品を探し当てはまる部分を読め",
         answer: "DNA",
         itemReward: { id: "agr-water", name: "水", icon: "💧", description: "作物に水をあげよう" },
