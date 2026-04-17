@@ -2172,12 +2172,18 @@ export const getCropGrowthLevel = (state: CropState): number => {
   return 3;
 };
 
-/** 育成段階の画像とラベル */
+/** 育成段階の画像とラベル（進化済みならフラワー画像を優先） */
 export const getCropVisual = (state: CropState): {
   image: string;
   label: string;
   color: string;
 } => {
+  // 進化済みなら専用のフラワー画像
+  const evoImage = getCropEvolutionImage(state);
+  const evoName = getCropEvolutionName(state);
+  if (evoImage && evoName) {
+    return { image: evoImage, label: evoName, color: "text-purple-700" };
+  }
   const level = getCropGrowthLevel(state);
   switch (level) {
     case 0: return state.seeded
@@ -2260,6 +2266,39 @@ export const getCropEvolutionName = (state: CropState): string | null => {
     return FINAL_EVOLUTIONS[state.baseEvoAtHeartUse]?.[state.usedHeartId] ?? state.baseEvoAtHeartUse;
   }
   return computeBaseEvolution(state);
+};
+
+/** 基本進化名 → 画像ファイルのベース名 */
+const EVO_IMAGE_BASE: Record<string, string> = {
+  "優しさフラワー": "yasashisa",
+  "強さフラワー":   "tsuyosa",
+  "賢さフラワー":   "kashikosa",
+  "イケメンフラワー": "ikemen",
+  "賢者フラワー":   "kenja",
+  "紳士フラワー":   "shinshi",
+  // 天使/最強/天才 は画像未生成
+  "天使フラワー":   "",
+  "最強フラワー":   "",
+  "天才フラワー":   "",
+};
+
+/** 心アイテムID → 画像ファイルのサフィックス */
+const HEART_SUFFIX: Record<string, string> = {
+  "agr-teacher-heart": "-teacher",
+  "agr-fisher-heart":  "-fisher",
+  "agr-warrior-heart": "-warrior",
+};
+
+/** 進化フラワーの画像パスを返す（進化前は null） */
+export const getCropEvolutionImage = (state: CropState): string | null => {
+  const base = state.usedHeartId && state.baseEvoAtHeartUse
+    ? state.baseEvoAtHeartUse
+    : computeBaseEvolution(state);
+  if (!base) return null;
+  const baseName = EVO_IMAGE_BASE[base];
+  if (!baseName) return null;
+  const suffix = state.usedHeartId ? (HEART_SUFFIX[state.usedHeartId] ?? "") : "";
+  return `/images/flowers/${baseName}${suffix}.png`;
 };
 
 /** ステータスの表示情報 */
