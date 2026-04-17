@@ -498,7 +498,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   // ===== イントロ =====
   if (battleState === "intro") {
     const introBg = isFinalBattle
-      ? "relative min-h-screen overflow-hidden bg-gradient-to-br from-red-950 via-purple-950 to-black flex items-center justify-center p-4"
+      ? "relative min-h-screen overflow-hidden bg-gradient-to-br from-red-700 via-purple-700 to-slate-800 flex items-center justify-center p-4"
       : "min-h-screen bg-gradient-to-br from-green-100 via-yellow-50 to-orange-100 flex items-center justify-center p-4";
     return (
       <div className={introBg}>
@@ -522,9 +522,9 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                 />
               ))}
             </div>
-            {/* 赤黒ヴィニェット */}
+            {/* 赤黒ヴィニェット（軽め） */}
             <div className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)" }} />
+              style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)" }} />
           </>
         )}
 
@@ -535,10 +535,10 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                 <div className="inline-block bg-gradient-to-r from-red-600 via-purple-600 to-red-600 px-6 py-1.5 rounded-full shadow-lg animate-pulse">
                   <span className="text-white font-bold text-sm tracking-widest">👑 最終決戦 👑</span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-purple-300 to-red-400 drop-shadow-[0_0_18px_rgba(239,68,68,0.85)]">
+                <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_0_18px_rgba(239,68,68,0.9)]">
                   ラスボス襲来！
                 </h1>
-                <p className="text-lg text-red-200 font-semibold">
+                <p className="text-lg text-white font-semibold drop-shadow-md">
                   全てを育てあげた作物の力で、最後の敵を打ち破れ！
                 </p>
               </>
@@ -551,23 +551,23 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           </div>
 
           {/* VS表示 */}
-          <Card className={`shadow-2xl border-4 overflow-hidden ${isFinalBattle ? "border-red-500 bg-black/70" : "border-green-400"}`}>
-            <div className={`flex items-center justify-around p-6 ${isFinalBattle ? "bg-gradient-to-r from-red-950/90 via-purple-950/80 to-red-950/90" : "bg-gradient-to-r from-green-50 to-red-50"}`}>
+          <Card className={`shadow-2xl border-4 overflow-hidden ${isFinalBattle ? "border-red-500 bg-white" : "border-green-400"}`}>
+            <div className={`flex items-center justify-around p-6 ${isFinalBattle ? "bg-gradient-to-r from-red-100 via-purple-100 to-red-100" : "bg-gradient-to-r from-green-50 to-red-50"}`}>
               {/* 自作物 */}
               <div className="text-center space-y-2">
-                <div className={`w-28 h-28 mx-auto rounded-full border-4 shadow-lg flex items-center justify-center overflow-hidden ${isFinalBattle ? "bg-black/60 border-green-300" : "bg-white border-green-400"}`}>
+                <div className={`w-28 h-28 mx-auto rounded-full border-4 shadow-lg flex items-center justify-center overflow-hidden bg-white ${isFinalBattle ? "border-green-500" : "border-green-400"}`}>
                   {playerVisual.image
                     ? <img src={playerVisual.image} alt={playerName} className="w-full h-full object-cover" />
                     : <span className="text-5xl">🌱</span>
                   }
                 </div>
-                <p className={`font-bold text-sm ${isFinalBattle ? "text-green-200" : "text-green-900"}`}>{playerName}</p>
+                <p className="font-bold text-sm text-green-900">{playerName}</p>
                 {playerSpecies && (
-                  <p className={`text-[10px] font-semibold ${isFinalBattle ? "text-purple-300" : "text-purple-700"}`}>{playerSpecies}</p>
+                  <p className="text-[10px] font-semibold text-purple-700">{playerSpecies}</p>
                 )}
                 <div className="flex items-center justify-center gap-2 text-xs">
                   {(["kindness", "strength", "wisdom"] as CropStat[]).map(s => (
-                    <span key={s} className={`font-semibold ${cropState[s] >= 3 ? CROP_STAT_INFO[s].color : isFinalBattle ? "text-gray-500" : "text-gray-400"}`}>
+                    <span key={s} className={`font-semibold ${cropState[s] >= 3 ? CROP_STAT_INFO[s].color : "text-gray-400"}`}>
                       {CROP_STAT_INFO[s].icon}{cropState[s]}
                     </span>
                   ))}
@@ -575,27 +575,27 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                 <Badge className="bg-blue-600 text-white">HP: {battleData.playerMaxHp}</Badge>
               </div>
 
-              <div className={`text-5xl font-black animate-pulse ${isFinalBattle ? "text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.9)]" : "text-red-600"}`}>VS</div>
+              <div className={`text-5xl font-black animate-pulse ${isFinalBattle ? "text-red-700 drop-shadow-[0_0_12px_rgba(239,68,68,0.7)]" : "text-red-600"}`}>VS</div>
 
               {/* 敵作物 */}
               <div className="text-center space-y-2">
-                <div className={`w-28 h-28 mx-auto rounded-full border-4 flex items-center justify-center overflow-hidden ${isFinalBattle ? "bg-black/60 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white border-red-400 shadow-lg"}`}>
+                <div className={`w-28 h-28 mx-auto rounded-full border-4 flex items-center justify-center overflow-hidden bg-white ${isFinalBattle ? "border-red-600 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "border-red-400 shadow-lg"}`}>
                   <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain"
                     style={{ filter: isFinalBattle
-                      ? "hue-rotate(180deg) brightness(0.75) saturate(1.8) contrast(1.2) drop-shadow(0 0 8px rgba(239,68,68,0.9))"
+                      ? "hue-rotate(180deg) brightness(0.85) saturate(1.6) contrast(1.15) drop-shadow(0 0 8px rgba(239,68,68,0.9))"
                       : "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
                 </div>
-                <p className={`font-bold text-sm ${isFinalBattle ? "text-red-300" : "text-red-900"}`}>{enemyName}</p>
+                <p className="font-bold text-sm text-red-900">{enemyName}</p>
                 <Badge className="bg-red-600 text-white">HP: {battleData.enemyMaxHp}</Badge>
               </div>
             </div>
 
-            <CardContent className={`space-y-4 pt-6 ${isFinalBattle ? "bg-black/40" : ""}`}>
-              <div className={`p-4 rounded-lg border-2 ${isFinalBattle ? "bg-red-950/60 border-red-500" : "bg-amber-50 border-amber-300"}`}>
-                <h3 className={`font-bold mb-2 ${isFinalBattle ? "text-red-200" : "text-amber-900"}`}>⚔️ バトルルール</h3>
-                <ul className={`space-y-1 text-sm ${isFinalBattle ? "text-red-100" : "text-gray-700"}`}>
-                  <li>• 正解で敵に <strong className={isFinalBattle ? "text-orange-300" : "text-red-600"}>{battleData.damageToEnemy}ダメージ</strong></li>
-                  <li>• 不正解で <strong className={isFinalBattle ? "text-blue-300" : "text-blue-600"}>{battleData.damageToPlayer}ダメージ</strong></li>
+            <CardContent className="space-y-4 pt-6">
+              <div className={`p-4 rounded-lg border-2 ${isFinalBattle ? "bg-red-50 border-red-400" : "bg-amber-50 border-amber-300"}`}>
+                <h3 className={`font-bold mb-2 ${isFinalBattle ? "text-red-900" : "text-amber-900"}`}>⚔️ バトルルール</h3>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  <li>• 正解で敵に <strong className="text-red-600">{battleData.damageToEnemy}ダメージ</strong></li>
+                  <li>• 不正解で <strong className="text-blue-600">{battleData.damageToPlayer}ダメージ</strong></li>
                   <li>• 敵のHPを0にすれば勝利！</li>
                 </ul>
               </div>
