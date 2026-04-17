@@ -1734,14 +1734,14 @@ export const departments: DepartmentData[] = [
         answer: "MARUZEN campus shop",
         alternateAnswers: ["マルゼンキャンパスショップ"],
         itemReward: { id: "agr-nutrient", name: "栄養剤", icon: "💊", description: "作物に栄養を与えよう" },
-        nextLocationHint: "次の問題へ進め"
+        nextLocationHint: "売店を出て1階の謎を解け"
       },
       {
         id: 4,
-        location: "10号館1階売店",
-        riddle: "売店の謎を解け",
-        hint: "",
-        answer: "あ",
+        location: "10号館1階エントランス",
+        riddle: "以下が示す場所を答えろ",
+        hint: "掲示板を確認しよう。",
+        answer: "健大サッカー場",
         itemRewards: [
           { id: "agr-17ice", name: "17アイス", icon: "🍦", description: "冷たくて甘い" },
           { id: "agr-energy", name: "エナドリ", icon: "⚡", description: "元気が出る飲み物" },
