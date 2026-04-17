@@ -1800,8 +1800,9 @@ export const departments: DepartmentData[] = [
         id: 8,
         location: "10号館3階",
         riddle: "３階掲示板の謎を解け",
-        hint: "",
-        answer: "あ",
+        hint: "枠線に注目",
+        answer: "さくもつ",
+        alternateAnswers: ["作物", "サクモツ"],
         nextLocationHint: "３階奥まで進め"
       },
       {
