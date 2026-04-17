@@ -1753,9 +1753,20 @@ export const departments: DepartmentData[] = [
       {
         id: 5,
         location: "10号館2階",
-        riddle: "２階掲示板の謎を解け",
-        hint: "",
-        answer: "あ",
+        riddle: "地域連携室の取り組みを答えよう",
+        hint: "２階を探索してみよう",
+        answer: "",
+        type: "multi-input",
+        multiAnswers: [
+          ["ナス", "なす", "茄子"],
+          ["花豆", "はなまめ", "ハナマメ"],
+          ["ネギ", "ねぎ", "葱"]
+        ],
+        inputLabels: [
+          "群馬の「」のブランド化",
+          "「」の減収要因の究明",
+          "「」の品質向上"
+        ],
         itemRewards: [
           { id: "agr-chili", name: "唐辛子", icon: "🌶️", description: "辛い刺激" },
           { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
