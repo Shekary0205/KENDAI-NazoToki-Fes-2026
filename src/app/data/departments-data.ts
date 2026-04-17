@@ -1785,10 +1785,19 @@ export const departments: DepartmentData[] = [
           { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
         ],
         recoversFullness: true,
-        nextLocationHint: "３階へ進め"
+        nextLocationHint: "よくやった。次の問題へ進め"
       },
       {
         id: 7,
+        location: "10号館2階奥",
+        riddle: "地域連携室の右へ進むとどの号館へつながっている？",
+        hint: "",
+        answer: "9号館",
+        alternateAnswers: ["9号館", "９号館", "9ごうかん", "きゅうごうかん"],
+        nextLocationHint: "３階へ進め"
+      },
+      {
+        id: 8,
         location: "10号館3階",
         riddle: "３階掲示板の謎を解け",
         hint: "",
@@ -1796,7 +1805,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "３階奥まで進め"
       },
       {
-        id: 8,
+        id: 9,
         location: "10号館3階奥",
         riddle: "３階奥での謎を解け",
         hint: "",
@@ -1804,7 +1813,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "戦闘の予感..."
       },
       {
-        id: 9,
+        id: 10,
         location: "10号館4階",
         riddle: "４階での謎を解け",
         hint: "",
@@ -1812,7 +1821,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "４階奥へ進め"
       },
       {
-        id: 10,
+        id: 11,
         location: "10号館4階奥",
         riddle: "４階奥での謎を解け",
         hint: "",
@@ -1820,7 +1829,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "よくやった。５階へ進め。"
       },
       {
-        id: 11,
+        id: 12,
         location: "10号館5階",
         riddle: "５階での謎を解け",
         hint: "",
@@ -1834,7 +1843,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "５階奥へ進め"
       },
       {
-        id: 12,
+        id: 13,
         location: "10号館5階奥",
         riddle: "５階奥での謎を解け",
         hint: "",
@@ -1842,7 +1851,7 @@ export const departments: DepartmentData[] = [
         nextLocationHint: "次は最上階。６階へ進め。"
       },
       {
-        id: 13,
+        id: 14,
         location: "10号館6階",
         riddle: "６階での謎を解け",
         hint: "",
@@ -1853,7 +1862,7 @@ export const departments: DepartmentData[] = [
     midBattles: [
       {
         id: 1,
-        afterStageId: 8,
+        afterStageId: 9,
         cropBattle: true,
         enemyCropName: "ダークフラワー",
         enemyCropImage: "/images/tane3.png",
@@ -1906,7 +1915,7 @@ export const departments: DepartmentData[] = [
       },
       {
         id: 2,
-        afterStageId: 13,
+        afterStageId: 14,
         cropBattle: true,
         enemyCropName: "キングフラワー",
         enemyCropImage: "/images/tane3.png",
