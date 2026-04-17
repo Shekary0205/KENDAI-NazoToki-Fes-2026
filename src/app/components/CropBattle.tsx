@@ -250,16 +250,35 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const advanceToNextQuestion = (eHp: number, pHp: number) => {
     if (eHp <= 0) { switchTrack("victory"); setBattleState("victory"); return; }
     if (pHp <= 0) { switchTrack("trainer"); setBattleState("defeat"); return; }
+    // 問題が残っている場合
     if (queueIndex < questionQueue.length - 1) {
       setQueueIndex(i => i + 1);
       setSelectedOption(null);
       setCheckedOptions(new Set());
       setCheckboxSubmitted(false);
       setBattleState("question");
-    } else {
-      if (enemyHp < playerHp) { switchTrack("victory"); setBattleState("victory"); }
-      else { switchTrack("trainer"); setBattleState("defeat"); }
+      return;
     }
+    // 問題が尽きた: fallbackBattleId が指定されていたら該当バトルの問題を補充
+    if (battleData.fallbackBattleId !== undefined) {
+      const fallback = department.midBattles?.find(b => b.id === battleData.fallbackBattleId);
+      if (fallback && fallback.questions.length > 0) {
+        const extra = (battleData.randomOrder
+          ? shuffleArray(fallback.questions)
+          : [...fallback.questions]
+        ).map(shuffleQuestionOptions);
+        setQuestionQueue(prev => [...prev, ...extra]);
+        setQueueIndex(i => i + 1);
+        setSelectedOption(null);
+        setCheckedOptions(new Set());
+        setCheckboxSubmitted(false);
+        setBattleState("question");
+        return;
+      }
+    }
+    // フォールバックもない場合は HP で判定して終了
+    if (enemyHp < playerHp) { switchTrack("victory"); setBattleState("victory"); }
+    else { switchTrack("trainer"); setBattleState("defeat"); }
   };
 
   // 正解時のダメージ計算（パッシブ・バフ適用）

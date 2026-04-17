@@ -139,6 +139,8 @@ export interface MidBattleData {
   enemyCropName?: string;
   /** 敵作物の画像パス */
   enemyCropImage?: string;
+  /** 問題が尽きた際にフォールバックとして使用する別バトルのID */
+  fallbackBattleId?: number;
 }
 
 export interface KeywordRoute {
@@ -2025,6 +2027,7 @@ export const departments: DepartmentData[] = [
         randomOrder: true,
         nextLocationHint: "よくやった。４階へ進め",
         recoversFullness: true,
+        fallbackBattleId: 3,
         rewardItems: [
           { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂" },
           { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱" },
@@ -2032,34 +2035,82 @@ export const departments: DepartmentData[] = [
         ],
         questions: [
           {
-            question: "日本の農業従事者の平均年齢はおよそ何歳？",
-            options: ["50歳", "60歳", "68歳", "75歳"],
-            correctIndex: 2,
-            explanation: "日本の農業従事者の平均年齢は約68歳です。"
-          },
-          {
-            question: "日本で最も生産量が多い野菜は？",
-            options: ["キャベツ", "大根", "玉ねぎ", "トマト"],
-            correctIndex: 1,
-            explanation: "日本で最も生産量が多い野菜は大根です。"
-          },
-          {
-            question: "群馬県の農業生産額が全国1位の作物は？",
-            options: ["こんにゃく芋", "りんご", "米", "キャベツ"],
+            question: "ゲノム科学や分子生理学を用いた作物改良の研究を行う研究室の名称は？",
+            options: ["作物学研究室", "園芸学研究室", "植物生命科学研究室", "基礎生命科学研究室"],
             correctIndex: 0,
-            explanation: "群馬県はこんにゃく芋の生産量が全国1位です。"
+            explanation: "作物学研究室では、ゲノム科学や分子生理学を用いた作物改良の研究を行っています。"
           },
           {
-            question: "稲作で「田植え」が行われる時期は？",
-            options: ["3月〜4月", "5月〜6月", "7月〜8月", "9月〜10月"],
-            correctIndex: 1,
-            explanation: "田植えは一般的に5月〜6月に行われます。"
+            question: "園芸作物の育成と生態特性の解明に関する研究を行う研究室の名称は？",
+            options: ["園芸学研究室", "作物学研究室", "植物生命科学研究室", "農業情報システム学研究室"],
+            correctIndex: 0,
+            explanation: "園芸学研究室では、園芸作物の育成と生態特性の解明に関する研究を行っています。"
           },
           {
-            question: "「有機農業」で使用が禁止されているものは？",
-            options: ["堆肥", "化学肥料", "種", "水"],
-            correctIndex: 1,
-            explanation: "有機農業では化学肥料の使用が禁止されています。"
+            question: "高機能グリーンハウスにおける生育モニタリングと環境制御に関する研究を行う研究室の名称は？",
+            options: ["園芸学研究室", "農業情報システム学研究室", "作物学研究室", "食品学研究室"],
+            correctIndex: 0,
+            explanation: "園芸学研究室では、高機能グリーンハウスの生育モニタリングと環境制御を研究しています。"
+          },
+          {
+            question: "省エネな温室栽培システムの研究を行う研究室の名称は？",
+            options: ["園芸学研究室", "農業情報システム学研究室", "作物学研究室", "基礎生命科学研究室"],
+            correctIndex: 0,
+            explanation: "園芸学研究室では省エネな温室栽培システムの研究を行っています。"
+          },
+          {
+            question: "ICTや画像情報、ドローンなどを活用したスマート農業の研究を行う研究室は？",
+            options: ["農業情報システム学研究室", "作物学研究室", "園芸学研究室", "アグリビジネス研究室"],
+            correctIndex: 0,
+            explanation: "農業情報システム学研究室ではICT・画像情報・ドローンを活用したスマート農業の研究を行っています。"
+          },
+          {
+            question: "衛星観測や情報ツールなどを利用した地球環境、SDGsの研究を行う研究室は？",
+            options: ["農業情報システム学研究室", "アグリビジネス研究室", "基礎生命科学研究室", "植物生命科学研究室"],
+            correctIndex: 0,
+            explanation: "農業情報システム学研究室では衛星観測や情報ツールを用いた地球環境・SDGs研究を行っています。"
+          },
+          {
+            question: "おいしさと健康に着目した漬物に関する研究を行う研究室は？",
+            options: ["食品学研究室", "食品微生物学研究室", "食品安全学研究室", "アグリビジネス研究室"],
+            correctIndex: 0,
+            explanation: "食品学研究室ではおいしさと健康に着目した漬物に関する研究を行っています。"
+          },
+          {
+            question: "キノコの保存や加工に関する研究を行う研究室は？",
+            options: ["食品学研究室", "食品微生物学研究室", "食品安全学研究室", "作物学研究室"],
+            correctIndex: 0,
+            explanation: "食品学研究室ではキノコの保存や加工に関する研究を行っています。"
+          },
+          {
+            question: "発酵食品に関わる微生物の研究を行う研究室は？",
+            options: ["食品微生物学研究室", "食品学研究室", "食品安全学研究室", "基礎生命科学研究室"],
+            correctIndex: 0,
+            explanation: "食品微生物学研究室では発酵食品に関わる微生物の研究を行っています。"
+          },
+          {
+            question: "食中毒および人獣共通感染症に関する研究を行う研究室は？",
+            options: ["食品安全学研究室", "食品微生物学研究室", "食品学研究室", "動物生命科学研究室"],
+            correctIndex: 0,
+            explanation: "食品安全学研究室では食中毒および人獣共通感染症に関する研究を行っています。"
+          },
+          {
+            question: "アレルギー疾患に対する食品成分や栄養素の作用の研究を行う研究室の名称は？",
+            options: ["食品安全学研究室", "食品学研究室", "食品微生物学研究室", "基礎生命科学研究室"],
+            correctIndex: 0,
+            explanation: "食品安全学研究室ではアレルギー疾患に対する食品成分や栄養素の作用を研究しています。"
+          },
+          {
+            question: "多様な担い手と地域資源を生かした持続可能な食農システムの研究を行う研究室の名称は？",
+            options: ["アグリビジネス研究室", "農業情報システム学研究室", "作物学研究室", "食品学研究室"],
+            correctIndex: 0,
+            explanation: "アグリビジネス研究室では持続可能な食農システムの研究を行っています。"
+          },
+          {
+            question: "家計と食品産業の連携による食品ロス削減の研究を行う研究室の名称は？",
+            options: ["アグリビジネス研究室", "食品学研究室", "農業情報システム学研究室", "食品安全学研究室"],
+            correctIndex: 0,
+            explanation: "アグリビジネス研究室では家計と食品産業の連携による食品ロス削減の研究を行っています。"
           }
         ]
       },
