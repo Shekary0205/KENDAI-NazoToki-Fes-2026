@@ -359,6 +359,10 @@ export default function DepartmentStage() {
     if (wasInTutorial) {
       markAgrItemTutorialSeen();
     }
+    // チュートリアル未表示でも、水を使ったら既読扱いにしてロック回避
+    if (!hasSeenAgrItemTutorial() && item.id === "agr-water") {
+      markAgrItemTutorialSeen();
+    }
     // ステータス情報
     const stat = getItemStat(item.id);
     const statLabel = stat ? CROP_STAT_INFO[stat] : null;
@@ -707,9 +711,15 @@ export default function DepartmentStage() {
                       setShowItemRewards(false);
                       // 農学部: 初めて水アイテムを入手したらチュートリアル
                       const justGotWater = getAllRewards().some(r => r.id === "agr-water");
-                      if (isCrop && justGotWater && !hasSeenAgrItemTutorial()) {
+                      // 既に使ってしまっている場合はスキップ（チュートリアル完了扱い）
+                      const stillHasWater = getObtainedItems().some(i => i.id === "agr-water");
+                      if (isCrop && justGotWater && stillHasWater && !hasSeenAgrItemTutorial()) {
                         setShowAgrFeedGuide(true);
                         return;
+                      }
+                      // 水を先に使用済みだった場合はチュートリアル完了扱いに
+                      if (isCrop && justGotWater && !stillHasWater && !hasSeenAgrItemTutorial()) {
+                        markAgrItemTutorialSeen();
                       }
                       if (stage.skipNextLocationScreen) handleNext();
                       else setShowNext(true);
