@@ -40,14 +40,6 @@ import {
   ENERGY_PER_CORRECT,
   type SkillCard,
 } from "../data/cropSkills";
-import {
-  getDialogueForCrop,
-  getCropHand,
-  judgeJanken,
-  HAND_INFO,
-  type Hand,
-  type JankenResult,
-} from "../data/cropMiniGames";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -119,16 +111,6 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const [hiddenOptions, setHiddenOptions] = useState<Set<number>>(new Set());
   const [particleBurstKey, setParticleBurstKey] = useState(0); // インクリしてエフェクト再生
   const attackEmojis = getAttackEmojis(cropState);
-  // ミニゲーム用ステート
-  const [miniGame, setMiniGame] = useState<"none" | "conversation" | "janken">("none");
-  const [dialogueChoiceIndex, setDialogueChoiceIndex] = useState<number | null>(null);
-  const [jankenRound, setJankenRound] = useState(0);
-  const [jankenPlayerHand, setJankenPlayerHand] = useState<Hand | null>(null);
-  const [jankenCropHand, setJankenCropHand] = useState<Hand | null>(null);
-  const [jankenWins, setJankenWins] = useState(0);
-  const [jankenLosses, setJankenLosses] = useState(0);
-  const [jankenLast, setJankenLast] = useState<JankenResult | null>(null);
-  const dialogueSet = getDialogueForCrop(cropState);
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
 
@@ -707,29 +689,6 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                 </div>
               )}
 
-              {/* ミニゲーム */}
-              <div className="bg-pink-50 p-5 rounded-xl border-2 border-pink-300 space-y-3">
-                <p className="font-bold text-pink-900">🎮 作物とふれあう</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={() => { setDialogueChoiceIndex(null); setMiniGame("conversation"); }}
-                    className="h-14 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                  >
-                    💬 会話する
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setJankenRound(0); setJankenWins(0); setJankenLosses(0);
-                      setJankenPlayerHand(null); setJankenCropHand(null); setJankenLast(null);
-                      setMiniGame("janken");
-                    }}
-                    className="h-14 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-                  >
-                    ✌️ じゃんけん
-                  </Button>
-                </div>
-              </div>
-
               {battleData.nextLocationHint && (
                 <div className="bg-blue-50 p-6 rounded-xl border-2 border-blue-300">
                   <p className="text-lg font-semibold text-gray-800">{battleData.nextLocationHint}</p>
@@ -743,141 +702,6 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
             </CardContent>
           </Card>
         </div>
-
-        {/* 会話モーダル */}
-        {miniGame === "conversation" && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full shadow-2xl border-4 border-pink-400">
-              <CardHeader className="bg-gradient-to-r from-pink-100 to-rose-100">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-pink-400 bg-white flex-shrink-0">
-                    {playerVisual.image && <img src={playerVisual.image} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                  <CardTitle className="text-lg">{playerName}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                <div className="bg-white p-4 rounded-xl border-2 border-pink-200 text-gray-800 text-base leading-relaxed">
-                  {dialogueChoiceIndex === null
-                    ? `「${dialogueSet.opening}」`
-                    : `「${dialogueSet.choices[dialogueChoiceIndex].reply}」`}
-                </div>
-                {dialogueChoiceIndex === null ? (
-                  <div className="space-y-2">
-                    {dialogueSet.choices.map((c, i) => (
-                      <Button
-                        key={i}
-                        onClick={() => setDialogueChoiceIndex(i)}
-                        variant="outline"
-                        className="w-full h-auto py-3 justify-start text-left border-pink-300 hover:bg-pink-50"
-                      >
-                        {c.text}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <Button
-                    onClick={() => setMiniGame("none")}
-                    className="w-full h-12 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
-                  >
-                    閉じる
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* じゃんけんモーダル */}
-        {miniGame === "janken" && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full shadow-2xl border-4 border-indigo-400">
-              <CardHeader className="bg-gradient-to-r from-indigo-100 to-purple-100">
-                <CardTitle className="text-center">✌️ じゃんけん3本勝負</CardTitle>
-                <p className="text-center text-sm text-gray-700">
-                  ラウンド {Math.min(jankenRound + 1, 3)} / 3 ・ 勝ち {jankenWins} / 負け {jankenLosses}
-                </p>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                {/* 対面表示 */}
-                <div className="flex items-center justify-around py-2">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-green-400 bg-white mx-auto mb-1">
-                      {playerVisual.image && <img src={playerVisual.image} alt="" className="w-full h-full object-cover" />}
-                    </div>
-                    <p className="text-xs font-semibold">{playerName}</p>
-                    <div className="text-4xl mt-1 h-10">
-                      {jankenPlayerHand ? HAND_INFO[jankenPlayerHand].icon : "？"}
-                    </div>
-                  </div>
-                  <div className="text-2xl font-black text-purple-600">VS</div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-red-400 bg-white mx-auto mb-1">
-                      <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover scale-150" />
-                    </div>
-                    <p className="text-xs font-semibold">{enemyName}</p>
-                    <div className="text-4xl mt-1 h-10">
-                      {jankenCropHand ? HAND_INFO[jankenCropHand].icon : "？"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 結果表示 */}
-                {jankenLast && (
-                  <div className={`text-center font-bold text-xl p-2 rounded-lg ${
-                    jankenLast === "win" ? "bg-green-100 text-green-800" :
-                    jankenLast === "lose" ? "bg-red-100 text-red-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
-                    {jankenLast === "win" ? "🎉 あなたの勝ち！" : jankenLast === "lose" ? "😢 負け…" : "🤝 あいこ"}
-                  </div>
-                )}
-
-                {jankenRound < 3 ? (
-                  <>
-                    <p className="text-center text-sm text-gray-600">手を選んで！</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(["rock", "scissors", "paper"] as Hand[]).map(h => (
-                        <Button
-                          key={h}
-                          onClick={() => {
-                            const crop = getCropHand(cropState);
-                            const result = judgeJanken(h, crop);
-                            setJankenPlayerHand(h);
-                            setJankenCropHand(crop);
-                            setJankenLast(result);
-                            if (result === "win") setJankenWins(w => w + 1);
-                            else if (result === "lose") setJankenLosses(l => l + 1);
-                            setJankenRound(r => r + 1);
-                          }}
-                          variant="outline"
-                          className="h-20 flex flex-col items-center gap-0.5 border-indigo-300 hover:bg-indigo-50"
-                          disabled={!!jankenLast && jankenRound < 3 && jankenRound !== 0 ? false : !!jankenLast}
-                        >
-                          <span className="text-3xl">{HAND_INFO[h].icon}</span>
-                          <span className="text-xs">{HAND_INFO[h].label}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center space-y-3">
-                    <p className="text-xl font-bold">
-                      {jankenWins > jankenLosses ? "🏆 勝利！" : jankenWins < jankenLosses ? "💔 敗北…" : "🤝 引き分け"}
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      {jankenWins}勝 {jankenLosses}敗 {3 - jankenWins - jankenLosses}分
-                    </p>
-                  </div>
-                )}
-
-                <Button onClick={() => setMiniGame("none")} variant="outline" className="w-full h-12">
-                  閉じる
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
     );
   }
