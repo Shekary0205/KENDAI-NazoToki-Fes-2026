@@ -32,6 +32,13 @@ import {
   type DepartmentData,
   type CropStat,
 } from "../data/departments-data";
+import {
+  getCardsForCrop,
+  getPassiveForCrop,
+  MAX_ENERGY,
+  ENERGY_PER_CORRECT,
+  type SkillCard,
+} from "../data/cropSkills";
 import { useBgm } from "../context/BgmContext";
 import { fireCorrectEffect } from "../utils/confetti";
 
@@ -87,6 +94,19 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const [checkedOptions, setCheckedOptions] = useState<Set<number>>(new Set());
   const [checkboxSubmitted, setCheckboxSubmitted] = useState(false);
   const [showDamage, setShowDamage] = useState<"player" | "enemy" | null>(null);
+  // ===== スキル/パッシブ関連ステート =====
+  const cards = getCardsForCrop(cropState);
+  const passive = getPassiveForCrop(cropState);
+  const [energy, setEnergy] = useState(0);
+  const [attackBuff, setAttackBuff] = useState(1); // 次の正解ダメージ倍率
+  const [shieldMult, setShieldMult] = useState(1); // 次の被ダメージ倍率
+  const [optionReduce, setOptionReduce] = useState(0); // 次の問題で選択肢を削減する数
+  const [autoAnswer, setAutoAnswer] = useState(false); // 次の問題を自動成功
+  const [skillToast, setSkillToast] = useState<string | null>(null);
+  const [chainBonus, setChainBonus] = useState(0); // 連撃のパッシブ（累積倍率）
+  const [usedReviveFlag, setUsedRevive] = useState(false); // 天使フラワーの復活を使用済みか
+  const [usedFirstHit, setUsedFirstHit] = useState(false); // イケメンの先制が消費済みか
+  const [hiddenOptions, setHiddenOptions] = useState<Set<number>>(new Set());
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
 
@@ -104,10 +124,116 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
 
   const currentQuestion = questionQueue[queueIndex];
 
+  // 選択肢を減らす処理
+  useEffect(() => {
+    if (!currentQuestion || optionReduce <= 0) {
+      setHiddenOptions(new Set());
+      return;
+    }
+    const wrongIndices = currentQuestion.options
+      .map((_, i) => i)
+      .filter(i => i !== currentQuestion.correctIndex);
+    const shuffled = [...wrongIndices].sort(() => Math.random() - 0.5);
+    const toHide = shuffled.slice(0, Math.min(optionReduce, wrongIndices.length - 1));
+    setHiddenOptions(new Set(toHide));
+  }, [optionReduce, queueIndex, currentQuestion]);
+
   const handleStartBattle = () => {
     const track = (battleData.battleBgm || "battle") as import("../context/BgmContext").BgmTrack;
     switchTrack(track);
+    // パッシブ: 賢者の先見の明（開始時Energy+2）
+    let startEnergy = 0;
+    if (passive.id === "startEnergy") startEnergy = 2;
+    setEnergy(startEnergy);
+    setAttackBuff(1);
+    setShieldMult(1);
+    setOptionReduce(passive.id === "clairvoyance" ? 1 : 0);
+    setAutoAnswer(false);
+    setChainBonus(0);
+    setUsedRevive(false);
+    setUsedFirstHit(false);
     setBattleState("question");
+  };
+
+  // トースト表示
+  const showToast = (msg: string) => {
+    setSkillToast(msg);
+    setTimeout(() => setSkillToast(null), 2000);
+  };
+
+  // カード使用
+  const handlePlayCard = (card: SkillCard) => {
+    if (energy < card.energyCost) return;
+    if (battleState !== "question") return;
+    setEnergy(e => e - card.energyCost);
+    const eff = card.effect;
+    switch (eff.type) {
+      case "damage": {
+        const dmg = eff.amount;
+        setShowDamage("enemy");
+        const newE = Math.max(0, enemyHp - dmg);
+        setEnemyHp(newE);
+        showToast(`${card.icon} ${card.name}！ ${dmg}ダメージ！`);
+        setTimeout(() => {
+          setShowDamage(null);
+          if (newE <= 0) { switchTrack("victory"); setBattleState("victory"); }
+        }, 1000);
+        break;
+      }
+      case "heal": {
+        const amt = eff.amount >= 999 ? battleData.playerMaxHp : eff.amount;
+        setPlayerHp(p => Math.min(battleData.playerMaxHp, p + amt));
+        showToast(`${card.icon} ${card.name}！ HP回復！`);
+        break;
+      }
+      case "attackBuff": {
+        setAttackBuff(eff.multiplier);
+        showToast(`${card.icon} ${card.name}！ 次の攻撃${eff.multiplier}倍！`);
+        break;
+      }
+      case "shield": {
+        setShieldMult(eff.multiplier);
+        showToast(`${card.icon} ${card.name}！ 次の被ダメ${Math.round((1 - eff.multiplier) * 100)}%カット！`);
+        break;
+      }
+      case "reduceOptions": {
+        setOptionReduce(prev => prev + eff.count);
+        showToast(`${card.icon} ${card.name}！ 選択肢-${eff.count}！`);
+        break;
+      }
+      case "skipQuestion": {
+        const dmg = eff.damage;
+        setShowDamage("enemy");
+        const newE = Math.max(0, enemyHp - dmg);
+        setEnemyHp(newE);
+        showToast(`${card.icon} ${card.name}！ ${dmg}ダメージ！`);
+        setTimeout(() => {
+          setShowDamage(null);
+          if (newE <= 0) { switchTrack("victory"); setBattleState("victory"); return; }
+          // 次の問題へ
+          advanceToNextQuestion(newE, playerHp);
+        }, 1000);
+        break;
+      }
+      case "gainEnergy": {
+        setEnergy(e => Math.min(MAX_ENERGY, e + eff.amount));
+        showToast(`${card.icon} ${card.name}！ エネルギー+${eff.amount}`);
+        break;
+      }
+      case "combo": {
+        const dmg = eff.damage;
+        setShowDamage("enemy");
+        const newE = Math.max(0, enemyHp - dmg);
+        setEnemyHp(newE);
+        setEnergy(e => Math.min(MAX_ENERGY, e + eff.energy));
+        showToast(`${card.icon} ${card.name}！ ${dmg}ダメージ+エネ+${eff.energy}`);
+        setTimeout(() => {
+          setShowDamage(null);
+          if (newE <= 0) { switchTrack("victory"); setBattleState("victory"); }
+        }, 1000);
+        break;
+      }
+    }
   };
 
   const advanceToNextQuestion = (eHp: number, pHp: number) => {
@@ -125,20 +251,99 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     }
   };
 
+  // 正解時のダメージ計算（パッシブ・バフ適用）
+  const calcDamageToEnemy = () => {
+    let multiplier = attackBuff;
+    // パッシブ: chainAttack（強さ） - 累積20%ずつ
+    if (passive.id === "chainAttack") multiplier *= 1 + chainBonus;
+    // パッシブ: firstHit（イケメン） - 初撃のみ2倍+必中
+    if (passive.id === "firstHit" && !usedFirstHit) multiplier *= 2;
+    // パッシブ: lowHpBoost（最強） - HP50%以下で+100%
+    if (passive.id === "lowHpBoost" && playerHp / battleData.playerMaxHp < 0.5) multiplier *= 2;
+    return Math.round(battleData.damageToEnemy * multiplier);
+  };
+
+  // 被ダメージ計算（シールド・パッシブ適用）
+  const calcDamageToPlayer = () => {
+    let mult = shieldMult;
+    // パッシブ: evadeWrong（賢さ） - 50%で回避
+    if (passive.id === "evadeWrong" && Math.random() < 0.5) {
+      showToast("🌀 博識回避！ダメージ無効");
+      return 0;
+    }
+    // パッシブ: wrongReduce（紳士） - 半減
+    if (passive.id === "wrongReduce") mult *= 0.5;
+    return Math.round(battleData.damageToPlayer * mult);
+  };
+
+  // 正解後の共通処理
+  const onCorrectAnswer = () => {
+    const dmg = calcDamageToEnemy();
+    const newEHp = Math.max(0, enemyHp - dmg);
+    setEnemyHp(newEHp);
+    // バフ消費
+    setAttackBuff(1);
+    // パッシブ: firstHit消費
+    if (passive.id === "firstHit") setUsedFirstHit(true);
+    // パッシブ: chainAttack（累積）
+    if (passive.id === "chainAttack") setChainBonus(b => b + 0.2);
+    // エネルギー獲得
+    setEnergy(e => Math.min(MAX_ENERGY, e + ENERGY_PER_CORRECT));
+    return newEHp;
+  };
+
+  // 不正解時の共通処理
+  const onWrongAnswer = () => {
+    const dmg = calcDamageToPlayer();
+    const newPHp = Math.max(0, playerHp - dmg);
+    setPlayerHp(newPHp);
+    // シールド消費
+    setShieldMult(1);
+    // パッシブ: chainAttack 累積リセット
+    if (passive.id === "chainAttack") setChainBonus(0);
+    // パッシブ: autoHeal（優しさ）
+    if (passive.id === "autoHeal" && newPHp > 0 && newPHp / battleData.playerMaxHp < 0.3) {
+      const healed = Math.min(battleData.playerMaxHp, newPHp + 10);
+      setPlayerHp(healed);
+      setTimeout(() => showToast("🌱 自然治癒！HP+10"), 1200);
+    }
+    return newPHp;
+  };
+
   const handleSelectOption = (index: number) => {
     if (selectedOption !== null) return;
     setSelectedOption(index);
-    const isCorrect = index === currentQuestion.correctIndex;
+    // autoAnswer中なら強制正解
+    const isCorrect = autoAnswer ? true : index === currentQuestion.correctIndex;
+    if (autoAnswer) setAutoAnswer(false);
     if (isCorrect) {
       setBattleState("correct"); fireCorrectEffect(); setShowDamage("enemy");
-      const newEHp = Math.max(0, enemyHp - battleData.damageToEnemy);
-      setEnemyHp(newEHp);
-      setTimeout(() => { setShowDamage(null); currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(newEHp, playerHp); }, 1800);
+      const newEHp = onCorrectAnswer();
+      setTimeout(() => {
+        setShowDamage(null);
+        setOptionReduce(passive.id === "clairvoyance" ? 1 : 0);
+        if (newEHp <= 0) { switchTrack("victory"); setBattleState("victory"); return; }
+        currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(newEHp, playerHp);
+      }, 1800);
     } else {
       setBattleState("incorrect"); setShowDamage("player");
-      const newPHp = Math.max(0, playerHp - battleData.damageToPlayer);
-      setPlayerHp(newPHp);
-      setTimeout(() => { setShowDamage(null); currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(enemyHp, newPHp); }, 1800);
+      const newPHp = onWrongAnswer();
+      setTimeout(() => {
+        setShowDamage(null);
+        setOptionReduce(passive.id === "clairvoyance" ? 1 : 0);
+        if (newPHp <= 0) {
+          // パッシブ: revive（天使）
+          if (passive.id === "revive" && !usedReviveFlag) {
+            const revivedHp = Math.floor(battleData.playerMaxHp * 0.5);
+            setPlayerHp(revivedHp);
+            setUsedRevive(true);
+            showToast("✨ 天使の祝福！復活！");
+            currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(enemyHp, revivedHp);
+            return;
+          }
+        }
+        currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(enemyHp, newPHp);
+      }, 1800);
     }
   };
 
@@ -154,14 +359,21 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     const isCorrect = checkedOptions.size === correctSet.size && [...checkedOptions].every(i => correctSet.has(i));
     if (isCorrect) {
       setBattleState("correct"); fireCorrectEffect(); setShowDamage("enemy");
-      const newEHp = Math.max(0, enemyHp - battleData.damageToEnemy);
-      setEnemyHp(newEHp);
-      setTimeout(() => { setShowDamage(null); currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(newEHp, playerHp); }, 1800);
+      const newEHp = onCorrectAnswer();
+      setTimeout(() => {
+        setShowDamage(null);
+        setOptionReduce(passive.id === "clairvoyance" ? 1 : 0);
+        if (newEHp <= 0) { switchTrack("victory"); setBattleState("victory"); return; }
+        currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(newEHp, playerHp);
+      }, 1800);
     } else {
       setBattleState("incorrect"); setShowDamage("player");
-      const newPHp = Math.max(0, playerHp - battleData.damageToPlayer);
-      setPlayerHp(newPHp);
-      setTimeout(() => { setShowDamage(null); currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(enemyHp, newPHp); }, 1800);
+      const newPHp = onWrongAnswer();
+      setTimeout(() => {
+        setShowDamage(null);
+        setOptionReduce(passive.id === "clairvoyance" ? 1 : 0);
+        currentQuestion.explanation ? setBattleState("explanation") : advanceToNextQuestion(enemyHp, newPHp);
+      }, 1800);
     }
   };
 
@@ -403,6 +615,76 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
         {/* バトルフィールド */}
         <BattleField />
 
+        {/* エネルギー & スキルカード */}
+        {cards.length > 0 && (
+          <Card className="shadow-md border-2 border-purple-300">
+            <CardContent className="pt-3 pb-3 space-y-2">
+              {/* エネルギーバー */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-purple-800">⚡ エネルギー</span>
+                <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div className="h-3 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                    style={{ width: `${(energy / MAX_ENERGY) * 100}%` }} />
+                </div>
+                <span className="text-xs font-semibold text-gray-700">{energy}/{MAX_ENERGY}</span>
+              </div>
+              {/* パッシブ表示 */}
+              {passive.id !== "none" && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded">✨ {passive.name}</span>
+                  <span className="text-gray-600">{passive.description}</span>
+                </div>
+              )}
+              {/* カードボタン */}
+              <div className="flex flex-wrap gap-2">
+                {cards.map(card => {
+                  const canPlay = energy >= card.energyCost && battleState === "question";
+                  return (
+                    <button
+                      key={card.id}
+                      onClick={() => handlePlayCard(card)}
+                      disabled={!canPlay}
+                      title={card.description}
+                      className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg border-2 transition-all min-w-[78px]
+                        ${canPlay
+                          ? "border-purple-400 bg-white hover:bg-purple-50 hover:border-purple-600 active:scale-95 shadow-sm"
+                          : "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed"
+                        }`}
+                    >
+                      <span className="text-xl">{card.icon}</span>
+                      <span className="text-[11px] font-semibold text-gray-800 leading-tight text-center">{card.name}</span>
+                      <span className={`text-[10px] font-bold ${canPlay ? "text-purple-700" : "text-gray-500"}`}>⚡{card.energyCost}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* スキルトースト */}
+              {skillToast && (
+                <div className="text-center text-sm font-bold text-purple-900 bg-purple-100 border border-purple-300 rounded-lg py-1 animate-pulse">
+                  {skillToast}
+                </div>
+              )}
+              {/* 状態表示 */}
+              {(attackBuff > 1 || shieldMult < 1 || optionReduce > 0 || chainBonus > 0) && (
+                <div className="flex flex-wrap gap-1 text-[11px]">
+                  {attackBuff > 1 && (
+                    <span className="bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded">攻撃×{attackBuff}</span>
+                  )}
+                  {shieldMult < 1 && (
+                    <span className="bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">被ダメ×{shieldMult}</span>
+                  )}
+                  {optionReduce > 0 && (
+                    <span className="bg-yellow-100 text-yellow-800 font-semibold px-2 py-0.5 rounded">選択肢-{optionReduce}</span>
+                  )}
+                  {chainBonus > 0 && (
+                    <span className="bg-orange-100 text-orange-800 font-semibold px-2 py-0.5 rounded">連撃+{Math.round(chainBonus * 100)}%</span>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* 解説 */}
         {battleState === "explanation" && currentQuestion.explanation && (
           <Card className="shadow-xl border-2 border-green-400">
@@ -442,6 +724,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
               {currentQuestion.type !== "checkbox" && (
                 <div className="grid gap-3">
                   {currentQuestion.options.map((option, index) => {
+                    if (hiddenOptions.has(index)) return null;
                     const isSelected = selectedOption === index;
                     const isCorrect = index === currentQuestion.correctIndex;
                     const showResult = selectedOption !== null;
