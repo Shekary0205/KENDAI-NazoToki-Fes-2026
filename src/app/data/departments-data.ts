@@ -1739,7 +1739,8 @@ export const departments: DepartmentData[] = [
       {
         id: 4,
         location: "10号館1階エントランス",
-        riddle: "以下が示す場所を答えろ",
+        riddle: "緑色が示す場所を答えろ",
+        riddleImage: "/images/douro.png",
         hint: "掲示板を確認しよう。",
         answer: "健大サッカー場",
         itemRewards: [
