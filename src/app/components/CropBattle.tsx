@@ -497,32 +497,77 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
 
   // ===== イントロ =====
   if (battleState === "intro") {
+    const introBg = isFinalBattle
+      ? "relative min-h-screen overflow-hidden bg-gradient-to-br from-red-950 via-purple-950 to-black flex items-center justify-center p-4"
+      : "min-h-screen bg-gradient-to-br from-green-100 via-yellow-50 to-orange-100 flex items-center justify-center p-4";
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-100 via-yellow-50 to-orange-100 flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full space-y-6">
+      <div className={introBg}>
+        {/* 最終戦闘: 背景エフェクト */}
+        {isFinalBattle && (
+          <>
+            {/* 稲妻 */}
+            <div className="absolute inset-0 bg-red-500/10 animate-lightning pointer-events-none" />
+            {/* 火花 */}
+            <div className="absolute inset-0 pointer-events-none">
+              {[...Array(14)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 rounded-full bg-orange-400 opacity-70 animate-ember"
+                  style={{
+                    left: `${5 + i * 7}%`,
+                    bottom: `${Math.random() * 50}%`,
+                    animationDelay: `${i * 0.3}s`,
+                    animationDuration: `${2 + Math.random() * 3}s`,
+                  }}
+                />
+              ))}
+            </div>
+            {/* 赤黒ヴィニェット */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)" }} />
+          </>
+        )}
+
+        <div className="relative max-w-2xl w-full space-y-6 z-10">
           <div className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-green-900">作物バトル！</h1>
-            <p className="text-lg text-gray-700">きみの作物で敵を倒せ！</p>
+            {isFinalBattle ? (
+              <>
+                <div className="inline-block bg-gradient-to-r from-red-600 via-purple-600 to-red-600 px-6 py-1.5 rounded-full shadow-lg animate-pulse">
+                  <span className="text-white font-bold text-sm tracking-widest">👑 最終決戦 👑</span>
+                </div>
+                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-purple-300 to-red-400 drop-shadow-[0_0_18px_rgba(239,68,68,0.85)]">
+                  ラスボス襲来！
+                </h1>
+                <p className="text-lg text-red-200 font-semibold">
+                  全てを育てあげた作物の力で、最後の敵を打ち破れ！
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-4xl md:text-5xl font-bold text-green-900">作物バトル！</h1>
+                <p className="text-lg text-gray-700">きみの作物で敵を倒せ！</p>
+              </>
+            )}
           </div>
 
           {/* VS表示 */}
-          <Card className="shadow-2xl border-4 border-green-400 overflow-hidden">
-            <div className="flex items-center justify-around p-6 bg-gradient-to-r from-green-50 to-red-50">
+          <Card className={`shadow-2xl border-4 overflow-hidden ${isFinalBattle ? "border-red-500 bg-black/70" : "border-green-400"}`}>
+            <div className={`flex items-center justify-around p-6 ${isFinalBattle ? "bg-gradient-to-r from-red-950/90 via-purple-950/80 to-red-950/90" : "bg-gradient-to-r from-green-50 to-red-50"}`}>
               {/* 自作物 */}
               <div className="text-center space-y-2">
-                <div className="w-28 h-28 mx-auto rounded-full bg-white border-4 border-green-400 shadow-lg flex items-center justify-center overflow-hidden">
+                <div className={`w-28 h-28 mx-auto rounded-full border-4 shadow-lg flex items-center justify-center overflow-hidden ${isFinalBattle ? "bg-black/60 border-green-300" : "bg-white border-green-400"}`}>
                   {playerVisual.image
                     ? <img src={playerVisual.image} alt={playerName} className="w-full h-full object-cover" />
                     : <span className="text-5xl">🌱</span>
                   }
                 </div>
-                <p className="font-bold text-green-900 text-sm">{playerName}</p>
+                <p className={`font-bold text-sm ${isFinalBattle ? "text-green-200" : "text-green-900"}`}>{playerName}</p>
                 {playerSpecies && (
-                  <p className="text-[10px] text-purple-700 font-semibold">{playerSpecies}</p>
+                  <p className={`text-[10px] font-semibold ${isFinalBattle ? "text-purple-300" : "text-purple-700"}`}>{playerSpecies}</p>
                 )}
                 <div className="flex items-center justify-center gap-2 text-xs">
                   {(["kindness", "strength", "wisdom"] as CropStat[]).map(s => (
-                    <span key={s} className={`font-semibold ${cropState[s] >= 3 ? CROP_STAT_INFO[s].color : "text-gray-400"}`}>
+                    <span key={s} className={`font-semibold ${cropState[s] >= 3 ? CROP_STAT_INFO[s].color : isFinalBattle ? "text-gray-500" : "text-gray-400"}`}>
                       {CROP_STAT_INFO[s].icon}{cropState[s]}
                     </span>
                   ))}
@@ -530,30 +575,39 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                 <Badge className="bg-blue-600 text-white">HP: {battleData.playerMaxHp}</Badge>
               </div>
 
-              <div className="text-5xl font-black text-red-600 animate-pulse">VS</div>
+              <div className={`text-5xl font-black animate-pulse ${isFinalBattle ? "text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.9)]" : "text-red-600"}`}>VS</div>
 
               {/* 敵作物 */}
               <div className="text-center space-y-2">
-                <div className="w-28 h-28 mx-auto rounded-full bg-white border-4 border-red-400 shadow-lg flex items-center justify-center overflow-hidden">
-                  <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain" style={{ filter: "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
+                <div className={`w-28 h-28 mx-auto rounded-full border-4 flex items-center justify-center overflow-hidden ${isFinalBattle ? "bg-black/60 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white border-red-400 shadow-lg"}`}>
+                  <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain"
+                    style={{ filter: isFinalBattle
+                      ? "hue-rotate(180deg) brightness(0.75) saturate(1.8) contrast(1.2) drop-shadow(0 0 8px rgba(239,68,68,0.9))"
+                      : "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
                 </div>
-                <p className="font-bold text-red-900 text-sm">{enemyName}</p>
+                <p className={`font-bold text-sm ${isFinalBattle ? "text-red-300" : "text-red-900"}`}>{enemyName}</p>
                 <Badge className="bg-red-600 text-white">HP: {battleData.enemyMaxHp}</Badge>
               </div>
             </div>
 
-            <CardContent className="space-y-4 pt-6">
-              <div className="bg-amber-50 p-4 rounded-lg border-2 border-amber-300">
-                <h3 className="font-bold text-amber-900 mb-2">⚔️ バトルルール</h3>
-                <ul className="space-y-1 text-sm text-gray-700">
-                  <li>• 正解で敵に <strong className="text-red-600">{battleData.damageToEnemy}ダメージ</strong></li>
-                  <li>• 不正解で <strong className="text-blue-600">{battleData.damageToPlayer}ダメージ</strong></li>
+            <CardContent className={`space-y-4 pt-6 ${isFinalBattle ? "bg-black/40" : ""}`}>
+              <div className={`p-4 rounded-lg border-2 ${isFinalBattle ? "bg-red-950/60 border-red-500" : "bg-amber-50 border-amber-300"}`}>
+                <h3 className={`font-bold mb-2 ${isFinalBattle ? "text-red-200" : "text-amber-900"}`}>⚔️ バトルルール</h3>
+                <ul className={`space-y-1 text-sm ${isFinalBattle ? "text-red-100" : "text-gray-700"}`}>
+                  <li>• 正解で敵に <strong className={isFinalBattle ? "text-orange-300" : "text-red-600"}>{battleData.damageToEnemy}ダメージ</strong></li>
+                  <li>• 不正解で <strong className={isFinalBattle ? "text-blue-300" : "text-blue-600"}>{battleData.damageToPlayer}ダメージ</strong></li>
                   <li>• 敵のHPを0にすれば勝利！</li>
                 </ul>
               </div>
-              <Button onClick={handleStartBattle} className="w-full h-14 text-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+              <Button
+                onClick={handleStartBattle}
+                className={`w-full h-14 text-xl ${isFinalBattle
+                  ? "bg-gradient-to-r from-red-700 via-purple-700 to-red-700 hover:from-red-600 hover:via-purple-600 hover:to-red-600 shadow-[0_0_20px_rgba(239,68,68,0.6)]"
+                  : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                }`}
+              >
                 <Swords className="w-6 h-6 mr-2" />
-                バトル開始！
+                {isFinalBattle ? "最終決戦へ！" : "バトル開始！"}
               </Button>
             </CardContent>
           </Card>
