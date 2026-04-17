@@ -1023,10 +1023,11 @@ export default function DepartmentStage() {
                     setShowGrowthScreen(false);
                     setGrowthScreenVisual(null);
                   }}
+                  disabled={growthScreenVisual.level === 1 && !cropNicknameInput.trim()}
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   <ArrowRight className="w-5 h-5 mr-2" />
-                  {growthScreenVisual.level === 1 && cropNicknameInput.trim() ? "名前を決定！" : "戻る"}
+                  {growthScreenVisual.level === 1 ? "名前を決定！" : "戻る"}
                 </Button>
               </CardContent>
             </Card>
