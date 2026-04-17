@@ -30,6 +30,8 @@ import {
   getCropGrowthLevel,
   getCropEvolutionName,
   saveCropState,
+  hasSeenAgrItemTutorial,
+  markAgrItemTutorialSeen,
   getItemStat,
   CROP_FULLNESS_MAX,
   CROP_STAT_INFO,
@@ -75,6 +77,7 @@ export default function DepartmentStage() {
   const [showGrowthScreen, setShowGrowthScreen] = useState(false);
   const [growthScreenVisual, setGrowthScreenVisual] = useState<{ image: string; label: string; level: number } | null>(null);
   const [cropNicknameInput, setCropNicknameInput] = useState("");
+  const [showAgrFeedGuide, setShowAgrFeedGuide] = useState(false);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -99,6 +102,7 @@ export default function DepartmentStage() {
     setShowSeeding(false);
     setSeedingDone(false);
     setShowItemRewards(false);
+    setShowAgrFeedGuide(false);
     setInventory(getObtainedItems());
     if (departmentId && isCrop) {
       setCropStateLocal(getCropState(departmentId));
@@ -334,6 +338,11 @@ export default function DepartmentStage() {
     const updated = feedCrop(departmentId, item.id);
     setCropStateLocal(updated);
     const newLevel = getCropGrowthLevel(updated);
+    // チュートリアル中にフィードした場合 → チュートリアル完了（状態はフラグで継続管理）
+    const wasInTutorial = showAgrFeedGuide;
+    if (wasInTutorial) {
+      markAgrItemTutorialSeen();
+    }
     // ステータス情報
     const stat = getItemStat(item.id);
     const statLabel = stat ? CROP_STAT_INFO[stat] : null;
@@ -353,6 +362,12 @@ export default function DepartmentStage() {
     } else {
       setFeedToast(`${item.icon} ${item.name}をあげた！`);
       setTimeout(() => setFeedToast(null), 2500);
+    }
+    // チュートリアル完了後 & 成長画面が出ない場合は即 showNext
+    if (wasInTutorial && newLevel <= prevLevel) {
+      setShowAgrFeedGuide(false);
+      if (stage.skipNextLocationScreen) handleNext();
+      else setShowNext(true);
     }
   };
 
@@ -534,7 +549,7 @@ export default function DepartmentStage() {
 
           <CardContent className="space-y-6 pt-6">
             {/* 謎・ヒントは各フェーズ画面では非表示 */}
-            {!showNext && !showExplanation && !showSeeding && !showItemRewards && (
+            {!showNext && !showExplanation && !showSeeding && !showItemRewards && !showAgrFeedGuide && (
               <>
                 {/* 謎 */}
                 <div className="bg-amber-50 p-6 rounded-lg border-2 border-amber-200">
@@ -662,6 +677,12 @@ export default function DepartmentStage() {
                   <Button
                     onClick={() => {
                       setShowItemRewards(false);
+                      // 農学部: 初めて水アイテムを入手したらチュートリアル
+                      const justGotWater = getAllRewards().some(r => r.id === "agr-water");
+                      if (isCrop && justGotWater && !hasSeenAgrItemTutorial()) {
+                        setShowAgrFeedGuide(true);
+                        return;
+                      }
                       if (stage.skipNextLocationScreen) handleNext();
                       else setShowNext(true);
                     }}
@@ -673,6 +694,41 @@ export default function DepartmentStage() {
                 </div>
               );
             })()}
+
+            {/* 農学部: 初回アイテム入手時のチュートリアル */}
+            {showAgrFeedGuide && (
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="inline-block bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full p-4 shadow-xl animate-pulse">
+                    <Sparkles className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-blue-900">アイテム使用チュートリアル</h2>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-2xl border-4 border-blue-300 shadow-lg space-y-3">
+                  <p className="text-base text-gray-800 leading-relaxed">
+                    💡 アイテムを入手しました！<br />
+                    画面上部の <strong className="text-green-700">作物パネル</strong> に所持中のアイテムが表示されます。
+                  </p>
+                  <p className="text-base text-gray-800 leading-relaxed">
+                    まずは <strong className="text-blue-700">💧水</strong> を作物にあげてみましょう！<br />
+                    上のアイテムをタップしてください。
+                  </p>
+                  <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3">
+                    <p className="text-sm text-yellow-900">
+                      ⚠️ アイテムをあげると満腹度が上がり、満タンになるとしばらくあげられなくなります。
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="inline-block animate-bounce text-4xl">☝️</div>
+                  <p className="text-sm font-semibold text-gray-600">
+                    上の作物パネルから水をタップ！
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* 種まきフェーズ（農学部ステージ1正解後） */}
             {showSeeding && (
@@ -737,7 +793,7 @@ export default function DepartmentStage() {
             )}
 
             {/* 回答フォーム */}
-            {!showNext && !showExplanation && !showSeeding && !showItemRewards ? (
+            {!showNext && !showExplanation && !showSeeding && !showItemRewards && !showAgrFeedGuide ? (
               <>
                 {/* テキスト入力形式 */}
                 {(!stage.type || stage.type === "text") && (
@@ -1022,6 +1078,12 @@ export default function DepartmentStage() {
                     }
                     setShowGrowthScreen(false);
                     setGrowthScreenVisual(null);
+                    // チュートリアル中の成長 → 閉じたら次の目的地へ
+                    if (showAgrFeedGuide) {
+                      setShowAgrFeedGuide(false);
+                      if (stage.skipNextLocationScreen) handleNext();
+                      else setShowNext(true);
+                    }
                   }}
                   disabled={growthScreenVisual.level === 1 && !cropNicknameInput.trim()}
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"

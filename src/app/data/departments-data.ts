@@ -2376,6 +2376,16 @@ export const markItemTutorialSeen = (): void => {
   localStorage.setItem('seenItemTutorial', 'true');
 };
 
+// 農学部用のアイテム使用チュートリアル
+export const hasSeenAgrItemTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenAgrItemTutorial') === 'true';
+};
+
+export const markAgrItemTutorialSeen = (): void => {
+  localStorage.setItem('seenAgrItemTutorial', 'true');
+};
+
 // ===== ブラウザバック対策：ステート・スナップショット =====
 // 各ステージ表示時に localStorage の状態を history.state に保存し、
 // ブラウザバック時に復元することでアイテム消失を防ぐ。
