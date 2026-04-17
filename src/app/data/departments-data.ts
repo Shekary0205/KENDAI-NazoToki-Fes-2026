@@ -1772,7 +1772,7 @@ export const departments: DepartmentData[] = [
           { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
         ],
         recoversFullness: true,
-        nextLocationHint: "２階奥まで進め"
+        nextLocationHint: "おめでとう。次の問題に答えよう。"
       },
       {
         id: 6,
