@@ -1803,7 +1803,7 @@ export const departments: DepartmentData[] = [
         hint: "「け」をむし・「こ」をけし",
         answer: "きんえん",
         alternateAnswers: ["禁煙", "キンエン"],
-        nextLocationHint: "３階奥まで進め"
+        nextLocationHint: "よくやった。次の問題へ進め"
       },
       {
         id: 9,
