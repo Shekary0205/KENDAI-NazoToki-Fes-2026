@@ -2270,16 +2270,15 @@ export const getCropEvolutionName = (state: CropState): string | null => {
 
 /** 基本進化名 → 画像ファイルのベース名 */
 const EVO_IMAGE_BASE: Record<string, string> = {
-  "優しさフラワー": "yasashisa",
-  "強さフラワー":   "tsuyosa",
-  "賢さフラワー":   "kashikosa",
+  "優しさフラワー":   "yasashisa",
+  "強さフラワー":     "tsuyosa",
+  "賢さフラワー":     "kashikosa",
   "イケメンフラワー": "ikemen",
-  "賢者フラワー":   "kenja",
-  "紳士フラワー":   "shinshi",
-  // 天使/最強/天才 は画像未生成
-  "天使フラワー":   "",
-  "最強フラワー":   "",
-  "天才フラワー":   "",
+  "賢者フラワー":     "kenja",
+  "紳士フラワー":     "shinshi",
+  "天使フラワー":     "tenshi",
+  "最強フラワー":     "saikyo",
+  "天才フラワー":     "tensai",
 };
 
 /** 心アイテムID → 画像ファイルのサフィックス */
@@ -2289,7 +2288,17 @@ const HEART_SUFFIX: Record<string, string> = {
   "agr-warrior-heart": "-warrior",
 };
 
-/** 進化フラワーの画像パスを返す（進化前は null） */
+/** 画像が未生成の進化名セット（該当する場合は fallback 表示） */
+const MISSING_EVO_IMAGES: Set<string> = new Set([
+  "yasashisa-teacher",
+  "yasashisa-fisher",
+  "tsuyosa-teacher",
+  "tsuyosa-fisher",
+  "kashikosa-teacher",
+  "kashikosa-fisher",
+]);
+
+/** 進化フラワーの画像パスを返す（進化前 / 画像未生成は null） */
 export const getCropEvolutionImage = (state: CropState): string | null => {
   const base = state.usedHeartId && state.baseEvoAtHeartUse
     ? state.baseEvoAtHeartUse
@@ -2298,7 +2307,9 @@ export const getCropEvolutionImage = (state: CropState): string | null => {
   const baseName = EVO_IMAGE_BASE[base];
   if (!baseName) return null;
   const suffix = state.usedHeartId ? (HEART_SUFFIX[state.usedHeartId] ?? "") : "";
-  return `/images/flowers/${baseName}${suffix}.png`;
+  const fileKey = `${baseName}${suffix}`;
+  if (MISSING_EVO_IMAGES.has(fileKey)) return null;
+  return `/images/flowers/${fileKey}.png`;
 };
 
 /** ステータスの表示情報 */
