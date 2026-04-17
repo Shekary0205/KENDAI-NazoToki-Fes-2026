@@ -407,28 +407,63 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
 
   const playerHpPct = (playerHp / battleData.playerMaxHp) * 100;
   const enemyHpPct = (enemyHp / battleData.enemyMaxHp) * 100;
+  const isFinalBattle = battleData.afterStageId >= department.stages.length;
 
   // ===== バトルフィールド（共通） =====
+  const bgClass = isFinalBattle
+    ? "relative bg-gradient-to-b from-red-950 via-purple-950 to-black rounded-2xl overflow-hidden h-72 shadow-inner animate-bossGlow"
+    : "relative bg-gradient-to-b from-sky-200 via-green-200 to-green-400 rounded-2xl overflow-hidden h-72 shadow-inner";
+
   const BattleField = () => (
-    <div className="relative bg-gradient-to-b from-sky-200 via-green-200 to-green-400 rounded-2xl overflow-hidden h-72 shadow-inner">
+    <div className={bgClass}>
       {/* 地面ライン */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-green-600/40 to-transparent" />
+      {isFinalBattle ? (
+        <>
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-red-900/60 to-transparent" />
+          {/* 溶岩/火花エフェクト */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 rounded-full bg-orange-400 opacity-70 animate-ember"
+                style={{
+                  left: `${10 + i * 11}%`,
+                  bottom: `${Math.random() * 40}%`,
+                  animationDelay: `${i * 0.4}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`,
+                }}
+              />
+            ))}
+          </div>
+          {/* 稲妻（時々光る） */}
+          <div className="absolute inset-0 bg-red-500/10 animate-lightning pointer-events-none" />
+          {/* ボスラベル */}
+          <div className="absolute top-2 left-2 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg animate-pulse">
+            👑 最終決戦
+          </div>
+        </>
+      ) : (
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-green-600/40 to-transparent" />
+      )}
 
       {/* 敵作物（右上） */}
       <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-        <div className="bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md min-w-[140px]">
-          <p className="font-bold text-sm text-red-900 text-right">{enemyName}</p>
+        <div className={`backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md min-w-[140px] ${isFinalBattle ? "bg-red-950/80 border border-red-500" : "bg-white/85"}`}>
+          <p className={`font-bold text-sm text-right ${isFinalBattle ? "text-red-200" : "text-red-900"}`}>{enemyName}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-gray-600">HP</span>
+            <span className={`text-[10px] ${isFinalBattle ? "text-red-300" : "text-gray-600"}`}>HP</span>
             <div className="flex-1 bg-gray-300 rounded-full h-2.5">
-              <div className={`h-2.5 rounded-full transition-all duration-700 ${enemyHpPct > 50 ? "bg-green-500" : enemyHpPct > 20 ? "bg-yellow-500" : "bg-red-500"}`}
+              <div className={`h-2.5 rounded-full transition-all duration-500 ${enemyHpPct > 50 ? "bg-green-500" : enemyHpPct > 20 ? "bg-yellow-500" : "bg-red-500"}`}
                 style={{ width: `${enemyHpPct}%` }} />
             </div>
           </div>
-          <p className="text-[10px] text-gray-500 text-right mt-0.5">{enemyHp}/{battleData.enemyMaxHp}</p>
+          <p className={`text-[10px] text-right mt-0.5 ${isFinalBattle ? "text-red-300" : "text-gray-500"}`}>{enemyHp}/{battleData.enemyMaxHp}</p>
         </div>
-        <div className={`w-28 h-28 rounded-full bg-white/50 shadow-xl flex items-center justify-center ${showDamage === "enemy" ? "animate-shake" : ""}`}>
-          <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain" style={{ filter: "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
+        <div className={`w-28 h-28 rounded-full flex items-center justify-center ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "bg-gradient-to-br from-red-500/40 to-purple-900/40 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white/50 shadow-xl"}`}>
+          <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain"
+            style={{ filter: isFinalBattle
+              ? "hue-rotate(180deg) brightness(0.8) saturate(1.8) contrast(1.2) drop-shadow(0 0 8px rgba(239,68,68,0.8))"
+              : "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
         </div>
       </div>
 
@@ -440,7 +475,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
             : <span className="text-7xl">🌱</span>
           }
         </div>
-        <div className="bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md min-w-[160px]">
+        <div className={`backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md min-w-[160px] ${isFinalBattle ? "bg-white/95 border border-green-400" : "bg-white/85"}`}>
           <div className="flex items-baseline justify-between">
             <div className="min-w-0 flex-1">
               <p className="font-bold text-sm text-green-900 truncate">{playerName}</p>
@@ -450,7 +485,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[10px] text-gray-600">HP</span>
             <div className="flex-1 bg-gray-300 rounded-full h-2.5">
-              <div className={`h-2.5 rounded-full transition-all duration-700 ${playerHpPct > 50 ? "bg-green-500" : playerHpPct > 20 ? "bg-yellow-500" : "bg-red-500"}`}
+              <div className={`h-2.5 rounded-full transition-all duration-500 ${playerHpPct > 50 ? "bg-green-500" : playerHpPct > 20 ? "bg-yellow-500" : "bg-red-500"}`}
                 style={{ width: `${playerHpPct}%` }} />
             </div>
           </div>
@@ -619,7 +654,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-green-50 p-4 py-6">
       <div className="max-w-3xl mx-auto space-y-4">
         {/* バトルフィールド */}
-        <BattleField />
+        {BattleField()}
 
         {/* エネルギー & スキルカード */}
         {cards.length > 0 && (
@@ -806,6 +841,33 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           20%, 40%, 60%, 80% { transform: translateX(10px); }
         }
         .animate-shake { animation: shake 0.5s; }
+
+        @keyframes bossGlow {
+          0%, 100% { box-shadow: inset 0 0 60px rgba(220, 38, 38, 0.5); }
+          50%      { box-shadow: inset 0 0 100px rgba(168, 85, 247, 0.7); }
+        }
+        .animate-bossGlow { animation: bossGlow 3s ease-in-out infinite; }
+
+        @keyframes bossPulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
+          50%      { transform: scale(1.05); box-shadow: 0 0 55px rgba(168, 85, 247, 1); }
+        }
+        .animate-bossPulse { animation: bossPulse 2s ease-in-out infinite; }
+
+        @keyframes ember {
+          0%   { transform: translateY(0) scale(1); opacity: 0.9; }
+          100% { transform: translateY(-180px) scale(0.3); opacity: 0; }
+        }
+        .animate-ember { animation: ember linear infinite; }
+
+        @keyframes lightning {
+          0%, 100%    { opacity: 0; }
+          48%, 52%    { opacity: 0; }
+          50%         { opacity: 0.6; }
+          70%, 73%    { opacity: 0; }
+          72%         { opacity: 0.4; }
+        }
+        .animate-lightning { animation: lightning 7s linear infinite; }
       `}</style>
     </div>
   );
