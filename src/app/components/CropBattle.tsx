@@ -469,11 +469,9 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           </div>
           <p className={`text-[10px] text-right mt-0.5 ${isFinalBattle ? "text-red-300" : "text-gray-500"}`}>{enemyHp}/{battleData.enemyMaxHp}</p>
         </div>
-        <div className={`relative w-28 h-28 rounded-full flex items-center justify-center ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "bg-gradient-to-br from-red-500/40 to-purple-900/40 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white/50 shadow-xl"}`}>
-          <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain"
-            style={{ filter: isFinalBattle
-              ? "hue-rotate(180deg) brightness(0.8) saturate(1.8) contrast(1.2) drop-shadow(0 0 8px rgba(239,68,68,0.8))"
-              : "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
+        <div className={`relative w-28 h-28 rounded-full overflow-hidden bg-white ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse border-4 border-red-600" : "shadow-xl border-2 border-white"}`}>
+          <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover object-center scale-150"
+            style={isFinalBattle ? { filter: "brightness(0.9) saturate(1.4) contrast(1.15) drop-shadow(0 0 8px rgba(239,68,68,0.9))" } : undefined} />
           {/* 攻撃パーティクルエフェクト */}
           {showDamage === "enemy" && (
             <div key={particleBurstKey} className="absolute inset-0 pointer-events-none">
