@@ -122,3 +122,22 @@ export const getPassiveForCrop = (state: CropState): Passive => {
 // ===== 定数 =====
 export const MAX_ENERGY = 10;
 export const ENERGY_PER_CORRECT = 2;
+
+// ===== 攻撃エフェクト（進化別の絵文字パーティクル） =====
+export const getAttackEmojis = (state: CropState): string[] => {
+  const base = state.usedHeartId && state.baseEvoAtHeartUse
+    ? state.baseEvoAtHeartUse
+    : computeBaseEvolution(state);
+  switch (base) {
+    case "優しさフラワー":   return ["💗", "💖", "✨", "🌸"];
+    case "強さフラワー":     return ["🔥", "💥", "⚔️", "💢"];
+    case "賢さフラワー":     return ["✨", "⭐", "📖", "🔮"];
+    case "イケメンフラワー": return ["💗", "🔥", "⭐", "💫"];
+    case "賢者フラワー":     return ["🔥", "✨", "📖", "⚡"];
+    case "紳士フラワー":     return ["💗", "✨", "🎩", "🌹"];
+    case "天使フラワー":     return ["💫", "🌟", "✨", "🕊️", "👼"];
+    case "最強フラワー":     return ["💥", "🔥", "⚡", "💢", "☄️"];
+    case "天才フラワー":     return ["🧠", "⭐", "✨", "📚", "🔬"];
+    default:                 return ["💢"];
+  }
+};

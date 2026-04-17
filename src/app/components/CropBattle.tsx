@@ -35,6 +35,7 @@ import {
 import {
   getCardsForCrop,
   getPassiveForCrop,
+  getAttackEmojis,
   MAX_ENERGY,
   ENERGY_PER_CORRECT,
   type SkillCard,
@@ -108,6 +109,8 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const [usedReviveFlag, setUsedRevive] = useState(false); // 天使フラワーの復活を使用済みか
   const [usedFirstHit, setUsedFirstHit] = useState(false); // イケメンの先制が消費済みか
   const [hiddenOptions, setHiddenOptions] = useState<Set<number>>(new Set());
+  const [particleBurstKey, setParticleBurstKey] = useState(0); // インクリしてエフェクト再生
+  const attackEmojis = getAttackEmojis(cropState);
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
 
@@ -138,6 +141,13 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     const toHide = shuffled.slice(0, Math.min(optionReduce, wrongIndices.length - 1));
     setHiddenOptions(new Set(toHide));
   }, [optionReduce, queueIndex, currentQuestion]);
+
+  // 敵にダメージが入った瞬間にパーティクルバーストをトリガー
+  useEffect(() => {
+    if (showDamage === "enemy") {
+      setParticleBurstKey(k => k + 1);
+    }
+  }, [showDamage]);
 
   const handleStartBattle = () => {
     const track = (battleData.battleBgm || "battle") as import("../context/BgmContext").BgmTrack;
@@ -459,11 +469,37 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           </div>
           <p className={`text-[10px] text-right mt-0.5 ${isFinalBattle ? "text-red-300" : "text-gray-500"}`}>{enemyHp}/{battleData.enemyMaxHp}</p>
         </div>
-        <div className={`w-28 h-28 rounded-full flex items-center justify-center ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "bg-gradient-to-br from-red-500/40 to-purple-900/40 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white/50 shadow-xl"}`}>
+        <div className={`relative w-28 h-28 rounded-full flex items-center justify-center ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "bg-gradient-to-br from-red-500/40 to-purple-900/40 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "bg-white/50 shadow-xl"}`}>
           <img src={enemyImage} alt={enemyName} className="w-24 h-24 object-contain"
             style={{ filter: isFinalBattle
               ? "hue-rotate(180deg) brightness(0.8) saturate(1.8) contrast(1.2) drop-shadow(0 0 8px rgba(239,68,68,0.8))"
               : "hue-rotate(180deg) brightness(0.85) saturate(1.3)" }} />
+          {/* 攻撃パーティクルエフェクト */}
+          {showDamage === "enemy" && (
+            <div key={particleBurstKey} className="absolute inset-0 pointer-events-none">
+              {[...Array(8)].map((_, i) => {
+                const angle = (i / 8) * Math.PI * 2;
+                const dist = 70 + Math.random() * 30;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+                const emoji = attackEmojis[i % attackEmojis.length];
+                return (
+                  <span
+                    key={i}
+                    className="absolute left-1/2 top-1/2 text-3xl animate-particleBurst"
+                    style={{
+                      // @ts-expect-error CSS vars
+                      "--dx": `${dx}px`,
+                      "--dy": `${dy}px`,
+                      animationDelay: `${i * 30}ms`,
+                    }}
+                  >
+                    {emoji}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -922,6 +958,13 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           72%         { opacity: 0.4; }
         }
         .animate-lightning { animation: lightning 7s linear infinite; }
+
+        @keyframes particleBurst {
+          0%   { transform: translate(-50%, -50%) scale(0.2) rotate(0deg); opacity: 0; }
+          20%  { opacity: 1; }
+          100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+        .animate-particleBurst { animation: particleBurst 1.2s ease-out forwards; }
       `}</style>
     </div>
   );
