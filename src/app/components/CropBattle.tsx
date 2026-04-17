@@ -81,7 +81,8 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const cropState = getCropState(departmentId);
   const playerVisual = getCropVisual(cropState);
   const playerEvoName = getCropEvolutionName(cropState);
-  const playerName = playerEvoName ?? playerVisual.label;
+  const playerName = cropState.nickname ?? playerEvoName ?? playerVisual.label;
+  const playerSpecies = playerEvoName; // 種族名（進化名）は別表示
   const enemyName = battleData.enemyCropName ?? battleData.enemyName;
   const enemyImage = battleData.enemyCropImage ?? battleData.enemyImage;
 
@@ -441,8 +442,10 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
         </div>
         <div className="bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md min-w-[160px]">
           <div className="flex items-baseline justify-between">
-            <p className="font-bold text-sm text-green-900">{playerName}</p>
-            {playerEvoName && <Badge className="text-[9px] px-1.5 py-0 bg-green-100 text-green-800 ml-1">進化</Badge>}
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-sm text-green-900 truncate">{playerName}</p>
+              {playerSpecies && <p className="text-[9px] text-purple-700 font-semibold truncate">{playerSpecies}</p>}
+            </div>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[10px] text-gray-600">HP</span>
@@ -479,6 +482,9 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
                   }
                 </div>
                 <p className="font-bold text-green-900 text-sm">{playerName}</p>
+                {playerSpecies && (
+                  <p className="text-[10px] text-purple-700 font-semibold">{playerSpecies}</p>
+                )}
                 <div className="flex items-center justify-center gap-2 text-xs">
                   {(["kindness", "strength", "wisdom"] as CropStat[]).map(s => (
                     <span key={s} className={`font-semibold ${cropState[s] >= 3 ? CROP_STAT_INFO[s].color : "text-gray-400"}`}>

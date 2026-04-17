@@ -462,11 +462,16 @@ export default function DepartmentStage() {
                     )}
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-green-900 text-sm">
-                        {evoName ?? cropState.nickname ?? "育成中の作物"}
-                      </h3>
-                      <span className={`text-xs font-semibold ${visual.color}`}>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-green-900 text-sm truncate">
+                          {cropState.nickname ?? "育成中の作物"}
+                        </h3>
+                        {evoName && (
+                          <p className="text-[10px] text-purple-700 font-semibold truncate">{evoName}</p>
+                        )}
+                      </div>
+                      <span className={`text-xs font-semibold ${visual.color} flex-shrink-0`}>
                         {visual.label}
                       </span>
                     </div>
