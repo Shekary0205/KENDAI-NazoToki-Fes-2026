@@ -2288,15 +2288,8 @@ const HEART_SUFFIX: Record<string, string> = {
   "agr-warrior-heart": "-warrior",
 };
 
-/** 画像が未生成の進化名セット（該当する場合は fallback 表示） */
-const MISSING_EVO_IMAGES: Set<string> = new Set([
-  "yasashisa-teacher",
-  "yasashisa-fisher",
-  "tsuyosa-teacher",
-  "tsuyosa-fisher",
-  "kashikosa-teacher",
-  "kashikosa-fisher",
-]);
+/** 画像が未生成の進化名セット（該当する場合は fallback 表示）。現在は全36枚揃っているため空。 */
+const MISSING_EVO_IMAGES: Set<string> = new Set();
 
 /** 進化フラワーの画像パスを返す（進化前 / 画像未生成は null） */
 export const getCropEvolutionImage = (state: CropState): string | null => {
