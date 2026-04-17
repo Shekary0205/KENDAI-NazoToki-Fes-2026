@@ -32,6 +32,7 @@ import {
   saveCropState,
   hasSeenAgrItemTutorial,
   markAgrItemTutorialSeen,
+  isHeartItem,
   getItemStat,
   CROP_FULLNESS_MAX,
   CROP_STAT_INFO,
@@ -330,14 +331,29 @@ export default function DepartmentStage() {
   // 所持アイテムを作物に与える
   const handleFeedCrop = (item: ItemData) => {
     if (!departmentId || cropState.fullness >= CROP_FULLNESS_MAX) return;
+    // 心アイテムは1つのみ使用可能
+    const heart = isHeartItem(item.id);
+    if (heart && cropState.usedHeartId) {
+      setFeedToast("❌ 心のアイテムは1つしか使えません");
+      setTimeout(() => setFeedToast(null), 2500);
+      return;
+    }
+    // 心アイテムは進化済み（基本進化名がある）でなければ使えない
+    if (heart && !getCropEvolutionName(cropState)) {
+      setFeedToast("❌ まず作物を進化させよう（ステータス2以上）");
+      setTimeout(() => setFeedToast(null), 2500);
+      return;
+    }
     const prevLevel = getCropGrowthLevel(cropState);
+    const prevEvo = getCropEvolutionName(cropState);
     // アイテムをインベントリから削除
     removeItem(item.id);
     setInventory(getObtainedItems());
-    // 作物の成長（ステータスも加算）
+    // 作物の成長（ステータスも加算 / 心なら最終進化）
     const updated = feedCrop(departmentId, item.id);
     setCropStateLocal(updated);
     const newLevel = getCropGrowthLevel(updated);
+    const newEvo = getCropEvolutionName(updated);
     // チュートリアル中にフィードした場合 → チュートリアル完了（状態はフラグで継続管理）
     const wasInTutorial = showAgrFeedGuide;
     if (wasInTutorial) {
@@ -349,11 +365,18 @@ export default function DepartmentStage() {
     // アニメーション
     setFeedAnimation(item.id);
     setTimeout(() => setFeedAnimation(null), 600);
-    if (newLevel > prevLevel) {
-      // レベルアップ → 成長画面を表示
+    if (heart && newEvo && newEvo !== prevEvo) {
+      // 心使用 → 最終進化セレモニー
       const visual = getCropVisual(updated);
       fireCorrectEffect();
-      setGrowthScreenVisual({ image: visual.image, label: visual.label, level: newLevel });
+      setTimeout(() => fireCorrectEffect(), 300);
+      setGrowthScreenVisual({ image: visual.image, label: newEvo, level: 99 });
+      setShowGrowthScreen(true);
+    } else if (newLevel > prevLevel || (newEvo && newEvo !== prevEvo)) {
+      // レベルアップ or 進化 → 成長画面を表示
+      const visual = getCropVisual(updated);
+      fireCorrectEffect();
+      setGrowthScreenVisual({ image: visual.image, label: newEvo ?? visual.label, level: newLevel });
       setCropNicknameInput("");
       setShowGrowthScreen(true);
     } else if (statLabel) {
@@ -1018,35 +1041,50 @@ export default function DepartmentStage() {
       </div>
 
       {/* 作物成長画面（フルスクリーンオーバーレイ） */}
-      {showGrowthScreen && growthScreenVisual && (
+      {showGrowthScreen && growthScreenVisual && (() => {
+        const isFinalEvo = growthScreenVisual.level === 99;
+        return (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
           <div className="max-w-sm w-full space-y-6">
             <div className="text-center space-y-3">
-              <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-5 shadow-2xl animate-bounce">
+              <div className={`inline-block rounded-full p-5 shadow-2xl animate-bounce ${isFinalEvo ? "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500" : "bg-gradient-to-r from-yellow-400 to-orange-500"}`}>
                 <Sparkles className="w-12 h-12 text-white" />
               </div>
               <h2 className="text-4xl font-bold text-white drop-shadow-lg">
-                成長した！
+                {isFinalEvo ? "最終進化！" : "成長した！"}
               </h2>
             </div>
 
-            <Card className="shadow-2xl border-4 border-green-400">
+            <Card className={`shadow-2xl border-4 ${isFinalEvo ? "border-purple-500" : "border-green-400"}`}>
               <CardContent className="pt-8 pb-8 text-center space-y-5">
                 <div className="flex justify-center">
-                  <div className="w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 border-green-400 shadow-2xl bg-white flex items-center justify-center">
+                  <div className={`w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-8 shadow-2xl bg-white flex items-center justify-center ${isFinalEvo ? "border-purple-500" : "border-green-400"}`}>
                     {growthScreenVisual.image
                       ? <img src={growthScreenVisual.image} alt={growthScreenVisual.label} className="w-full h-full object-cover" />
                       : <span className="text-8xl">🌱</span>
                     }
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-green-900">
-                  作物が「{growthScreenVisual.label}」に成長した！
-                </p>
-                {getCropEvolutionName(cropState) && (
-                  <p className="text-lg font-semibold text-purple-700">
-                    ✨ {getCropEvolutionName(cropState)} に進化！
-                  </p>
+                {isFinalEvo ? (
+                  <>
+                    <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-red-600">
+                      {growthScreenVisual.label}
+                    </p>
+                    <p className="text-base text-purple-900 font-semibold">
+                      ✨ 心を受け取り、真の姿になった！
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-green-900">
+                      作物が「{growthScreenVisual.label}」に成長した！
+                    </p>
+                    {getCropEvolutionName(cropState) && (
+                      <p className="text-lg font-semibold text-purple-700">
+                        ✨ {getCropEvolutionName(cropState)} に進化！
+                      </p>
+                    )}
+                  </>
                 )}
 
                 {/* 発芽時（レベル1）に名前をつける */}
@@ -1095,7 +1133,8 @@ export default function DepartmentStage() {
             </Card>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

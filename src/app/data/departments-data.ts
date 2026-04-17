@@ -2064,7 +2064,18 @@ export interface CropState {
   wisdom: number;    // 賢さ
   /** ユーザーがつけた作物の名前 */
   nickname?: string;
+  /** 使用した心アイテムのID（1つだけ使用可能） */
+  usedHeartId?: string;
+  /** 心を使った時点での基本進化名（最終進化名を固定するため） */
+  baseEvoAtHeartUse?: string;
 }
+
+/** 3種類の「心」アイテム */
+export const HEART_ITEM_IDS = ["agr-teacher-heart", "agr-fisher-heart", "agr-warrior-heart"] as const;
+
+export const isHeartItem = (itemId: string): boolean => {
+  return (HEART_ITEM_IDS as readonly string[]).includes(itemId);
+};
 
 /** アイテムIDごとのステータス対応表 */
 const ITEM_STAT_MAP: Record<string, CropStat> = {
@@ -2089,7 +2100,7 @@ export const CROP_FULLNESS_PER_FEED = 34;
 export const CROP_FULLNESS_RECOVERY_PER_ITEM = 34;
 export const CROP_FULLNESS_MAX = 100;
 
-const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0, kindness: 0, strength: 0, wisdom: 0 };
+const DEFAULT_CROP: CropState = { seeded: false, totalFeeds: 0, fullness: 0, rewardTimings: 0, kindness: 0, strength: 0, wisdom: 0, usedHeartId: undefined, baseEvoAtHeartUse: undefined };
 
 export const getCropState = (departmentId: string): CropState => {
   if (typeof window === 'undefined') return { ...DEFAULT_CROP };
@@ -2111,9 +2122,28 @@ export const saveCropState = (departmentId: string, state: CropState): void => {
   localStorage.setItem(`cropState_${departmentId}`, JSON.stringify(state));
 };
 
-/** アイテムを作物に与える（ステータスも加算） */
+/** 心アイテムを使用可能かどうかを判定 */
+export const canUseHeartItem = (departmentId: string): boolean => {
+  const state = getCropState(departmentId);
+  return !state.usedHeartId;
+};
+
+/** アイテムを作物に与える（ステータスも加算 / 心なら最終進化） */
 export const feedCrop = (departmentId: string, itemId?: string): CropState => {
   const state = getCropState(departmentId);
+  // 心アイテムの特殊処理
+  if (itemId && isHeartItem(itemId)) {
+    if (state.usedHeartId) {
+      // すでに使用済みなのでそのまま返す（呼び出し側でブロック）
+      return state;
+    }
+    // 現在の基本進化名を記録してから心を使用
+    const currentBase = computeBaseEvolution(state);
+    if (currentBase) {
+      state.baseEvoAtHeartUse = currentBase;
+    }
+    state.usedHeartId = itemId;
+  }
   state.totalFeeds += 1;
   state.fullness = Math.min(CROP_FULLNESS_MAX, state.fullness + CROP_FULLNESS_PER_FEED);
   // ステータス加算
@@ -2160,13 +2190,76 @@ export const getCropVisual = (state: CropState): {
   }
 };
 
-/** 支配的ステータスに応じた進化名を返す（3以上で進化） */
-export const getCropEvolutionName = (state: CropState): string | null => {
-  const { kindness, strength, wisdom } = state;
-  if (kindness >= 3 && kindness >= strength && kindness >= wisdom) return "優しさフラワー";
-  if (strength >= 3 && strength >= kindness && strength >= wisdom) return "つよさフラワー";
-  if (wisdom >= 3 && wisdom >= kindness && wisdom >= strength) return "かしこさフラワー";
+/** ステータスから基本進化名を計算する（優先度: 単独3 > 2+2 > 単独2） */
+export const computeBaseEvolution = (state: CropState): string | null => {
+  const { kindness: k, strength: s, wisdom: w } = state;
+  if (k >= 3) return "天使フラワー";
+  if (s >= 3) return "最強フラワー";
+  if (w >= 3) return "天才フラワー";
+  if (k >= 2 && s >= 2) return "イケメンフラワー";
+  if (s >= 2 && w >= 2) return "賢者フラワー";
+  if (k >= 2 && w >= 2) return "紳士フラワー";
+  if (k >= 2) return "優しさフラワー";
+  if (s >= 2) return "強さフラワー";
+  if (w >= 2) return "賢さフラワー";
   return null;
+};
+
+/** 基本進化 × 心アイテム → 最終進化名のマッピング */
+const FINAL_EVOLUTIONS: Record<string, Record<string, string>> = {
+  "優しさフラワー": {
+    "agr-teacher-heart": "慈愛教師フラワー",
+    "agr-fisher-heart": "海の母フラワー",
+    "agr-warrior-heart": "聖騎士フラワー",
+  },
+  "強さフラワー": {
+    "agr-teacher-heart": "熱血教師フラワー",
+    "agr-fisher-heart": "荒海の漁師フラワー",
+    "agr-warrior-heart": "猛将フラワー",
+  },
+  "賢さフラワー": {
+    "agr-teacher-heart": "博識教授フラワー",
+    "agr-fisher-heart": "海神フラワー",
+    "agr-warrior-heart": "知将フラワー",
+  },
+  "イケメンフラワー": {
+    "agr-teacher-heart": "理想の先生フラワー",
+    "agr-fisher-heart": "海の貴公子フラワー",
+    "agr-warrior-heart": "美形騎士フラワー",
+  },
+  "賢者フラワー": {
+    "agr-teacher-heart": "大賢者教授フラワー",
+    "agr-fisher-heart": "海の賢人フラワー",
+    "agr-warrior-heart": "軍師フラワー",
+  },
+  "紳士フラワー": {
+    "agr-teacher-heart": "教養紳士フラワー",
+    "agr-fisher-heart": "海の紳士フラワー",
+    "agr-warrior-heart": "騎士道フラワー",
+  },
+  "天使フラワー": {
+    "agr-teacher-heart": "聖母教師フラワー",
+    "agr-fisher-heart": "海の女神フラワー",
+    "agr-warrior-heart": "大天使フラワー",
+  },
+  "最強フラワー": {
+    "agr-teacher-heart": "無双教授フラワー",
+    "agr-fisher-heart": "伝説の漁師フラワー",
+    "agr-warrior-heart": "絶対王者フラワー",
+  },
+  "天才フラワー": {
+    "agr-teacher-heart": "神童フラワー",
+    "agr-fisher-heart": "海のカリスマフラワー",
+    "agr-warrior-heart": "覇王フラワー",
+  },
+};
+
+/** 心アイテム使用済みなら最終進化名、それ以外なら基本進化名を返す */
+export const getCropEvolutionName = (state: CropState): string | null => {
+  if (state.usedHeartId && state.baseEvoAtHeartUse) {
+    return FINAL_EVOLUTIONS[state.baseEvoAtHeartUse]?.[state.usedHeartId] ?? state.baseEvoAtHeartUse;
+  }
+  return computeBaseEvolution(state);
 };
 
 /** ステータスの表示情報 */
