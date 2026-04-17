@@ -1808,9 +1808,11 @@ export const departments: DepartmentData[] = [
       {
         id: 9,
         location: "10号館3階奥",
-        riddle: "３階奥での謎を解け",
+        riddle: "以下の謎を解け",
+        riddleImage: "/images/sakumotu.png",
         hint: "",
-        answer: "あ",
+        answer: "さくもつ",
+        alternateAnswers: ["作物", "サクモツ"],
         nextLocationHint: "戦闘の予感..."
       },
       {
