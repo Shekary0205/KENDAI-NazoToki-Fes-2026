@@ -1777,9 +1777,9 @@ export const departments: DepartmentData[] = [
       {
         id: 6,
         location: "10号館2階奥",
-        riddle: "２階奥での謎を解け",
-        hint: "",
-        answer: "あ",
+        riddle: "返本、書架整理、案内の作成などの図書館業務をシフト制でお手伝いし、１時間につきQUOカードが１枚もらえる本学の学生サポーターの名称は？",
+        hint: "１階掲示板を見てみよう",
+        answer: "図書館サポーター",
         itemRewards: [
           { id: "agr-banana", name: "バナナ", icon: "🍌", description: "栄養満点の果物" },
           { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
