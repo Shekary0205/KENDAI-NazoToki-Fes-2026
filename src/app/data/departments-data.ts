@@ -1731,8 +1731,8 @@ export const departments: DepartmentData[] = [
         location: "10号館1階売店",
         riddle: "農学部売店の名称を答えろ",
         hint: "",
-        answer: "MARUZEN SHOP",
-        alternateAnswers: ["MARUZENSHOP", "マルゼンショップ"],
+        answer: "MARUZEN campus shop",
+        alternateAnswers: ["マルゼンキャンパスショップ"],
         itemReward: { id: "agr-nutrient", name: "栄養剤", icon: "💊", description: "作物に栄養を与えよう" },
         nextLocationHint: "次の問題へ進め"
       },
