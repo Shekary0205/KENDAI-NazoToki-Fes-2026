@@ -1769,11 +1769,6 @@ export const departments: DepartmentData[] = [
           "「」の減収要因の究明",
           "「」の品質向上"
         ],
-        itemRewards: [
-          { id: "agr-chili", name: "唐辛子", icon: "🌶️", description: "辛い刺激" },
-          { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
-        ],
-        recoversFullness: true,
         nextLocationHint: "おめでとう。次の問題に答えよう。"
       },
       {
@@ -1879,6 +1874,11 @@ export const departments: DepartmentData[] = [
         damageToPlayer: 15,
         randomOrder: true,
         nextLocationHint: "よくやった。３階へ進め",
+        recoversFullness: true,
+        rewardItems: [
+          { id: "agr-chili", name: "唐辛子", icon: "🌶️", description: "辛い刺激" },
+          { id: "agr-rice", name: "お米", icon: "🍚", description: "日本の主食" }
+        ],
         questions: [
           {
             question: "生物生産学科の４つのコースを選択しろ",
