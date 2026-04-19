@@ -37,6 +37,7 @@ import {
   hasSeenAgrFullnessTutorial,
   markAgrFullnessTutorialSeen,
   isHeartItem,
+  isAllStatsItem,
   getItemStat,
   CROP_FULLNESS_MAX,
   CROP_STAT_INFO,
@@ -372,6 +373,7 @@ export default function DepartmentStage() {
     // ステータス情報
     const stat = getItemStat(item.id);
     const statLabel = stat ? CROP_STAT_INFO[stat] : null;
+    const allStats = isAllStatsItem(item.id);
     // アニメーション
     setFeedAnimation(item.id);
     setTimeout(() => setFeedAnimation(null), 600);
@@ -389,6 +391,9 @@ export default function DepartmentStage() {
       setGrowthScreenVisual({ image: visual.image, label: newEvo ?? visual.label, level: newLevel });
       setCropNicknameInput("");
       setShowGrowthScreen(true);
+    } else if (allStats) {
+      setFeedToast(`${item.icon} ${item.name}をあげた！ 💗💪📖 全ステータス+1`);
+      setTimeout(() => setFeedToast(null), 2500);
     } else if (statLabel) {
       setFeedToast(`${item.icon} ${item.name}をあげた！ ${statLabel.icon}${statLabel.label}+1`);
       setTimeout(() => setFeedToast(null), 2500);
@@ -526,6 +531,7 @@ export default function DepartmentStage() {
                       {inventory.filter(i => i.id.startsWith("agr-")).map((item, idx) => {
                         const stat = getItemStat(item.id);
                         const statInfo = stat ? CROP_STAT_INFO[stat] : null;
+                        const allStats = isAllStatsItem(item.id);
                         return (
                           <button
                             key={`${item.id}-${idx}`}
@@ -539,11 +545,13 @@ export default function DepartmentStage() {
                           >
                             <span className="text-xl">{item.icon}</span>
                             <span className="text-[10px] font-semibold text-gray-700 leading-tight">{item.name}</span>
-                            {statInfo && (
+                            {allStats ? (
+                              <span className="text-[9px] font-bold text-purple-700">💗💪📖全+1</span>
+                            ) : statInfo ? (
                               <span className={`text-[9px] font-bold ${statInfo.color}`}>
                                 {statInfo.icon}{statInfo.label}
                               </span>
-                            )}
+                            ) : null}
                           </button>
                         );
                       })}

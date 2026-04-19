@@ -2314,6 +2314,11 @@ const ITEM_STAT_MAP: Record<string, CropStat> = {
   "agr-silica-water": "wisdom",
 };
 
+/** 全ステータスを+1するアイテム（オールラウンダー） */
+const ALL_STATS_ITEMS: Set<string> = new Set(["agr-nutrient"]);
+
+export const isAllStatsItem = (itemId: string): boolean => ALL_STATS_ITEMS.has(itemId);
+
 export const getItemStat = (itemId: string): CropStat | null => {
   return ITEM_STAT_MAP[itemId] ?? null;
 };
@@ -2371,8 +2376,14 @@ export const feedCrop = (departmentId: string, itemId?: string): CropState => {
   state.fullness = Math.min(CROP_FULLNESS_MAX, state.fullness + CROP_FULLNESS_PER_FEED);
   // ステータス加算
   if (itemId) {
-    const stat = getItemStat(itemId);
-    if (stat) state[stat] += 1;
+    if (isAllStatsItem(itemId)) {
+      state.kindness += 1;
+      state.strength += 1;
+      state.wisdom += 1;
+    } else {
+      const stat = getItemStat(itemId);
+      if (stat) state[stat] += 1;
+    }
   }
   saveCropState(departmentId, state);
   return state;
