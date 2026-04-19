@@ -2745,6 +2745,36 @@ export const markAgrItemTutorialSeen = (): void => {
   localStorage.setItem('seenAgrItemTutorial', 'true');
 };
 
+// 栄養剤入手時のチュートリアル（ステータス種別の解説）
+export const hasSeenAgrNutrientTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenAgrNutrientTutorial') === 'true';
+};
+
+export const markAgrNutrientTutorialSeen = (): void => {
+  localStorage.setItem('seenAgrNutrientTutorial', 'true');
+};
+
+// 満腹ゲージのチュートリアル
+export const hasSeenAgrFullnessTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenAgrFullnessTutorial') === 'true';
+};
+
+export const markAgrFullnessTutorialSeen = (): void => {
+  localStorage.setItem('seenAgrFullnessTutorial', 'true');
+};
+
+// 戦闘スキルのチュートリアル
+export const hasSeenAgrSkillTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenAgrSkillTutorial') === 'true';
+};
+
+export const markAgrSkillTutorialSeen = (): void => {
+  localStorage.setItem('seenAgrSkillTutorial', 'true');
+};
+
 // ===== ブラウザバック対策：ステート・スナップショット =====
 // 各ステージ表示時に localStorage の状態を history.state に保存し、
 // ブラウザバック時に復元することでアイテム消失を防ぐ。

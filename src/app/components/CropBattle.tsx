@@ -26,6 +26,8 @@ import {
   isCropDepartment,
   digestCrop,
   markDepartmentAsCleared,
+  hasSeenAgrSkillTutorial,
+  markAgrSkillTutorialSeen,
   CROP_STAT_INFO,
   type MidBattleData,
   type MidBattleQuestion,
@@ -111,6 +113,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const [hiddenOptions, setHiddenOptions] = useState<Set<number>>(new Set());
   const [particleBurstKey, setParticleBurstKey] = useState(0); // インクリしてエフェクト再生
   const attackEmojis = getAttackEmojis(cropState);
+  const [showSkillTutorial, setShowSkillTutorial] = useState(false);
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
 
@@ -152,6 +155,10 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const handleStartBattle = () => {
     const track = (battleData.battleBgm || "battle") as import("../context/BgmContext").BgmTrack;
     switchTrack(track);
+    // 初回戦闘ならスキルチュートリアルを表示
+    if (!hasSeenAgrSkillTutorial() && cards.length > 0) {
+      setShowSkillTutorial(true);
+    }
     // パッシブ: 賢者の先見の明（開始時Energy+2）
     let startEnergy = 0;
     if (passive.id === "startEnergy") startEnergy = 2;
@@ -981,6 +988,36 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
         }
         .animate-particleBurst { animation: particleBurst 1.2s ease-out forwards; }
       `}</style>
+
+      {/* スキルチュートリアル（初回戦闘） */}
+      {showSkillTutorial && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
+          <Card className="shadow-2xl border-2 border-purple-400 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">⚡</span>
+                <div className="flex-1 space-y-1.5">
+                  <p className="font-bold text-purple-900 text-sm">スキルカードについて</p>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    問題に正解すると<strong className="text-purple-700">エネルギー</strong>が貯まります。
+                    貯まったエネルギーを消費して<strong className="text-purple-700">スキルカード</strong>を使い、強力な攻撃・回復・問題操作ができます！
+                  </p>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    また、作物の進化に応じた<strong className="text-amber-700">パッシブ特性</strong>が自動発動するので要チェック。
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => { markAgrSkillTutorialSeen(); setShowSkillTutorial(false); }}
+                    className="h-8 w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    分かった！
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

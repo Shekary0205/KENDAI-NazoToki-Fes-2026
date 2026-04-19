@@ -32,6 +32,10 @@ import {
   saveCropState,
   hasSeenAgrItemTutorial,
   markAgrItemTutorialSeen,
+  hasSeenAgrNutrientTutorial,
+  markAgrNutrientTutorialSeen,
+  hasSeenAgrFullnessTutorial,
+  markAgrFullnessTutorialSeen,
   isHeartItem,
   getItemStat,
   CROP_FULLNESS_MAX,
@@ -79,6 +83,8 @@ export default function DepartmentStage() {
   const [growthScreenVisual, setGrowthScreenVisual] = useState<{ image: string; label: string; level: number } | null>(null);
   const [cropNicknameInput, setCropNicknameInput] = useState("");
   const [showAgrFeedGuide, setShowAgrFeedGuide] = useState(false);
+  const [showNutrientTutorial, setShowNutrientTutorial] = useState(false);
+  const [showFullnessTutorial, setShowFullnessTutorial] = useState(false);
 
   // 謎解き中のBGM（ステージごとに異なるトラックを再生）
   useEffect(() => {
@@ -721,6 +727,15 @@ export default function DepartmentStage() {
                       if (isCrop && justGotWater && !stillHasWater && !hasSeenAgrItemTutorial()) {
                         markAgrItemTutorialSeen();
                       }
+                      // 栄養剤を初めて入手 → チュートリアルバナー表示
+                      const justGotNutrient = getAllRewards().some(r => r.id === "agr-nutrient");
+                      if (isCrop && justGotNutrient && !hasSeenAgrNutrientTutorial()) {
+                        setShowNutrientTutorial(true);
+                      }
+                      // 満腹ゲージチュートリアル（栄養剤入手時に一緒に出す）
+                      if (isCrop && justGotNutrient && !hasSeenAgrFullnessTutorial()) {
+                        setShowFullnessTutorial(true);
+                      }
                       if (stage.skipNextLocationScreen) handleNext();
                       else setShowNext(true);
                     }}
@@ -1054,6 +1069,58 @@ export default function DepartmentStage() {
           掲示物をよく見て、謎を解き明かそう！
         </p>
       </div>
+
+      {/* チュートリアルバナー（栄養剤） */}
+      {showNutrientTutorial && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
+          <Card className="shadow-2xl border-2 border-red-400 bg-gradient-to-r from-red-50 to-pink-50">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">💊</span>
+                <div className="flex-1 space-y-1">
+                  <p className="font-bold text-red-900 text-sm">栄養剤を入手！</p>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    アイテムには<strong className="text-pink-600">💗優しさ</strong>・<strong className="text-red-600">💪強さ</strong>・<strong className="text-blue-600">📖賢さ</strong>のステータスが付いています。どのアイテムをあげるかで作物の進化先が変わります！
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => { markAgrNutrientTutorialSeen(); setShowNutrientTutorial(false); }}
+                    className="h-8 w-full bg-red-600 hover:bg-red-700"
+                  >
+                    分かった！
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* チュートリアルバナー（満腹ゲージ） */}
+      {showFullnessTutorial && !showNutrientTutorial && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
+          <Card className="shadow-2xl border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">🍽️</span>
+                <div className="flex-1 space-y-1">
+                  <p className="font-bold text-yellow-900 text-sm">満腹ゲージについて</p>
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    作物にアイテムをあげると<strong className="text-yellow-700">満腹ゲージ</strong>が上昇します。満タンになるとしばらくアイテムをあげられません。ゲージは特定のアイテム入手時に少しずつ回復します。
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => { markAgrFullnessTutorialSeen(); setShowFullnessTutorial(false); }}
+                    className="h-8 w-full bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    分かった！
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 作物成長画面（フルスクリーンオーバーレイ） */}
       {showGrowthScreen && growthScreenVisual && (() => {
