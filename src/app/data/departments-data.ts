@@ -1805,11 +1805,6 @@ export const departments: DepartmentData[] = [
         hint: "",
         answer: "さくもつ",
         alternateAnswers: ["作物", "サクモツ"],
-        itemRewards: [
-          { id: "agr-banana", name: "バナナ", icon: "🍌", description: "栄養満点の果物" },
-          { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
-        ],
-        recoversFullness: true,
         nextLocationHint: "戦闘の予感..."
       },
       {
@@ -1818,6 +1813,11 @@ export const departments: DepartmentData[] = [
         riddle: "４階での謎を解け",
         hint: "",
         answer: "あ",
+        itemRewards: [
+          { id: "agr-banana", name: "バナナ", icon: "🍌", description: "栄養満点の果物" },
+          { id: "agr-melon", name: "メロン", icon: "🍈", description: "高級フルーツ" }
+        ],
+        recoversFullness: true,
         nextLocationHint: "４階奥へ進め"
       },
       {
@@ -1835,9 +1835,9 @@ export const departments: DepartmentData[] = [
         hint: "",
         answer: "あ",
         itemRewards: [
-          { id: "agr-natural-water", name: "天然水", icon: "🏔️", description: "自然の恵み" },
-          { id: "agr-silica-water", name: "シリカ水", icon: "💎", description: "ミネラル豊富な水" },
-          { id: "agr-hydrogen-water", name: "水素水", icon: "🫧", description: "水素たっぷりの水" }
+          { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂（1つだけ使用可能）" },
+          { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱（1つだけ使用可能）" },
+          { id: "agr-warrior-heart", name: "戦士の心", icon: "⚔️", description: "戦う勇気（1つだけ使用可能）" }
         ],
         recoversFullness: true,
         nextLocationHint: "５階奥へ進め"
@@ -2026,13 +2026,7 @@ export const departments: DepartmentData[] = [
         damageToPlayer: 20,
         randomOrder: true,
         nextLocationHint: "よくやった。４階へ進め",
-        recoversFullness: true,
         fallbackBattleId: 3,
-        rewardItems: [
-          { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂" },
-          { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱" },
-          { id: "agr-warrior-heart", name: "戦士の心", icon: "⚔️", description: "戦う勇気" }
-        ],
         questions: [
           {
             question: "ゲノム科学や分子生理学を用いた作物改良の研究を行う研究室の名称は？",
