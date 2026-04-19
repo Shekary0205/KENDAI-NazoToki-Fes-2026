@@ -28,6 +28,8 @@ import {
   markDepartmentAsCleared,
   hasSeenAgrSkillTutorial,
   markAgrSkillTutorialSeen,
+  hasSeenAgrSkillUseTutorial,
+  markAgrSkillUseTutorialSeen,
   CROP_STAT_INFO,
   type MidBattleData,
   type MidBattleQuestion,
@@ -114,6 +116,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const [particleBurstKey, setParticleBurstKey] = useState(0); // インクリしてエフェクト再生
   const attackEmojis = getAttackEmojis(cropState);
   const [showSkillTutorial, setShowSkillTutorial] = useState(false);
+  const [showSkillUseTutorial, setShowSkillUseTutorial] = useState(false);
   const { switchTrack } = useBgm();
   const wonRef = useRef(false);
 
@@ -152,6 +155,18 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     }
   }, [showDamage]);
 
+  // 初めてカードを使えるエネルギーに到達したらチュートリアル
+  useEffect(() => {
+    if (battleState !== "question") return;
+    if (showSkillTutorial) return; // スキル説明チュートリアル表示中は待つ
+    if (hasSeenAgrSkillUseTutorial()) return;
+    if (cards.length === 0) return;
+    const minCost = Math.min(...cards.map(c => c.energyCost));
+    if (energy >= minCost) {
+      setShowSkillUseTutorial(true);
+    }
+  }, [energy, battleState, showSkillTutorial, cards]);
+
   const handleStartBattle = () => {
     const track = (battleData.battleBgm || "battle") as import("../context/BgmContext").BgmTrack;
     switchTrack(track);
@@ -183,6 +198,13 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const handlePlayCard = (card: SkillCard) => {
     if (energy < card.energyCost) return;
     if (battleState !== "question") return;
+    // スキル使用チュートリアルを既読扱いに
+    if (showSkillUseTutorial) {
+      markAgrSkillUseTutorialSeen();
+      setShowSkillUseTutorial(false);
+    } else if (!hasSeenAgrSkillUseTutorial()) {
+      markAgrSkillUseTutorialSeen();
+    }
     setEnergy(e => e - card.energyCost);
     const eff = card.effect;
     switch (eff.type) {
@@ -988,6 +1010,35 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
         }
         .animate-particleBurst { animation: particleBurst 1.2s ease-out forwards; }
       `}</style>
+
+      {/* スキル使用チュートリアル（初回エネルギー到達） */}
+      {showSkillUseTutorial && !showSkillTutorial && (
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full shadow-2xl border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50">
+            <CardContent className="pt-6 pb-6 space-y-4">
+              <div className="text-center">
+                <div className="inline-block text-5xl mb-2 animate-bounce">💥</div>
+                <p className="font-bold text-orange-900 text-xl">エネルギーが溜まった！</p>
+              </div>
+              <div className="space-y-3 text-sm text-gray-800 leading-relaxed">
+                <p>
+                  <strong className="text-orange-700">スキルカード</strong>が使えるようになりました！
+                  カードをタップして敵に強力な攻撃を仕掛けよう！
+                </p>
+                <p className="text-xs text-gray-600">
+                  ※ 一度使うと、エネルギーはまた最初から貯め直しです。使いどころを見極めよう。
+                </p>
+              </div>
+              <Button
+                onClick={() => { markAgrSkillUseTutorialSeen(); setShowSkillUseTutorial(false); }}
+                className="w-full h-11 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              >
+                カードを使ってみる！
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* スキルチュートリアル（初回戦闘）— 画面中央モーダル */}
       {showSkillTutorial && (

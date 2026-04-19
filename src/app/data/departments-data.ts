@@ -2786,6 +2786,16 @@ export const markAgrSkillTutorialSeen = (): void => {
   localStorage.setItem('seenAgrSkillTutorial', 'true');
 };
 
+// スキル使用のチュートリアル（初めてカードが使えるようになった時）
+export const hasSeenAgrSkillUseTutorial = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('seenAgrSkillUseTutorial') === 'true';
+};
+
+export const markAgrSkillUseTutorialSeen = (): void => {
+  localStorage.setItem('seenAgrSkillUseTutorial', 'true');
+};
+
 // ===== ブラウザバック対策：ステート・スナップショット =====
 // 各ステージ表示時に localStorage の状態を history.state に保存し、
 // ブラウザバック時に復元することでアイテム消失を防ぐ。
