@@ -141,6 +141,8 @@ export interface MidBattleData {
   enemyCropImage?: string;
   /** 問題が尽きた際にフォールバックとして使用する別バトルのID */
   fallbackBattleId?: number;
+  /** バトル開始時に問題プールを拡張する別バトルのID群（ミックス出題） */
+  questionSourceBattleIds?: number[];
 }
 
 export interface KeywordRoute {
@@ -1826,7 +1828,7 @@ export const departments: DepartmentData[] = [
         riddle: "４階奥での謎を解け",
         hint: "",
         answer: "あ",
-        nextLocationHint: "よくやった。５階へ進め。"
+        nextLocationHint: "戦闘の予感..."
       },
       {
         id: 12,
@@ -1834,12 +1836,6 @@ export const departments: DepartmentData[] = [
         riddle: "５階での謎を解け",
         hint: "",
         answer: "あ",
-        itemRewards: [
-          { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂（1つだけ使用可能）" },
-          { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱（1つだけ使用可能）" },
-          { id: "agr-warrior-heart", name: "戦士の心", icon: "⚔️", description: "戦う勇気（1つだけ使用可能）" }
-        ],
-        recoversFullness: true,
         nextLocationHint: "５階奥へ進め"
       },
       {
@@ -2107,6 +2103,29 @@ export const departments: DepartmentData[] = [
             explanation: "アグリビジネス研究室では家計と食品産業の連携による食品ロス削減の研究を行っています。"
           }
         ]
+      },
+      {
+        id: 4,
+        afterStageId: 11,
+        cropBattle: true,
+        enemyCropName: "豊穣の巨神",
+        enemyCropImage: "/images/tane3.png",
+        enemyName: "豊穣の巨神",
+        enemyImage: "/images/tane3.png",
+        enemyMaxHp: 120,
+        playerMaxHp: 100,
+        damageToEnemy: 18,
+        damageToPlayer: 18,
+        randomOrder: true,
+        nextLocationHint: "よくやった。５階へ進め",
+        recoversFullness: true,
+        questionSourceBattleIds: [1, 3],
+        rewardItems: [
+          { id: "agr-fisher-heart", name: "漁師の心", icon: "🐟", description: "海の男の魂（1つだけ使用可能）" },
+          { id: "agr-teacher-heart", name: "教師の心", icon: "❤️", description: "教える情熱（1つだけ使用可能）" },
+          { id: "agr-warrior-heart", name: "戦士の心", icon: "⚔️", description: "戦う勇気（1つだけ使用可能）" }
+        ],
+        questions: []
       },
       {
         id: 2,

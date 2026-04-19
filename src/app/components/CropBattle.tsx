@@ -121,11 +121,19 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
   const wonRef = useRef(false);
 
   useEffect(() => {
+    // ベースの問題プール
+    let pool: MidBattleQuestion[] = [...battleData.questions];
+    // 複数バトルから問題をミックス
+    if (battleData.questionSourceBattleIds) {
+      for (const id of battleData.questionSourceBattleIds) {
+        const src = department.midBattles?.find(b => b.id === id);
+        if (src) pool.push(...src.questions);
+      }
+    }
     setQuestionQueue(
-      (battleData.randomOrder ? shuffleArray(battleData.questions) : [...battleData.questions])
-        .map(shuffleQuestionOptions)
+      (battleData.randomOrder ? shuffleArray(pool) : pool).map(shuffleQuestionOptions)
     );
-  }, [battleData]);
+  }, [battleData, department]);
 
   useEffect(() => {
     switchTrack("trainer");
@@ -440,7 +448,14 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     switchTrack("trainer");
     setPlayerHp(battleData.playerMaxHp);
     setEnemyHp(battleData.enemyMaxHp);
-    setQuestionQueue((battleData.randomOrder ? shuffleArray(battleData.questions) : [...battleData.questions]).map(shuffleQuestionOptions));
+    let pool: MidBattleQuestion[] = [...battleData.questions];
+    if (battleData.questionSourceBattleIds) {
+      for (const id of battleData.questionSourceBattleIds) {
+        const src = department.midBattles?.find(b => b.id === id);
+        if (src) pool.push(...src.questions);
+      }
+    }
+    setQuestionQueue((battleData.randomOrder ? shuffleArray(pool) : pool).map(shuffleQuestionOptions));
     setQueueIndex(0); setSelectedOption(null); setCheckedOptions(new Set()); setCheckboxSubmitted(false);
     setBattleState("intro");
   };
