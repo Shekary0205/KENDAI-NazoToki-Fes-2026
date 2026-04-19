@@ -989,31 +989,31 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
         .animate-particleBurst { animation: particleBurst 1.2s ease-out forwards; }
       `}</style>
 
-      {/* スキルチュートリアル（初回戦闘） */}
+      {/* スキルチュートリアル（初回戦闘）— 画面中央モーダル */}
       {showSkillTutorial && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
-          <Card className="shadow-2xl border-2 border-purple-400 bg-gradient-to-r from-purple-50 to-indigo-50">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl flex-shrink-0">⚡</span>
-                <div className="flex-1 space-y-1.5">
-                  <p className="font-bold text-purple-900 text-sm">スキルカードについて</p>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    問題に正解すると<strong className="text-purple-700">エネルギー</strong>が貯まります。
-                    貯まったエネルギーを消費して<strong className="text-purple-700">スキルカード</strong>を使い、強力な攻撃・回復・問題操作ができます！
-                  </p>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    また、作物の進化に応じた<strong className="text-amber-700">パッシブ特性</strong>が自動発動するので要チェック。
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => { markAgrSkillTutorialSeen(); setShowSkillTutorial(false); }}
-                    className="h-8 w-full bg-purple-600 hover:bg-purple-700"
-                  >
-                    分かった！
-                  </Button>
-                </div>
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full shadow-2xl border-4 border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-50">
+            <CardContent className="pt-6 pb-6 space-y-4">
+              <div className="text-center">
+                <div className="inline-block text-5xl mb-2">⚡</div>
+                <p className="font-bold text-purple-900 text-xl">スキルカードについて</p>
               </div>
+              <div className="space-y-3 text-sm text-gray-800 leading-relaxed">
+                <p>
+                  問題に正解すると<strong className="text-purple-700">エネルギー</strong>が貯まります。
+                  貯まったエネルギーを消費して<strong className="text-purple-700">スキルカード</strong>を使い、
+                  強力な攻撃・回復・問題操作ができます！
+                </p>
+                <p>
+                  また、作物の進化に応じた<strong className="text-amber-700">パッシブ特性</strong>が自動発動するので要チェック。
+                </p>
+              </div>
+              <Button
+                onClick={() => { markAgrSkillTutorialSeen(); setShowSkillTutorial(false); }}
+                className="w-full h-11 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+              >
+                分かった！
+              </Button>
             </CardContent>
           </Card>
         </div>

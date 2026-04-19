@@ -1070,53 +1070,51 @@ export default function DepartmentStage() {
         </p>
       </div>
 
-      {/* チュートリアルバナー（栄養剤） */}
+      {/* チュートリアル（栄養剤）— 画面中央モーダル */}
       {showNutrientTutorial && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
-          <Card className="shadow-2xl border-2 border-red-400 bg-gradient-to-r from-red-50 to-pink-50">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl flex-shrink-0">💊</span>
-                <div className="flex-1 space-y-1">
-                  <p className="font-bold text-red-900 text-sm">栄養剤を入手！</p>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    アイテムには<strong className="text-pink-600">💗優しさ</strong>・<strong className="text-red-600">💪強さ</strong>・<strong className="text-blue-600">📖賢さ</strong>のステータスが付いています。どのアイテムをあげるかで作物の進化先が変わります！
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => { markAgrNutrientTutorialSeen(); setShowNutrientTutorial(false); }}
-                    className="h-8 w-full bg-red-600 hover:bg-red-700"
-                  >
-                    分かった！
-                  </Button>
-                </div>
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full shadow-2xl border-4 border-red-400 bg-gradient-to-br from-red-50 to-pink-50">
+            <CardContent className="pt-6 pb-6 space-y-4">
+              <div className="text-center">
+                <div className="inline-block text-5xl mb-2">💊</div>
+                <p className="font-bold text-red-900 text-xl">栄養剤を入手！</p>
               </div>
+              <p className="text-sm text-gray-800 leading-relaxed">
+                アイテムには<strong className="text-pink-600">💗優しさ</strong>・<strong className="text-red-600">💪強さ</strong>・<strong className="text-blue-600">📖賢さ</strong>のステータスが付いています。
+                <br /><br />
+                どのアイテムをあげるかで<strong>作物の進化先が変わる</strong>ので、育てたい方向性を考えて使いましょう！
+              </p>
+              <Button
+                onClick={() => { markAgrNutrientTutorialSeen(); setShowNutrientTutorial(false); }}
+                className="w-full h-11 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+              >
+                分かった！
+              </Button>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* チュートリアルバナー（満腹ゲージ） */}
+      {/* チュートリアル（満腹ゲージ）— 画面中央モーダル */}
       {showFullnessTutorial && !showNutrientTutorial && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto">
-          <Card className="shadow-2xl border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl flex-shrink-0">🍽️</span>
-                <div className="flex-1 space-y-1">
-                  <p className="font-bold text-yellow-900 text-sm">満腹ゲージについて</p>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    作物にアイテムをあげると<strong className="text-yellow-700">満腹ゲージ</strong>が上昇します。満タンになるとしばらくアイテムをあげられません。ゲージは特定のアイテム入手時に少しずつ回復します。
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => { markAgrFullnessTutorialSeen(); setShowFullnessTutorial(false); }}
-                    className="h-8 w-full bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    分かった！
-                  </Button>
-                </div>
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full shadow-2xl border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50">
+            <CardContent className="pt-6 pb-6 space-y-4">
+              <div className="text-center">
+                <div className="inline-block text-5xl mb-2">🍽️</div>
+                <p className="font-bold text-yellow-900 text-xl">満腹ゲージについて</p>
               </div>
+              <p className="text-sm text-gray-800 leading-relaxed">
+                作物にアイテムをあげると<strong className="text-yellow-700">満腹ゲージ</strong>が上昇します。
+                <br /><br />
+                満タンになると<strong>しばらくアイテムをあげられません</strong>。ゲージは特定のアイテム入手時に少しずつ回復します。
+              </p>
+              <Button
+                onClick={() => { markAgrFullnessTutorialSeen(); setShowFullnessTutorial(false); }}
+                className="w-full h-11 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+              >
+                分かった！
+              </Button>
             </CardContent>
           </Card>
         </div>
