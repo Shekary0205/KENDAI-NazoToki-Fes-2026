@@ -42,14 +42,14 @@ const ESCAPE_RIDDLES: EscapeRiddle[] = [
   },
 ];
 
-type EscapeState = "intro" | "running" | "incorrect" | "descending" | "cleared";
+type EscapeState = "reviving" | "intro" | "running" | "incorrect" | "descending" | "disappearing" | "cleared";
 
 export default function AgriEscape() {
   const { departmentId } = useParams<{ departmentId: string }>();
   const navigate = useNavigate();
   const { switchTrack } = useBgm();
 
-  const [state, setState] = useState<EscapeState>("intro");
+  const [state, setState] = useState<EscapeState>("reviving");
   const [currentFloor, setCurrentFloor] = useState(6);
   const [riddleIndex, setRiddleIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -60,6 +60,13 @@ export default function AgriEscape() {
     switchTrack("finalBattle");
     return () => { switchTrack("field"); };
   }, [switchTrack]);
+
+  // 復活アニメーション: 2.8秒後にintroへ
+  useEffect(() => {
+    if (state !== "reviving") return;
+    const t = setTimeout(() => setState("intro"), 2800);
+    return () => clearTimeout(t);
+  }, [state]);
 
   // ラスボス画像をパルスさせる（迫ってくる感）
   useEffect(() => {
@@ -106,10 +113,13 @@ export default function AgriEscape() {
     setCurrentFloor(newFloor);
     setSelectedOption(null);
     if (newFloor <= 1) {
-      // 1階エントランスに到達 → クリア
-      if (departmentId) markDepartmentAsCleared(departmentId);
-      switchTrack("victory");
-      setState("cleared");
+      // 1階エントランスに到達 → 消滅演出 → クリア
+      setState("disappearing");
+      setTimeout(() => {
+        if (departmentId) markDepartmentAsCleared(departmentId);
+        switchTrack("victory");
+        setState("cleared");
+      }, 2600);
     } else {
       // 次の問題へ
       setRiddleIndex(i => (i + 1) % ESCAPE_RIDDLES.length);
@@ -120,6 +130,138 @@ export default function AgriEscape() {
   const handleGoToComplete = () => {
     navigate(`/department/${departmentId}/complete`);
   };
+
+  // ===== 復活演出 =====
+  if (state === "reviving") {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-black flex items-center justify-center p-4">
+        {/* 赤いフラッシュ */}
+        <div className="absolute inset-0 bg-red-600 animate-redFlash pointer-events-none" />
+        {/* ラスボス画像が奥から迫ってくる */}
+        <div className="absolute inset-0 flex items-center justify-center animate-bossRevive pointer-events-none">
+          <img
+            src="/images/last.png"
+            alt="ラスボス"
+            className="w-full h-full object-cover"
+            style={{ filter: "brightness(0.85) saturate(1.6) contrast(1.2)" }}
+          />
+        </div>
+        {/* 稲妻エフェクト */}
+        <div className="absolute inset-0 bg-white/20 animate-lightning2 pointer-events-none" />
+        {/* 中央のタイトル */}
+        <div className="relative z-10 text-center space-y-2 animate-titlePop">
+          <p className="text-red-500 text-2xl font-bold tracking-widest drop-shadow-[0_0_12px_rgba(239,68,68,1)]">
+            ─ ラスボス復活 ─
+          </p>
+          <h1 className="text-5xl md:text-7xl font-black text-white drop-shadow-[0_0_24px_rgba(239,68,68,1)]">
+            💀 KING FLOWER 💀
+          </h1>
+          <p className="text-red-300 text-lg font-semibold animate-pulse">
+            絶望が迫る…！
+          </p>
+        </div>
+
+        <style>{`
+          @keyframes redFlash {
+            0%   { opacity: 0.9; }
+            30%  { opacity: 0.3; }
+            60%  { opacity: 0.6; }
+            100% { opacity: 0.15; }
+          }
+          .animate-redFlash { animation: redFlash 2.8s ease-out forwards; }
+
+          @keyframes bossRevive {
+            0%   { transform: scale(0.1); opacity: 0; filter: blur(20px); }
+            40%  { transform: scale(0.6); opacity: 0.7; filter: blur(6px); }
+            70%  { transform: scale(1.05); opacity: 0.9; filter: blur(0); }
+            100% { transform: scale(1); opacity: 0.8; filter: blur(0); }
+          }
+          .animate-bossRevive { animation: bossRevive 2.8s ease-out forwards; }
+
+          @keyframes lightning2 {
+            0%, 100%   { opacity: 0; }
+            10%, 14%   { opacity: 0.8; }
+            12%        { opacity: 0.4; }
+            35%, 38%   { opacity: 0.6; }
+            60%, 62%   { opacity: 0.7; }
+          }
+          .animate-lightning2 { animation: lightning2 2.8s linear forwards; }
+
+          @keyframes titlePop {
+            0%   { transform: scale(2); opacity: 0; }
+            50%  { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          .animate-titlePop { animation: titlePop 1.4s ease-out 0.8s both; }
+        `}</style>
+      </div>
+    );
+  }
+
+  // ===== 消滅演出 =====
+  if (state === "disappearing") {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-orange-200 via-yellow-100 to-white flex items-center justify-center p-4">
+        {/* 光の粒子 */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(30)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 rounded-full bg-yellow-300 animate-sparkleFly"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${i * 60}ms`,
+                boxShadow: "0 0 8px rgba(250,204,21,0.9)",
+              }}
+            />
+          ))}
+        </div>
+        {/* ラスボスが消えていくアニメ */}
+        <div className="absolute inset-0 flex items-center justify-center animate-bossFade pointer-events-none">
+          <img
+            src="/images/last.png"
+            alt="ラスボス"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* 中央メッセージ */}
+        <div className="relative z-10 text-center space-y-4 animate-titlePopUp">
+          <p className="text-6xl animate-bounce">✨</p>
+          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 drop-shadow">
+            ラスボス消滅！
+          </h1>
+          <p className="text-xl text-gray-700 font-semibold">
+            光に包まれて消えていく…
+          </p>
+        </div>
+
+        <style>{`
+          @keyframes bossFade {
+            0%   { transform: scale(1); opacity: 0.85; filter: brightness(1) saturate(1.3); }
+            35%  { transform: scale(1.08); opacity: 0.65; filter: brightness(1.5) saturate(0.7); }
+            70%  { transform: scale(0.6); opacity: 0.25; filter: brightness(2) saturate(0.2) blur(3px); }
+            100% { transform: scale(0.1); opacity: 0; filter: brightness(3) blur(12px); }
+          }
+          .animate-bossFade { animation: bossFade 2.6s ease-in forwards; }
+
+          @keyframes sparkleFly {
+            0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+            20%  { opacity: 1; }
+            100% { transform: translate(0, -200px) scale(0); opacity: 0; }
+          }
+          .animate-sparkleFly { animation: sparkleFly 2s ease-out forwards; }
+
+          @keyframes titlePopUp {
+            0%   { transform: scale(0.5); opacity: 0; }
+            60%  { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          .animate-titlePopUp { animation: titlePopUp 1.2s ease-out 0.8s both; }
+        `}</style>
+      </div>
+    );
+  }
 
   // ===== クリア画面 =====
   if (state === "cleared") {
