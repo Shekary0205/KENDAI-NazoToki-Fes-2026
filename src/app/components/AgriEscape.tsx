@@ -42,7 +42,7 @@ const ESCAPE_RIDDLES: EscapeRiddle[] = [
   },
 ];
 
-type EscapeState = "intro" | "running" | "incorrect" | "cleared";
+type EscapeState = "intro" | "running" | "incorrect" | "descending" | "cleared";
 
 export default function AgriEscape() {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -83,21 +83,10 @@ export default function AgriEscape() {
     if (isCorrect) {
       fireCorrectEffect();
       setShake(true);
-      setTimeout(() => setShake(false), 500);
       setTimeout(() => {
-        const newFloor = currentFloor - 1;
-        setCurrentFloor(newFloor);
-        setSelectedOption(null);
-        if (newFloor <= 1) {
-          // 1階エントランスに到達 → クリア
-          if (departmentId) markDepartmentAsCleared(departmentId);
-          switchTrack("victory");
-          setState("cleared");
-        } else {
-          // 次の問題へ
-          setRiddleIndex(i => (i + 1) % ESCAPE_RIDDLES.length);
-        }
-      }, 1400);
+        setShake(false);
+        setState("descending");
+      }, 500);
     } else {
       // 不正解でラスボスが接近
       setBossScale(1.2);
@@ -109,6 +98,22 @@ export default function AgriEscape() {
         setSelectedOption(null);
         setState("running");
       }, 1500);
+    }
+  };
+
+  const handleDescend = () => {
+    const newFloor = currentFloor - 1;
+    setCurrentFloor(newFloor);
+    setSelectedOption(null);
+    if (newFloor <= 1) {
+      // 1階エントランスに到達 → クリア
+      if (departmentId) markDepartmentAsCleared(departmentId);
+      switchTrack("victory");
+      setState("cleared");
+    } else {
+      // 次の問題へ
+      setRiddleIndex(i => (i + 1) % ESCAPE_RIDDLES.length);
+      setState("running");
     }
   };
 
@@ -249,6 +254,37 @@ export default function AgriEscape() {
           </p>
         </div>
 
+        {/* 下降メッセージ画面（正解後） */}
+        {state === "descending" ? (
+          <div className="mt-auto max-w-xl w-full mx-auto">
+            <Card className="shadow-2xl border-4 border-green-400 bg-white/95">
+              <CardContent className="pt-6 pb-6 space-y-4 text-center">
+                <div className="inline-block bg-green-500 rounded-full p-4 shadow-xl animate-bounce">
+                  <ArrowDown className="w-10 h-10 text-white" />
+                </div>
+                <p className="text-2xl font-bold text-green-900">
+                  ✨ 正解！
+                </p>
+                <p className="text-3xl font-black text-red-700 drop-shadow">
+                  {currentFloor - 1}階まで降りろ！
+                </p>
+                <p className="text-sm text-gray-700">
+                  {currentFloor - 1 <= 1
+                    ? "もう少しでエントランス！"
+                    : `残り ${currentFloor - 2} フロア`}
+                </p>
+                <Button
+                  onClick={handleDescend}
+                  className="w-full h-12 text-lg bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700"
+                >
+                  <ArrowDown className="w-5 h-5 mr-2" />
+                  {currentFloor - 1 <= 1 ? "エントランスへ！" : "下のフロアへ！"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+        <>
         {/* クイズカード（画面下部） */}
         <div className="mt-auto max-w-xl w-full mx-auto">
           <Card className="shadow-2xl border-4 border-red-400 bg-white/95">
@@ -301,6 +337,8 @@ export default function AgriEscape() {
             </CardContent>
           </Card>
         </div>
+        </>
+        )}
       </div>
 
       <style>{`
