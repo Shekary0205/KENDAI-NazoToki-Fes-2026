@@ -470,8 +470,13 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
     }
     const isLastStage = battleData.afterStageId >= department.stages.length;
     if (isLastStage) {
-      markDepartmentAsCleared(departmentId);
-      navigate(`/department/${departmentId}/complete`);
+      // 農学部の最終戦闘 → 逃避パートへ
+      if (isCropDepartment(departmentId)) {
+        navigate(`/department/${departmentId}/escape`);
+      } else {
+        markDepartmentAsCleared(departmentId);
+        navigate(`/department/${departmentId}/complete`);
+      }
     } else {
       const nextStageId = battleData.nextStageId ?? battleData.afterStageId + 1;
       navigate(`/department/${departmentId}/stage/${nextStageId}`);
