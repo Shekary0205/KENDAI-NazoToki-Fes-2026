@@ -142,7 +142,7 @@ export default function AgriEscape() {
           <img
             src="/images/last.png"
             alt="ラスボス"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             style={{ filter: "brightness(0.85) saturate(1.6) contrast(1.2)" }}
           />
         </div>
@@ -222,7 +222,7 @@ export default function AgriEscape() {
           <img
             src="/images/last.png"
             alt="ラスボス"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         </div>
         {/* 中央メッセージ */}
@@ -368,7 +368,7 @@ export default function AgriEscape() {
         <img
           src="/images/last.png"
           alt="ラスボス"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           style={{ filter: "brightness(0.75) saturate(1.4) contrast(1.1)" }}
         />
       </div>

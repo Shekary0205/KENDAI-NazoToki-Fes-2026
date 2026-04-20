@@ -538,7 +538,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
           <p className={`text-[10px] text-right mt-0.5 ${isFinalBattle ? "text-red-300" : "text-gray-500"}`}>{enemyHp}/{battleData.enemyMaxHp}</p>
         </div>
         <div className={`relative w-28 h-28 rounded-full overflow-hidden bg-white ${showDamage === "enemy" ? "animate-shake" : ""} ${isFinalBattle ? "shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse border-4 border-red-600" : "shadow-xl border-2 border-white"}`}>
-          <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover object-center scale-150"
+          <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover object-center -scale-x-150 scale-y-150"
             style={isFinalBattle ? { filter: "brightness(0.9) saturate(1.4) contrast(1.15) drop-shadow(0 0 8px rgba(239,68,68,0.9))" } : undefined} />
           {/* 攻撃パーティクルエフェクト */}
           {showDamage === "enemy" && (
@@ -682,7 +682,7 @@ export default function CropBattle({ departmentId, battleData, department }: Cro
               {/* 敵作物 */}
               <div className="text-center space-y-2">
                 <div className={`w-28 h-28 mx-auto rounded-full border-4 overflow-hidden bg-white ${isFinalBattle ? "border-red-600 shadow-[0_0_30px_rgba(239,68,68,0.8)] animate-bossPulse" : "border-red-400 shadow-lg"}`}>
-                  <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover object-center scale-150"
+                  <img src={enemyImage} alt={enemyName} className="w-full h-full object-cover object-center -scale-x-150 scale-y-150"
                     style={isFinalBattle ? { filter: "brightness(0.9) saturate(1.4) contrast(1.15) drop-shadow(0 0 8px rgba(239,68,68,0.9))" } : undefined} />
                 </div>
                 <p className="font-bold text-sm text-red-900">{enemyName}</p>

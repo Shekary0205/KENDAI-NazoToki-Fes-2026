@@ -317,7 +317,7 @@ export default function KeywordBattle() {
                   <img
                     src={battleData.enemyImage}
                     alt={battleData.enemyName}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover -scale-x-100"
                   />
                 </div>
               </div>
@@ -557,7 +557,7 @@ export default function KeywordBattle() {
             <img
               src={battleData.enemyImage}
               alt={battleData.enemyName}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover -scale-x-100"
             />
           </div>
         </div>

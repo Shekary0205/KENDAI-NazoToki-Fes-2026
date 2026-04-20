@@ -306,8 +306,8 @@ export default function Battle() {
                   <img
                     src={battleData.enemyImage}
                     alt={battleData.enemyName}
-                    className="w-full h-full object-contain scale-[1.6]"
-                    style={{ transform: `scale(1.6) translateY(${battleData.enemyImageOffsetY || "0%"})` }}
+                    className="w-full h-full object-contain"
+                    style={{ transform: `scale(-1.6, 1.6) translateY(${battleData.enemyImageOffsetY || "0%"})` }}
                   />
                 </div>
               </div>
